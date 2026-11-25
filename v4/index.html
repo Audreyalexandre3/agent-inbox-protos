@@ -135,11 +135,11 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .st { padding:10px 12px; border-radius:12px; background:var(--soft); }
 .st b { display:block; font-size:22px; font-weight:600; letter-spacing:-.03em; line-height:1.1; }
 .st span { font-size:12px; color:var(--muted); }
-.st.hot { background:var(--rsoft); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--red) 22%, transparent); color:var(--red); }
-.st.hot span { color:var(--red); display:flex; align-items:center; gap:4px; white-space:nowrap; }
+.st.hot { }
+.st.hot span { display:flex; align-items:center; gap:4px; white-space:nowrap; }
 .st.hot span svg { width:13px; height:13px; }
 .st.hot b { position:relative; display:inline-block; }
-.st.hot b::after { content:""; position:absolute; top:4px; right:-12px; width:7px; height:7px; border-radius:50%; background:var(--red); box-shadow:0 0 0 0 rgba(194,65,12,.45); animation:pingr 2s infinite; }
+.st.hot b::after { content:none; }
 @keyframes pingr { 70% { box-shadow:0 0 0 6px rgba(194,65,12,0); } 100% { box-shadow:0 0 0 0 rgba(194,65,12,0); } }
 .ac-l { margin-top:12px; font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
 .sg { display:grid; grid-template-columns:20px 1fr auto; gap:10px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
@@ -182,7 +182,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .bk-c { font-size:22px; font-weight:600; letter-spacing:-.03em; line-height:1; }
 .bk-a { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
 .bk-a .btn.cog { width:30px; height:30px; border-radius:9px; }
-.bk.lead { box-shadow:inset 3px 0 0 #e8590c, var(--shadow); }
+.bk.lead { }
 .bk.slim { background:var(--soft); box-shadow:none; padding:2px 20px; }
 .bk.slim .bk-h { padding:10px 0; }
 .bk .more { display:flex; align-items:center; justify-content:center; gap:4px; }
@@ -224,9 +224,10 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .recap .rg .st:last-child { border-right:0; margin-right:0; }
 .recap .rg .st b { font-size:26px; }
 .recap .rg .st.hot { background:none; box-shadow:none; }
-.needs { margin-top:16px; border-radius:20px; background:#fff; box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--red) 28%, transparent), 0 12px 32px -16px rgba(194,65,12,.18); padding:6px 18px; border-left:4px solid var(--red); }
-.needs-h { color:var(--red); }
+.needs { margin-top:16px; border-radius:20px; background:#fff; box-shadow:var(--shadow); padding:6px 20px 8px; }
+.needs-h { color:var(--fg); font-size:16px; }
 .needs-h .muted { color:var(--muted); }
+.needs-h svg { color:var(--muted); }
 .needs-h { display:flex; align-items:center; gap:8px; padding:12px 0 4px; font-weight:600; }
 .tabs { display:flex; gap:4px; margin-top:26px; border-bottom:1px solid var(--line); }
 .tabs button { padding:10px 14px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500; }
@@ -527,7 +528,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const reply = th.act === "reply";
     return `<div class="it ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}">
       <div style="min-width:0">
-        <div class="who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers</span><span>· ${rel(x.at)}</span>${opts.agent ? `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[th.agent].dot}"></span>${AGENTS[th.agent].name}</span>` : ""}${opts.theme ? `<span class="chip">${th.label}</span>` : ""}${x.needs ? `<span class="chip red">${ic("alert")}${esc(x.needs.split(":")[0])}</span>` : ""}${x.fresh ? '<span class="chip ok">New</span>' : ""}</div>
+        <div class="who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers</span><span>· ${rel(x.at)}</span>${opts.agent ? `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[th.agent].dot}"></span>${AGENTS[th.agent].name}</span>` : ""}${opts.theme ? `<span class="chip">${th.label}</span>` : ""}${x.needs ? `<span class="chip">${ic("alert")}${esc(x.needs.split(":")[0])}</span>` : ""}${x.fresh ? '<span class="chip ok">New</span>' : ""}</div>
         <div class="txt">${esc(x.text)}</div>
         <div class="why">${ic("spark")}${esc(x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why)} <span class="faint">· ${Math.round(x.conf * 100)}% sure</span></div>
         ${reply ? `<div class="sugg"><span class="tag">${ic("reply")}Reply</span><textarea class="draft" rows="1" data-draft="${x.id}" placeholder="Write your reply">${esc(draftOf(x))}</textarea></div>${x.dm ? `<div class="sugg"><span class="tag">${ic("send")}DM</span><span class="muted" style="font-size:13px;padding-top:2px">Product link: ${esc(x.dm)}</span></div>` : ""}` : ""}
@@ -558,7 +559,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   function needsOverview() {
     const nd = needs();
     if (!nd.length) return `<section class="needs" style="padding:14px 18px"><div class="row" style="color:var(--green);font-weight:600">${ic("check")}Nothing needs you right now</div></section>`;
-    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents won't act on these alone</span></div>${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true, pri: true })).join("")}</section>`;
+    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents won't act on these alone</span></div>${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true })).join("")}</section>`;
   }
   function bucket(t) {
     const th = TH[t], a = AGENTS[th.agent], xs = feed(t);
@@ -585,7 +586,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     return `<section class="card ac"><div class="ac-h"><span class="aav" style="background:${a.dot}">${ic(a.icon)}</span><div style="min-width:0"><h3>${a.name}</h3><p>${a.role}</p></div></div>
       <div class="ac-stats"><div class="st ${s.needs ? "hot" : ""}"><b>${s.needs}</b><span>${s.needs ? ic("alert") : ""}Need${s.needs === 1 ? "s" : ""} you</span></div><div class="st"><b>${s.todo}</b><span>To review</span></div><div class="st"><b>${s.auto}</b><span>Done on its own</span></div></div>
       <div class="ac-l">Latest suggestions</div>
-      ${latest.length ? latest.map((x) => { const th = TH[x.theme]; return `<div class="sg"><span class="net ${x.net}">${x.net}</span><div style="min-width:0"><div class="tx"><b>${esc(x.author)}</b> ${esc(x.text)}</div><div class="meta">${x.needs ? `<span class="chip red" style="height:18px">${ic("alert")}Needs you</span>` : `<span class="chip" style="height:18px">${th.label}</span>`}${x.theme === "buy" || th.act === "reply" ? `<span class="dr">→ ${esc(draftOf(x) || "Write a reply")}</span>` : `<span class="dr">→ ${ACT[th.act].w}</span>`}<span class="faint">${rel(x.at)}</span></div></div>
+      ${latest.length ? latest.map((x) => { const th = TH[x.theme]; return `<div class="sg"><span class="net ${x.net}">${x.net}</span><div style="min-width:0"><div class="tx"><b>${esc(x.author)}</b> ${esc(x.text)}</div><div class="meta">${x.needs ? `<span class="chip" style="height:18px">${ic("alert")}Needs you</span>` : `<span class="chip" style="height:18px">${th.label}</span>`}${x.theme === "buy" || th.act === "reply" ? `<span class="dr">→ ${esc(draftOf(x) || "Write a reply")}</span>` : `<span class="dr">→ ${ACT[th.act].w}</span>`}<span class="faint">${rel(x.at)}</span></div></div>
         ${x.needs ? `<button class="btn sm" data-go="${a.id}">Open</button>` : `<button class="btn sm" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`}</div>`; }).join("") : `<div class="empty">All clear.</div>`}
       <div class="ac-f"><button class="btn pri" data-go="${a.id}">Open feed ${ic("right")}</button><button class="btn cog" data-go="${a.id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button><span class="sp"></span>${s.todo + s.needs ? "" : '<span class="chip ok">All clear</span>'}</div></section>`;
   }
@@ -618,7 +619,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
         ${xs.length > 5 ? `<button class="more" data-more="${t}">${S.open[t] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`;
     }).join("");
     const nd = needs(a.id);
-    const needsSec = nd.length ? `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · the agent won't act on these alone</span></div>${nd.map((x, i) => itemRow(x, i === 0, { theme: true, pri: true })).join("")}</section>` : "";
+    const needsSec = nd.length ? `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · the agent won't act on these alone</span></div>${nd.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</section>` : "";
     return `${needsSec}${groups}<div style="margin-top:16px">${liveTile((e) => e.agent === a.id, "Activity", false, s.saved)}</div>`;
   }
   function config(a) {
