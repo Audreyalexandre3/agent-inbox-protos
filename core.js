@@ -16,6 +16,8 @@
     undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
     up: '<path d="M7 10v12"/><path d="M15 5.88 14 10h5.83a2 2 0 0 1 1.92 2.56l-2.33 8A2 2 0 0 1 17.5 22H4a2 2 0 0 1-2-2v-8a2 2 0 0 1 2-2h2.76a2 2 0 0 0 1.79-1.11L12 2a3.13 3.13 0 0 1 3 3.88Z"/>',
     down: '<path d="M17 14V2"/><path d="M9 18.12 10 14H4.17a2 2 0 0 1-1.92-2.56l2.33-8A2 2 0 0 1 6.5 2H20a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2h-2.76a2 2 0 0 0-1.79 1.11L12 22a3.13 3.13 0 0 1-3-3.88Z"/>',
+    trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    broom: '<path d="m13 11 9-9"/><path d="M14.6 12.6c.8.8.9 2.1.2 3L10 22l-8-8 6.4-4.8c.9-.7 2.2-.6 3 .2Z"/><path d="m6.8 10.4 6.8 6.8"/>',
     back: '<path d="m15 18-6-6 6-6"/>', right: '<path d="m9 18 6-6-6-6"/>',
     book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z"/>',
     inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/>',
@@ -29,15 +31,17 @@
   const S = {
     items: D.ITEMS.map((x) => ({ ...x, status: "pending", at: now - x.ago * 60000 })),
     log: [], auto: { like: false, hide: false, reply: false },
-    approved: { like: 0, hide: 0, reply: 0 }, rejected: { like: 0, hide: 0, reply: 0 },
-    nudge: null, nudged: {}, learned: { lead: [], support: [], engage: [], mod: [] },
+    approved: { like: 0, hide: 0, reply: 0, delete: 0 }, rejected: { like: 0, hide: 0, reply: 0, delete: 0 },
+    nudge: null, nudged: {}, learned: Object.fromEntries(D.AGENTS.map((a) => [a.id, []])),
     guides: Object.fromEntries(D.AGENTS.map((a) => [a.id, a.guide])),
     sel: new Set(), edits: {}, scanned: D.SCANNED_BEFORE, lastCheck: now, drawerId: null, drawerAgent: null
   };
   let LID = 0;
   // A bit of history so the log is not empty on first load.
-  [["mod", "hid 41 spam comments", null, 15], ["engage", "liked 63 comments", null, 16], ["lead", "replied to Clara M.", "do you have gift wrapping?", 17], ["support", "replied to Joe P.", "when is the restock?", 18]]
-    .forEach(([agent, text, q, h]) => S.log.push({ lid: ++LID, ids: [], agent, text, q, by: "you", t: now - h * 3600000 }));
+  const lastVisit = now - D.LAST_VISIT_MIN * 60000;
+  S.lastVisit = lastVisit;
+  [["general", "hid 41 spam comments", null, 0.2], ["general", "liked 63 comments", null, 0.4], ["lead", "replied to Clara M. and sent a DM", "do you have gift wrapping?", 0.6], ["general", "replied to Joe P.", "when is the restock?", 0.8]]
+    .forEach(([agent, text, q, h]) => S.log.push({ lid: ++LID, ids: [], agent, text, q, by: "you", t: lastVisit - h * 3600000 }));
 
   const agent = (id) => D.AGENTS.find((a) => a.id === id);
   const byId = (id) => S.items.find((x) => x.id === id);
@@ -45,10 +49,10 @@
   const isHuman = (x) => x.type === "escalation" || x.type === "gap";
   const rel = (t) => { const m = Math.round((Date.now() - t) / 60000); return m < 1 ? "just now" : m < 60 ? m + " min" : m < 1440 ? Math.round(m / 60) + " h" : Math.round(m / 1440) + " d"; };
   const kfmt = (n) => (n >= 1000 ? (n / 1000).toFixed(n >= 10000 ? 0 : 1).replace(".0", "") + "K" : String(n));
-  const actWord = { reply: "Send", like: "Like", hide: "Hide" };
-  const actIcon = { reply: "send", like: "heart", hide: "eyeoff" };
-  const past = { reply: "replied to", like: "liked", hide: "hid" };
-  const SAVE = { reply: 2, like: 0.2, hide: 0.3 };
+  const actWord = { reply: "Send", like: "Like", hide: "Hide", delete: "Delete" };
+  const actIcon = { reply: "send", like: "heart", hide: "eyeoff", delete: "trash" };
+  const past = { reply: "replied to", like: "liked", hide: "hid", delete: "deleted" };
+  const SAVE = { reply: 2, like: 0.2, hide: 0.3, delete: 0.3 };
 
   // ---------- events
   const subs = [];
@@ -80,9 +84,23 @@
       S.log.unshift(e); lids.push(e.lid);
     });
     checkNudge();
+    if (by === "you") {
+      const el = Math.round((Date.now() - M.t0) / 1000);
+      if (!M.firstLead && done.some((x) => x.type === "lead")) { M.firstLead = el; M.firstLeadClicks = M.clicks; }
+      if (!M.spamClear && !pending((x) => SPAM.includes(x.type)).length) { M.spamClear = el; M.spamClicks = M.clicks; }
+    }
     return lids;
   }
+  // Test metrics for the choice criteria (time to first lead, gestures to clear the spam).
+  const SPAM = ["spam", "scam", "insult"];
+  const M = { t0: Date.now(), clicks: 0, firstLead: null, firstLeadClicks: null, spamClear: null, spamClicks: null };
+  document.addEventListener("click", (e) => { if (e.target.closest("button, a, [data-go], [data-open], [data-sel], [data-view], [data-tab], select") && !e.target.closest(".protobar")) M.clicks++; }, true);
+  const mmss = (s) => Math.floor(s / 60) + ":" + String(s % 60).padStart(2, "0");
+  function metricsHTML() {
+    return `<span class="hide-m">First lead handled: <b>${M.firstLead != null ? mmss(M.firstLead) + " · " + M.firstLeadClicks + (M.firstLeadClicks === 1 ? " click" : " clicks") : "not yet"}</b></span><span class="hide-m">Spam cleared: <b>${M.spamClear != null ? M.spamClicks + (M.spamClicks === 1 ? " click · " : " clicks · ") + mmss(M.spamClear) : "not yet"}</b></span>`;
+  }
   function checkNudge() {
+    return; // V1 January: no automation, so no "turn on auto" nudge.
     if (S.nudge) return;
     for (const a of ["like", "hide"]) {
       if (!S.auto[a] && !S.nudged[a] && S.approved[a] >= 8 && S.rejected[a] === 0) { S.nudge = a; return; }
@@ -104,10 +122,8 @@
   function move(id, to) {
     const x = byId(id); if (!x) return; const from = x.agent; x.agent = to;
     S.learned[from].unshift({ r: "Sent to " + agent(to).short, q: x.text });
-    if (to === "mod") { x.act = "hide"; x.type = "spam"; }
-    else if (to === "engage") { x.act = "like"; x.type = "praise"; }
-    else if (to === "lead") { x.act = "reply"; x.type = "lead"; x.draft = x.draft || "Thanks! I sent you the link in DM."; }
-    else if (to === "support") { x.act = "reply"; x.type = "question"; x.draft = x.draft || "Thanks for asking! Sending you a DM."; }
+    if (to === "lead") { x.act = "reply"; x.type = "lead"; x.draft = x.draft || "Thanks! I sent you the link in DM."; x.why = "Moved here by you."; }
+    else { x.act = "reply"; x.type = "question"; x.draft = x.draft || "Thanks for your message! Sending you a DM."; x.dm = null; x.product = null; x.why = "Moved here by you."; }
     emit(); toast(`Moved to the ${agent(to).short} agent`);
   }
   function setAuto(act, on) {
@@ -201,22 +217,24 @@
     return `<div style="display:flex;flex-direction:column;gap:18px">
       <div><div class="lbl">How it works</div><textarea class="field" style="min-height:110px" data-guide="${id}">${esc(S.guides[id])}</textarea><div class="faint" style="font-size:12px;margin-top:6px">Plain words. The agent reads this before every suggestion.</div></div>
       <div><div class="lbl">Knows from</div><div class="row">${ic("book")}<span>${esc(a.source)}</span></div></div>
-      <div><div class="lbl">Autonomy</div><div class="modes">${a.acts.map((act) => `<div class="mode"><p><b>${act === "reply" ? "Replies" : act === "like" ? "Likes" : "Hiding"}</b><br><span class="muted" style="font-size:12.5px">${S.auto[act] ? "Acts on its own. You can undo in the log." : "Suggests. You approve each one."}</span></p>${act === "reply" ? `<span class="chip">Suggest only in January</span>` : `<button class="tg ${S.auto[act] ? "on" : ""}" data-auto="${act}" aria-label="Auto"></button>`}</div>`).join("")}</div></div>
+      <div><div class="lbl">What it can do</div><div class="row" style="flex-wrap:wrap;gap:6px">${a.acts.map((act) => `<span class="chip">${ic(actIcon[act])}${actWord[act] === "Send" ? "Reply" : actWord[act]}</span>`).join("")}</div><div class="faint" style="font-size:12px;margin-top:8px">Suggestions only for now. You approve every action.</div></div>
       <div><div class="lbl">Learned from your feedback</div>${L.length ? L.slice(0, 6).map((l) => `<div class="row" style="align-items:flex-start;padding:6px 0;border-top:1px solid var(--line);font-size:13px"><span class="chip">${esc(l.r)}</span><span class="muted">“${esc(l.q)}”</span></div>`).join("") : `<div class="muted" style="font-size:13px">Nothing yet. Each time you dismiss or edit a suggestion, it shows up here.</div>`}</div>
     </div>`;
   }
-  function appnavHTML() {
+  function appnavHTML(label = "Agent Inbox") {
     const n = pending().length;
     return `<div class="brand"><i>a</i>archie</div>
       <a href="#">${ic("cal")}Publishing</a><a href="#">${ic("archive")}Archive</a>
-      <a href="#" class="on">${ic("inbox")}Agent Inbox<span class="cnt">${n}</span></a>
+      <a href="#" class="on">${ic("inbox")}${label}<span class="cnt">${n}</span></a>
       <div class="foot">${esc(D.BRAND.name)}<br>Instagram · Facebook · TikTok</div>`;
   }
   function protobarHTML(active) {
     return `<b>Agent Inbox</b><span class="hide-m faint">prototype</span>
-      <div class="seg"><a href="a.html" class="${active === "a" ? "on" : ""}">A · Dashboard</a><a href="b.html" class="${active === "b" ? "on" : ""}">B · By agent</a></div>
-      <span class="sp"></span><span class="hide-m">Fake data · new messages arrive every ~10 s</span><button onclick="location.reload()">Reset</button>`;
+      <div class="seg"><a href="a.html" class="${active === "a" ? "on" : ""}">A · Light hub</a><a href="b.html" class="${active === "b" ? "on" : ""}">B · Tab per agent</a></div>
+      <span class="sp"></span><span class="hide-m faint">Back after 3 days · fake data</span><span id="metrics" class="row" style="gap:14px">${metricsHTML()}</span><button onclick="location.reload()">Reset</button>`;
   }
+  subsPush(() => { const m = document.getElementById("metrics"); if (m) m.innerHTML = metricsHTML(); });
+  function subsPush(f) { subs.push(f); }
   function counts() {
     const done = S.log.filter((e) => !e.undone && e.t > now - 3600000 * 12);
     const saved = done.reduce((s, e) => s + e.ids.reduce((t, id) => { const x = byId(id); return t + (x && x.act ? SAVE[x.act] : 1); }, 0), 0);
@@ -253,13 +271,14 @@
         if (x.dm) body += `<div class="row" style="margin-top:8px;font-size:13px">${ic("send")}<span>Then a DM with <b>${esc(x.dm.split(" → ")[0])}</b></span></div>`;
         if (x.product) body += `<div class="prod" style="margin-top:8px"><div class="ph"></div><div style="flex:1">${esc(x.product.name)}<div class="muted" style="font-size:12px">${esc(x.product.price)} · in stock</div></div><span class="chip">Matched</span></div>`;
       } else if (x.act === "like") body += `<div class="row">${ic("heart")}Like this comment</div>`;
+      else if (x.act === "delete") body += `<div class="row">${ic("trash")}Delete this comment. It disappears for everyone.</div>`;
       else body += `<div class="row">${ic("eyeoff")}Hide this comment. The author and their friends still see it.</div>`;
       body += `</div><div class="why">${ic("spark")}<div style="flex:1">${esc(x.why)}<div class="row" style="margin-top:6px;font-size:12px" ><span class="muted">Confidence</span><span class="conf"><span style="width:${Math.round(x.conf * 100)}%"></span></span><span class="muted">${Math.round(x.conf * 100)}%</span><span class="sp"></span><span class="faint">${esc(x.src || "")}</span></div></div></div>
         <div class="row"><span class="muted" style="font-size:13px">Wrong agent?</span><select class="mv" data-move="${x.id}"><option value="">Send to…</option>${D.AGENTS.filter((g) => g.id !== x.agent).map((g) => `<option value="${g.id}">${esc(g.name)}</option>`).join("")}</select></div>`;
       foot = `<button class="btn pri" data-dact="approve">${ic(actIcon[x.act])}${actWord[x.act]}</button><button class="btn" data-reject="${x.id}">Not right</button>`;
     }
     const nextN = pending((y) => y.type === x.type && y.id !== x.id).length;
-    openDrawer(`<div class="dh">${dot(x.agent)}<span class="muted" style="font-size:13px">${{ lead: "Buying question", question: "Customer question", praise: "Happy comment", spam: "Spam", insult: "Insult", escalation: "Needs you", gap: "Needs you" }[x.type]}</span><span class="sp"></span><button class="btn icon ghost" data-close>${ic("x")}</button></div>
+    openDrawer(`<div class="dh">${dot(x.agent)}<span class="muted" style="font-size:13px">${{ lead: "Lead", question: "Question", positive: "Positive comment", spam: "Spam", scam: "Scam", insult: "Insult" }[x.type] || ""}</span><span class="sp"></span><button class="btn icon ghost" data-close>${ic("x")}</button></div>
       <div class="db">${body}<div id="dState"></div></div>
       <div class="df">${foot}<span class="sp"></span><span class="faint" style="font-size:12px">${nextN ? nextN + " more like this" : ""}</span></div>`);
     refreshDrawerState();
@@ -310,7 +329,7 @@
     if (!e.target.closest(".menu") && !g("reject")) closeMenu();
     if ((el = g("tundo"))) { const f = $(".toast")._undo; $(".toast").classList.remove("on"); f && f(); return; }
     if ((el = g("close"))) return closeDrawer();
-    if ((el = g("approve"))) { const x = byId(el.dataset.approve); const lids = approve([x.id]); emit(); toast(`${actWord[x.act] === "Send" ? "Sent" : actWord[x.act] === "Like" ? "Liked" : "Hidden"}`, () => undo(lids)); return; }
+    if ((el = g("approve"))) { const x = byId(el.dataset.approve); const lids = approve([x.id]); emit(); toast({ reply: "Sent", like: "Liked", hide: "Hidden", delete: "Deleted" }[x.act], () => undo(lids)); return; }
     if ((el = g("reject"))) { openMenu(el, el.dataset.reject); return; }
     if ((el = g("reason"))) { const [id, r] = el.dataset.reason.split(":"); closeMenu(); const x = byId(id); const inDrawer = S.drawerId === id; reject(id, r); if (inDrawer) nextAfter(x); return; }
     if ((el = g("moveto"))) { const [id, to] = el.dataset.moveto.split(":"); closeMenu(); move(id, to); if (S.drawerId === id) openDetail(id); return; }

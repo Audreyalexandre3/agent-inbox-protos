@@ -3,41 +3,35 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent Inbox · B By agent</title>
+<title>Agent Inbox · B Tab per agent</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-.wrapB { display:grid; grid-template-columns:250px minmax(0, 1fr); height:100%; }
-.subnav { border-right:1px solid var(--line); padding:20px 12px; overflow:auto; }
-.subnav h2 { font-size:17px; font-weight:600; padding:0 8px; }
-.subnav .tot { padding:4px 8px 14px; font-size:12.5px; color:var(--muted); }
-.subnav .sec { padding:14px 8px 6px; font-size:11.5px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.04em; }
-.ag { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:9px 10px; border-radius:10px; }
-.ag:hover { background:var(--hover); }
-.ag.on { background:var(--card); box-shadow:var(--shadow); }
-.ag .d { width:10px; height:10px; border-radius:50%; flex:none; }
-.ag .nm { flex:1; min-width:0; }
-.ag .nm div:first-child { font-weight:500; }
-.ag .nm div + div { font-size:12px; color:var(--faint); }
-.ag .bd { font-size:12px; font-weight:600; min-width:22px; height:20px; padding:0 6px; border-radius:999px; background:var(--soft); display:grid; place-items:center; }
-.ag .bd.hot { background:var(--fg); color:#fff; }
-.ag .bd.red { background:var(--red); color:#fff; }
-.pane { overflow:auto; }
-.inner { max-width:880px; margin:0 auto; padding:26px 28px 60px; }
-.ahead { display:flex; align-items:flex-start; gap:14px; }
-.ahead .av { width:44px; height:44px; border-radius:13px; display:grid; place-items:center; color:#fff; flex:none; }
-.ahead .av svg { width:20px; height:20px; }
-.ahead h1 { font-size:24px; font-weight:600; letter-spacing:-.02em; }
-.tabsB { display:flex; gap:2px; margin-top:22px; border-bottom:1px solid var(--line); }
-.tabsB button { padding:9px 12px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; }
-.tabsB button.on { color:var(--fg); border-color:var(--fg); font-weight:600; }
-.tabsB .n { font-size:12px; color:var(--faint); margin-left:4px; }
-.toolbar { display:flex; align-items:center; gap:10px; margin:16px 0 10px; flex-wrap:wrap; }
+.inner { max-width:960px; margin:0 auto; padding:26px 28px 60px; }
+.ptitle h1 { font-size:26px; font-weight:600; letter-spacing:-.02em; }
+.agtabs { display:flex; gap:4px; margin-top:18px; border-bottom:1px solid var(--line); }
+.agtabs button { display:flex; align-items:center; gap:8px; padding:10px 14px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500; }
+.agtabs button.on { color:var(--fg); border-color:var(--fg); }
+.agtabs .d { width:9px; height:9px; border-radius:50%; }
+.agtabs .bd { font-size:12px; font-weight:600; min-width:22px; height:20px; padding:0 6px; border-radius:999px; background:var(--soft); display:grid; place-items:center; }
+.agtabs button.on .bd { background:var(--fg); color:#fff; }
+.ahead { display:flex; align-items:center; gap:12px; margin-top:20px; }
+.ahead .av { width:38px; height:38px; border-radius:11px; display:grid; place-items:center; color:#fff; flex:none; }
+.ahead h2 { font-size:18px; font-weight:600; }
+.sub { display:flex; gap:2px; margin-top:16px; }
+.sub button { padding:6px 12px; border-radius:8px; color:var(--muted); font-size:13px; }
+.sub button.on { background:var(--card); box-shadow:var(--shadow); color:var(--fg); font-weight:600; }
+.sub .n { font-size:12px; color:var(--faint); margin-left:4px; }
+.filters { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+.filters button { height:28px; padding:0 11px; border-radius:999px; background:var(--soft); font-size:12.5px; color:var(--muted); }
+.filters button.on { background:var(--fg); color:#fff; }
+.toolbar { display:flex; align-items:center; gap:10px; margin:14px 0 10px; flex-wrap:wrap; }
 .hint { font-size:12.5px; color:var(--muted); }
-.modebar { display:flex; gap:8px; flex-wrap:wrap; }
-@media (max-width:800px) { .wrapB { grid-template-columns:1fr; } .subnav { border-right:0; border-bottom:1px solid var(--line); } .inner { padding:18px 16px 60px; } }
+.mini { display:flex; gap:18px; font-size:13px; color:var(--muted); margin-left:auto; }
+.mini b { color:var(--fg); }
+@media (max-width:800px) { .inner { padding:18px 16px 60px; } .mini { display:none; } }
 </style>
 </head>
 <body>
@@ -52,81 +46,61 @@
 (function () {
   const A = window.App, S = A.S, D = A.D, esc = A.esc, ic = A.ic;
   A.$("#protobar").innerHTML = A.protobarHTML("b");
-  let view = "lead", tab = "review";
-  const AV = { lead: "spark", support: "book", engage: "heart", mod: "eyeoff" };
-  const mine = (id) => (x) => x.agent === id && !A.isHuman(x);
+  const SPAM = ["spam", "scam", "insult"];
+  const AV = { lead: "spark", general: "inbox" };
+  let agentId = "lead", tab = "review", filter = "all";
+  const mine = (id) => (x) => x.agent === id;
+  const inF = (f) => (x) => f === "all" || (f === "spam" ? SPAM.includes(x.type) : x.type === f);
 
-  function subnav() {
-    const c = A.counts();
-    const needs = A.pending(A.isHuman).length;
-    return `<aside class="subnav"><h2>Agent Inbox</h2><div class="tot">${c.pending + c.needs} to review in total</div>
-      <button class="ag ${view === "needs" ? "on" : ""}" data-view="needs"><span class="d" style="background:var(--red)"></span><div class="nm"><div>Needs you</div><div>Agents won't handle alone</div></div><span class="bd ${needs ? "red" : ""}">${needs}</span></button>
-      <div class="sec">Your agents</div>
-      ${D.AGENTS.map((a) => { const n = A.pending(mine(a.id)).length; const fresh = A.pending(mine(a.id)).some((x) => x.fresh);
-        return `<button class="ag ${view === a.id ? "on" : ""}" data-view="${a.id}"><span class="d" style="background:${a.dot}"></span><div class="nm"><div>${esc(a.name)}</div><div>${A.modeText(a) === "Auto" ? "On auto" : "Suggests"}${fresh ? " · new" : ""}</div></div><span class="bd ${n ? "hot" : ""}">${n}</span></button>`; }).join("")}
-      <div style="padding:18px 8px 0">${A.liveHTML()}</div></aside>`;
+  function bulkLabel(xs) {
+    const acts = [...new Set(xs.map((x) => x.act))];
+    if (acts.length === 1) return `${ic(A.actIcon[acts[0]])}${A.actWord[acts[0]]} all ${xs.length}`;
+    return `${ic(xs.every((x) => ["spam", "scam", "insult"].includes(x.type)) ? "broom" : "check")}${xs.every((x) => ["spam", "scam", "insult"].includes(x.type)) ? "Clean up" : "Approve"} all ${xs.length}`;
   }
 
-  function stats(a) {
-    const done = S.log.filter((e) => e.agent === a.id && !e.undone && e.ids.length);
-    const doneN = done.reduce((s, e) => s + e.ids.length, 0);
-    const autoN = done.filter((e) => e.by === "agent").reduce((s, e) => s + e.ids.length, 0);
-    const special = { lead: [S.items.filter((x) => x.agent === "lead" && x.type === "lead" && x.status !== "rejected").length, "Leads spotted"],
-      support: [S.items.filter((x) => x.agent === "support" && x.type === "question").length, "Answerable from your site"],
-      engage: [S.items.filter((x) => x.agent === "engage").length, "Happy comments found"],
-      mod: [S.items.filter((x) => x.agent === "mod").length, "Spam and insults caught"] }[a.id];
-    return `<div class="kpis" style="margin-top:18px">
-      <div class="card kpi"><div class="v">${A.pending(mine(a.id)).length}</div><div class="l">To review</div></div>
-      <div class="card kpi"><div class="v">${doneN}</div><div class="l">Done today${autoN ? ` · ${autoN} on auto` : ""}</div></div>
-      <div class="card kpi"><div class="v">${special[0]}</div><div class="l">${special[1]}</div></div>
-      <div class="card kpi"><div class="v">${a.acts.some((x) => S.auto[x]) ? "Auto" : "Suggest"}</div><div class="l">${a.acts.map((x) => ({ reply: "Replies", like: "Likes", hide: "Hiding" }[x])).join(", ")}</div></div></div>`;
-  }
-
-  function agentPane(a) {
-    const xs = A.pending(mine(a.id)).sort((p, q) => q.at - p.at);
+  function review(a) {
+    const all = A.pending(mine(a.id));
+    const intents = D.INTENTS.filter((i) => i.agent === a.id);
+    const xs = all.filter(inF(filter)).sort((p, q) => q.at - p.at);
     const ids = xs.map((x) => x.id);
-    const act = a.acts[0];
-    const logN = S.log.filter((e) => e.agent === a.id).length;
-    let content = "";
-    if (tab === "review") {
-      if (!xs.length) content = `<div class="card empty" style="margin-top:16px">${S.auto[act] ? `On auto. The ${esc(a.short)} agent acts on its own. <button class="btn sm" data-tab="activity" style="margin-left:8px">See what it did</button>` : "All done. New suggestions show up here as messages arrive."}</div>`;
-      else content = `<div class="toolbar">${A.selectAllHTML(ids)}<span class="sp"></span>${act === "reply" ? '<span class="hint">Edit any draft inline, then send one by one or select several</span>' : `<button class="btn sm pri" data-bulk="${ids.join(",")}">${ic(A.actIcon[act])}${A.actWord[act]} all ${xs.length}</button>`}</div>
-        ${xs.map((x) => A.rowHTML(x, { select: true, card: true, why: a.id === "lead" || a.id === "support" })).join("")}${A.bulkbarHTML()}`;
-    } else if (tab === "activity") {
-      content = `<p class="hint" style="margin:16px 0 8px">Everything this agent did or you approved. Thumbs help it learn, undo puts the message back.</p><div class="card" style="padding:4px 16px">${A.logHTML((e) => e.agent === a.id, { fb: true, showAgent: false })}</div>`;
-    } else {
-      content = `<div class="card" style="padding:18px;margin-top:16px">${A.agentPanelHTML(a.id)}</div>`;
-    }
-    return `<div class="inner">
-      <div class="ahead"><span class="av" style="background:${a.dot}">${ic(AV[a.id])}</span><div style="flex:1"><h1>${esc(a.name)}</h1><p class="muted">${esc(a.role)}</p></div>
-        <div class="modebar">${a.acts.map((x) => `<span class="chip ${S.auto[x] ? "dark" : ""}">${S.auto[x] ? ic("bolt") + "Auto" : "Suggest mode"}</span>`).join("")}</div></div>
-      ${S.nudge && a.acts.includes(S.nudge) ? `<div style="margin-top:16px">${A.nudgeHTML(a.acts)}</div>` : ""}
-      ${stats(a)}
-      <div class="tabsB"><button class="${tab === "review" ? "on" : ""}" data-tab="review">To review<span class="n">${xs.length}</span></button><button class="${tab === "activity" ? "on" : ""}" data-tab="activity">Activity<span class="n">${logN}</span></button><button class="${tab === "guide" ? "on" : ""}" data-tab="guide">Guidelines</button></div>
-      ${content}</div>`;
+    const canBulk = xs.length && xs.every((x) => x.act !== "reply");
+    const filters = intents.length > 1 ? `<div class="filters"><button class="${filter === "all" ? "on" : ""}" data-filter="all">All ${all.length}</button>${intents.map((i) => { const n = all.filter(inF(i.k)).length; return `<button class="${filter === i.k ? "on" : ""}" data-filter="${i.k}">${i.label} ${n}</button>`; }).join("")}</div>` : "";
+    if (!xs.length) return filters + `<div class="card empty" style="margin-top:14px">Nothing to review here. New suggestions show up as messages arrive.</div>`;
+    return `${filters}<div class="toolbar">${A.selectAllHTML(ids)}<span class="sp"></span>${canBulk ? `<button class="btn sm pri" data-bulk="${ids.join(",")}">${bulkLabel(xs)}</button>` : '<span class="hint">Edit any draft inline, then send one by one or select several</span>'}</div>
+      ${xs.map((x) => A.rowHTML(x, { select: true, card: true, why: x.type === "lead" })).join("")}${A.bulkbarHTML()}`;
   }
 
-  function needsPane() {
-    const xs = A.pending(A.isHuman).sort((p, q) => q.at - p.at);
-    return `<div class="inner"><div class="ahead"><span class="av" style="background:var(--red)">${ic("alert")}</span><div><h1>Needs you</h1><p class="muted">Sensitive messages and questions your agents could not answer. They never act on these alone.</p></div></div>
-      <div style="margin-top:20px">${xs.length ? xs.map((x) => A.rowHTML(x, { card: true, showAgent: true })).join("") : '<div class="card empty">Nothing needs you right now.</div>'}</div></div>`;
+  function pane() {
+    const a = A.agent(agentId);
+    const xs = A.pending(mine(a.id));
+    const done = S.log.filter((e) => e.agent === a.id && !e.undone && e.ids.length).reduce((s, e) => s + e.ids.length, 0);
+    const logN = S.log.filter((e) => e.agent === a.id).length;
+    let content;
+    if (tab === "review") content = review(a);
+    else if (tab === "history") content = `<p class="hint" style="margin:14px 0 8px">What you approved with this agent. Undo puts the message back.</p><div class="card" style="padding:4px 16px">${A.logHTML((e) => e.agent === a.id, { fb: true, showAgent: false })}</div>`;
+    else content = `<div class="card" style="padding:18px;margin-top:14px">${A.agentPanelHTML(a.id)}</div>`;
+    return `<div class="ahead"><span class="av" style="background:${a.dot}">${ic(AV[a.id])}</span><div><h2>${esc(a.name)}</h2><p class="muted" style="font-size:13px">${esc(a.role)}</p></div>
+        <div class="mini"><span><b>${xs.length}</b> to review</span><span><b>${done}</b> done</span>${a.id === "lead" ? `<span><b>${S.items.filter((x) => x.type === "lead" && x.status !== "rejected").length}</b> leads spotted</span>` : ""}</div></div>
+      <div class="sub"><button class="${tab === "review" ? "on" : ""}" data-tab="review">Suggestions<span class="n">${xs.length}</span></button><button class="${tab === "history" ? "on" : ""}" data-tab="history">History<span class="n">${logN}</span></button><button class="${tab === "guide" ? "on" : ""}" data-tab="guide">Instructions</button></div>
+      ${content}`;
   }
 
   function render() {
-    A.$("#appnav").innerHTML = A.appnavHTML();
-    const main = A.$("#main");
-    const prev = main.querySelector(".pane"), st = prev ? prev.scrollTop : 0;
-    const a = A.agent(view);
-    main.innerHTML = `<div class="wrapB">${subnav()}<section class="pane">${a ? agentPane(a) : needsPane()}</section></div>`;
-    main.querySelector(".pane").scrollTop = st; A.autosize(main);
+    A.$("#appnav").innerHTML = A.appnavHTML("Engagement");
+    const main = A.$("#main"), st = main.scrollTop;
+    main.innerHTML = `<div class="inner"><div class="ptitle row"><h1>Engagement</h1><span class="sp"></span>${A.liveHTML()}</div>
+      <div class="agtabs">${D.AGENTS.map((a) => { const n = A.pending(mine(a.id)).length; return `<button class="${agentId === a.id ? "on" : ""}" data-agent="${a.id}"><span class="d" style="background:${a.dot}"></span>${esc(a.name)}<span class="bd">${n}</span></button>`; }).join("")}</div>
+      ${pane()}</div>`;
+    main.scrollTop = st; A.autosize(main);
   }
   document.addEventListener("click", (e) => {
-    const v = e.target.closest("[data-view]"); if (v) { view = v.dataset.view; tab = "review"; S.sel.clear(); render(); main0(); return; }
-    const t = e.target.closest("[data-tab]"); if (t) { tab = t.dataset.tab; render(); }
+    let el;
+    if ((el = e.target.closest("[data-agent]"))) { agentId = el.dataset.agent; tab = "review"; filter = "all"; S.sel.clear(); render(); A.$("#main").scrollTop = 0; return; }
+    if ((el = e.target.closest("[data-tab]"))) { tab = el.dataset.tab; render(); return; }
+    if ((el = e.target.closest("[data-filter]"))) { filter = el.dataset.filter; S.sel.clear(); render(); return; }
   });
-  const main0 = () => { const p = A.$(".pane"); if (p) p.scrollTop = 0; };
   A.on(render);
-  setInterval(() => { const l = A.$(".subnav .live"); if (l) l.outerHTML = A.liveHTML(); }, 5000);
+  setInterval(() => { const l = A.$(".ptitle .live"); if (l) l.outerHTML = A.liveHTML(); }, 5000);
 })();
 </script>
 </body>

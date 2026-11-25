@@ -3,21 +3,26 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent Inbox · A Dashboard</title>
+<title>Agent Inbox · A Light hub</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="shared.css">
 <style>
-.wrapA { display:grid; grid-template-columns:minmax(0, 1fr) 330px; gap:28px; max-width:1240px; margin:0 auto; padding:26px 28px 60px; }
+.wrapA { display:grid; grid-template-columns:minmax(0, 1fr) 320px; gap:28px; max-width:1240px; margin:0 auto; padding:26px 28px 60px; }
 .head h1 { font-size:26px; font-weight:600; letter-spacing:-.02em; }
-.head .sub { color:var(--muted); margin-top:6px; font-size:15px; }
-.head .sub b { color:var(--fg); }
-.blk { margin-top:26px; }
+.recap { margin-top:14px; padding:16px 18px; }
+.recap p { font-size:15px; }
+.recap .mix { display:flex; flex-wrap:wrap; gap:8px; margin-top:10px; }
+.recap .mix button { display:inline-flex; align-items:center; gap:7px; height:30px; padding:0 11px; border-radius:999px; background:var(--soft); font-size:13px; }
+.recap .mix button:hover { background:var(--line); }
+.recap .mix b { font-weight:600; }
+.blk { margin-top:24px; }
 .blk > .bh { display:flex; align-items:baseline; gap:8px; margin-bottom:10px; }
 .blk > .bh h2 { font-size:16px; font-weight:600; }
 .blk > .bh .n { color:var(--muted); }
-.buckets { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+.leads { border:1.5px solid var(--fg); }
+.buckets { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
 .bucket { padding:16px; display:flex; flex-direction:column; gap:10px; cursor:pointer; transition:box-shadow .15s; }
 .bucket:hover { box-shadow:0 0 0 1px var(--line2), 0 8px 24px -16px rgba(0,0,0,.25); }
 .bucket .top { display:flex; align-items:center; gap:8px; }
@@ -26,20 +31,17 @@
 .bucket .pv { display:flex; flex-direction:column; gap:4px; font-size:13px; }
 .bucket .pv div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--muted); }
 .bucket .pv b { color:var(--fg); font-weight:500; }
-.bucket .ft { display:flex; gap:8px; margin-top:auto; padding-top:4px; }
+.bucket .ft { display:flex; gap:8px; margin-top:auto; padding-top:4px; flex-wrap:wrap; }
 .bucket.done { background:var(--soft); box-shadow:none; }
 .rail { position:sticky; top:0; align-self:start; max-height:calc(100vh - 40px); overflow:auto; padding-top:2px; }
 .rail .card { padding:14px 16px; }
-.tabs { display:flex; gap:4px; margin:8px 0 6px; }
-.tabs button { padding:4px 10px; border-radius:7px; font-size:12.5px; color:var(--muted); }
-.tabs button.on { background:var(--soft); color:var(--fg); font-weight:600; }
-.agrow { display:flex; align-items:center; gap:10px; padding:9px 0; border-top:1px solid var(--line); cursor:pointer; font-size:13px; }
+.agrow { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); cursor:pointer; font-size:13px; }
 .agrow:first-of-type { border-top:0; }
-.agrow .d { width:9px; height:9px; border-radius:50%; }
+.agrow .d { width:9px; height:9px; border-radius:50%; flex:none; }
 .toolbar { display:flex; align-items:center; gap:10px; margin:16px 0 10px; flex-wrap:wrap; }
 .hint { font-size:12.5px; color:var(--muted); }
 @media (max-width:1100px) { .wrapA { grid-template-columns:1fr; } .rail { position:static; max-height:none; } }
-@media (max-width:700px) { .buckets { grid-template-columns:1fr; } .wrapA { padding:18px 16px 60px; } }
+@media (max-width:800px) { .buckets { grid-template-columns:1fr; } .wrapA { padding:18px 16px 60px; } }
 </style>
 </head>
 <body>
@@ -54,82 +56,85 @@
 (function () {
   const A = window.App, S = A.S, D = A.D, esc = A.esc, ic = A.ic;
   A.$("#protobar").innerHTML = A.protobarHTML("a");
-  const BUCKETS = [
-    { k: "lead", title: "Buying questions", agent: "lead", types: ["lead"], act: "reply", desc: "Where to buy, prices, stock. Replies come with a product link by DM." },
-    { k: "question", title: "Customer questions", agent: "support", types: ["question"], act: "reply", desc: "Answered from halden.co. Read before sending." },
-    { k: "praise", title: "Happy comments", agent: "engage", types: ["praise"], act: "like", desc: "Positive comments to like." },
-    { k: "spam", title: "Spam and insults", agent: "mod", types: ["spam", "insult"], act: "hide", desc: "Scams, bots and insults to hide." }
-  ];
-  let view = "home", railTab = "all";
-  const inB = (b) => (x) => b.types.includes(x.type);
+  const SPAM = ["spam", "scam", "insult"];
+  const typesOf = (k) => (k === "spam" ? SPAM : [k]);
+  const inI = (k) => (x) => typesOf(k).includes(x.type);
+  const intent = (k) => D.INTENTS.find((i) => i.k === k);
+  let view = "home";
+
+  function bulkLabel(xs) {
+    const acts = [...new Set(xs.map((x) => x.act))];
+    if (acts.length === 1) return `${ic(A.actIcon[acts[0]])}${A.actWord[acts[0]]} all ${xs.length}`;
+    return `${ic("broom")}Clean up all ${xs.length}`;
+  }
+  function bulkDetail(xs) {
+    const h = xs.filter((x) => x.act === "hide").length, d = xs.filter((x) => x.act === "delete").length;
+    return h && d ? `${h} to hide · ${d} scams to delete` : "";
+  }
 
   function home() {
     const c = A.counts();
-    const needs = A.pending(A.isHuman).sort((a, b) => b.at - a.at);
-    const total = c.pending + c.needs;
+    const leads = A.pending(inI("lead")).sort((a, b) => b.at - a.at);
+    const n = (k) => A.pending(inI(k)).length;
     return `<div class="wrapA"><div style="min-width:0">
-      <div class="head"><div class="row"><h1>Agent Inbox</h1><span class="sp"></span>${A.liveHTML()}</div>
-      <p class="sub">${total ? `<b>${total} things wait for you.</b> ${c.needs} need your eyes, the rest are suggestions you can approve in a few clicks.` : "<b>All clear.</b> Your agents keep watching and will suggest what to do next."}</p></div>
-      ${S.nudge ? `<div class="blk">${A.nudgeHTML()}</div>` : ""}
-      <div class="blk kpis">
-        <div class="card kpi"><div class="v">${total}</div><div class="l">Waiting for you</div></div>
-        <div class="card kpi"><div class="v">${c.done}</div><div class="l">Handled today${c.auto ? ` · ${c.auto} on auto` : ""}</div></div>
-        <div class="card kpi"><div class="v">${c.leads}</div><div class="l">Leads spotted</div></div>
-        <div class="card kpi"><div class="v">${c.saved} min</div><div class="l">Time saved today</div></div>
+      <div class="head"><div class="row"><h1>Welcome back</h1><span class="sp"></span>${A.liveHTML()}</div></div>
+      <div class="card recap"><p>${c.pending ? `Since <b>Sunday</b>, your agents read ${S.scanned} messages and prepared <b>${S.items.filter((x) => x.at >= S.lastVisit).length} suggestions</b> for you.${c.done ? ` <span class="muted">${c.pending} left.</span>` : ""}` : "<b>All clear.</b> Your agents keep reading new messages and will suggest what to do."}</p>
+        ${c.pending ? `<div class="mix">${D.INTENTS.map((i) => n(i.k) ? `<button data-go="${i.k}"><span class="d" style="width:7px;height:7px;border-radius:50%;background:${A.agent(i.agent).dot}"></span><b>${n(i.k)}</b> ${i.label.toLowerCase()}</button>` : "").join("")}</div>` : ""}
       </div>
-      <div class="blk"><div class="bh"><h2>Needs you</h2><span class="n">${needs.length}</span><span class="sp"></span><span class="hint">Agents never handle these alone</span></div>
-        <div class="card items">${needs.length ? needs.map((x) => A.rowHTML(x, { showAgent: true })).join("") : '<div class="empty">Nothing needs you right now.</div>'}</div></div>
-      <div class="blk"><div class="bh"><h2>Suggestions</h2><span class="n">${c.pending}</span><span class="sp"></span><span class="hint">Grouped by type, approve in bulk or review one by one</span></div>
-        <div class="buckets">${BUCKETS.map(bucketCard).join("")}</div></div>
+      <div class="blk kpis">
+        <div class="card kpi"><div class="v">${c.pending}</div><div class="l">Waiting for you</div></div>
+        <div class="card kpi"><div class="v">${c.done}</div><div class="l">Handled this visit</div></div>
+        <div class="card kpi"><div class="v">${c.leads}</div><div class="l">Leads spotted</div></div>
+        <div class="card kpi"><div class="v">${c.saved} min</div><div class="l">Time saved</div></div>
+      </div>
+      <div class="blk"><div class="bh"><h2>Leads</h2><span class="n">${leads.length}</span>${A.dot("lead")}<span class="sp"></span><span class="hint">People ready to buy. Answer them first.</span></div>
+        <div class="card items ${leads.length ? "leads" : ""}">${leads.length ? leads.map((x) => A.rowHTML(x, { why: true })).join("") : '<div class="empty">No lead waiting. New ones show up here first.</div>'}</div></div>
+      <div class="blk"><div class="bh"><h2>Everything else</h2><span class="n">${c.pending - leads.length}</span><span class="sp"></span><span class="hint">Grouped by intent. Approve a whole group or review it.</span></div>
+        <div class="buckets">${D.INTENTS.filter((i) => i.k !== "lead").map(bucketCard).join("")}</div></div>
     </div>${rail()}</div>`;
   }
-  function bucketCard(b) {
-    const xs = A.pending(inB(b)).sort((a, c) => c.at - a.at);
-    const auto = S.auto[b.act];
-    const doneAuto = S.log.filter((e) => e.by === "agent" && e.agent === b.agent && !e.undone).reduce((s, e) => s + e.ids.length, 0);
+  function bucketCard(i) {
+    const xs = A.pending(inI(i.k)).sort((a, c) => c.at - a.at);
     const fresh = xs.filter((x) => x.fresh).length;
-    if (!xs.length) return `<div class="card bucket done" data-go="${b.k}"><div class="top">${A.dot(b.agent)}${auto ? '<span class="chip dark">' + ic("bolt") + "Auto</span>" : ""}</div>
-      <h3>${b.title}</h3><p class="muted" style="font-size:13px">${auto ? (doneAuto ? `On auto. ${doneAuto} handled by the agent, see the activity log.` : "On auto. New ones are handled by the agent and show up in the activity log.") : "All done. New ones show up here."}</p></div>`;
-    const bulkBtn = b.act !== "reply" ? `<button class="btn sm pri" data-bulk="${xs.map((x) => x.id).join(",")}">${ic(A.actIcon[b.act])}${A.actWord[b.act]} all ${xs.length}</button>` : "";
-    return `<div class="card bucket" data-go="${b.k}">
-      <div class="top">${A.dot(b.agent)}${fresh ? `<span class="chip ok">+${fresh} new</span>` : ""}<span class="sp"></span><span class="faint" style="font-size:12px">${xs.length > 1 ? "avg " + Math.round(xs.reduce((s, x) => s + x.conf, 0) / xs.length * 100) + "% sure" : ""}</span></div>
-      <div class="row" style="align-items:flex-end"><span class="cnt">${xs.length}</span><h3 style="padding-bottom:2px">${b.title}</h3></div>
-      <p class="muted" style="font-size:13px">${b.desc}</p>
+    if (!xs.length) return `<div class="card bucket done" data-go="${i.k}"><div class="top">${A.dot(i.agent)}</div><h3>${i.label}</h3><p class="muted" style="font-size:13px">All done. New ones show up here.</p></div>`;
+    const canBulk = xs.every((x) => x.act !== "reply");
+    return `<div class="card bucket" data-go="${i.k}">
+      <div class="top">${A.dot(i.agent)}${fresh ? `<span class="chip ok">+${fresh} new</span>` : ""}</div>
+      <div class="row" style="align-items:flex-end"><span class="cnt">${xs.length}</span><h3 style="padding-bottom:2px">${i.label}</h3></div>
+      <p class="muted" style="font-size:13px">${i.desc}</p>
       <div class="pv">${xs.slice(0, 3).map((x) => `<div><b>${esc(x.author)}</b> ${esc(x.text)}</div>`).join("")}</div>
-      <div class="ft">${bulkBtn}<button class="btn sm" data-go="${b.k}">Review ${ic("right")}</button></div>
+      ${canBulk && bulkDetail(xs) ? `<div class="faint" style="font-size:12px">${bulkDetail(xs)}</div>` : ""}
+      <div class="ft">${canBulk ? `<button class="btn sm pri" data-bulk="${xs.map((x) => x.id).join(",")}">${bulkLabel(xs)}</button>` : ""}<button class="btn sm" data-go="${i.k}">Review ${ic("right")}</button></div>
     </div>`;
   }
   function rail() {
-    const f = railTab === "agents" ? (e) => e.by === "agent" : railTab === "you" ? (e) => e.by === "you" : () => true;
-    return `<aside class="rail"><div class="card"><div class="row"><b>Live activity</b><span class="sp"></span><span class="live"><span class="pulse"></span></span></div>
-      <div class="tabs">${[["all", "All"], ["agents", "Agents"], ["you", "You"]].map(([k, l]) => `<button class="${railTab === k ? "on" : ""}" data-rail="${k}">${l}</button>`).join("")}</div>
-      ${A.logHTML(f, { limit: 25 })}</div>
-      <div class="card" style="margin-top:12px"><div class="row" style="margin-bottom:4px"><b>Your agents</b><span class="sp"></span><span class="faint" style="font-size:12px">Click to set up</span></div>
-      ${D.AGENTS.map((a) => `<div class="agrow" data-agentopen="${a.id}"><span class="d" style="background:${a.dot}"></span><div style="flex:1"><div>${esc(a.name)}</div><div class="faint" style="font-size:12px">${esc(a.role)}</div></div><span class="chip ${A.modeText(a) === "Auto" ? "dark" : ""}">${A.modeText(a)}</span></div>`).join("")}</div></aside>`;
+    return `<aside class="rail"><div class="card"><div class="row"><b>History</b><span class="sp"></span><span class="faint" style="font-size:12px">What you approved</span></div>
+      <div style="margin-top:6px">${A.logHTML(() => true, { limit: 25 })}</div></div>
+      <div class="card" style="margin-top:12px"><div class="row" style="margin-bottom:4px"><b>Your agents</b><span class="sp"></span><span class="faint" style="font-size:12px">Instructions</span></div>
+      ${D.AGENTS.map((a) => `<div class="agrow" data-agentopen="${a.id}"><span class="d" style="background:${a.dot}"></span><div style="flex:1"><div>${esc(a.name)}</div><div class="faint" style="font-size:12px">${esc(a.role)}</div></div>${ic("right")}</div>`).join("")}</div></aside>`;
   }
-  function bucketView(b) {
-    const xs = A.pending(inB(b)).sort((a, c) => c.at - a.at);
+  function bucketView(i) {
+    const xs = A.pending(inI(i.k)).sort((a, c) => c.at - a.at);
     const ids = xs.map((x) => x.id);
+    const canBulk = xs.length && xs.every((x) => x.act !== "reply");
     return `<div class="wrapA"><div style="min-width:0">
       <button class="btn ghost sm" data-go="home" style="margin-left:-8px">${ic("back")}Agent Inbox</button>
-      <div class="head" style="margin-top:10px"><div class="row"><h1>${b.title}</h1><span class="muted" style="font-size:22px">${xs.length}</span><span class="sp"></span>${A.dot(b.agent)}</div><p class="sub">${b.desc}</p></div>
-      ${S.nudge === b.act ? `<div class="blk">${A.nudgeHTML()}</div>` : ""}
-      ${xs.length ? `<div class="toolbar">${A.selectAllHTML(ids)}<span class="sp"></span>${b.act === "reply" ? '<span class="hint">Edit any draft inline, then send one by one or select several</span>' : `<button class="btn sm pri" data-bulk="${ids.join(",")}">${ic(A.actIcon[b.act])}${A.actWord[b.act]} all ${xs.length}</button>`}</div>
-      <div class="card items">${xs.map((x) => A.rowHTML(x, { select: true })).join("")}</div>${A.bulkbarHTML()}`
-      : `<div class="card empty" style="margin-top:16px">${S.auto[b.act] ? "This type is on auto. See what the agent did in the activity log." : "All done here."} <button class="btn sm" data-go="home" style="margin-left:8px">Back to the inbox</button></div>`}
+      <div class="head" style="margin-top:10px"><div class="row"><h1>${i.label}</h1><span class="muted" style="font-size:22px">${xs.length}</span><span class="sp"></span>${A.dot(i.agent)}</div><p class="muted" style="margin-top:6px">${i.desc}</p></div>
+      ${xs.length ? `<div class="toolbar">${A.selectAllHTML(ids)}<span class="sp"></span>${canBulk ? `${bulkDetail(xs) ? `<span class="hint">${bulkDetail(xs)}</span>` : ""}<button class="btn sm pri" data-bulk="${ids.join(",")}">${bulkLabel(xs)}</button>` : '<span class="hint">Edit any draft inline, then send one by one or select several</span>'}</div>
+      <div class="card items">${xs.map((x) => A.rowHTML(x, { select: true, why: i.k === "lead" })).join("")}</div>${A.bulkbarHTML()}`
+      : `<div class="card empty" style="margin-top:16px">All done here. <button class="btn sm" data-go="home" style="margin-left:8px">Back to the inbox</button></div>`}
     </div>${rail()}</div>`;
   }
   function render() {
-    A.$("#appnav").innerHTML = A.appnavHTML();
+    A.$("#appnav").innerHTML = A.appnavHTML("Agent Inbox");
     const main = A.$("#main"), st = main.scrollTop;
-    const b = BUCKETS.find((x) => x.k === view);
-    main.innerHTML = b ? bucketView(b) : home();
+    const i = view !== "home" && intent(view);
+    main.innerHTML = i ? bucketView(i) : home();
     main.scrollTop = st; A.autosize(main);
   }
   document.addEventListener("click", (e) => {
-    const r = e.target.closest("[data-rail]"); if (r) { railTab = r.dataset.rail; render(); return; }
     const g = e.target.closest("[data-go]");
-    if (g && !e.target.closest("button:not([data-go]), [data-sel], [data-open], textarea")) { view = g.dataset.go; S.sel.clear(); A.$("#main").scrollTop = 0; render(); }
+    if (g && !e.target.closest("button:not([data-go]), [data-sel], [data-open], textarea")) { view = g.dataset.go; S.sel.clear(); render(); A.$("#main").scrollTop = 0; }
   });
   A.on(render);
   setInterval(() => { const l = A.$(".head .live"); if (l) l.outerHTML = A.liveHTML(); }, 5000);
