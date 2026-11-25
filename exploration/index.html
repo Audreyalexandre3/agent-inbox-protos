@@ -1,0 +1,48 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Inbox · prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.w { max-width:880px; margin:0 auto; padding:56px 20px 80px; }
+h1 { font-size:30px; font-weight:600; letter-spacing:-.025em; }
+.lead { color:var(--muted); font-size:16px; margin-top:10px; max-width:640px; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:32px; }
+.opt { padding:22px; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s; }
+.opt:hover { box-shadow:0 0 0 1px var(--line2), 0 14px 34px -20px rgba(0,0,0,.3); }
+.opt h2 { font-size:19px; font-weight:600; }
+.opt ul { margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:flex; flex-direction:column; gap:4px; }
+.opt .go { margin-top:auto; padding-top:8px; font-weight:600; }
+.common { margin-top:32px; padding:20px 22px; }
+.common h3 { font-size:15px; font-weight:600; margin-bottom:8px; }
+.common ul { margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; }
+@media (max-width:700px) { .two, .common ul { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="w">
+  <span class="chip">Première exploration · 24/11 · hors périmètre V1</span> <a href="../" class="chip dark" style="text-decoration:none">Voir la V1 janvier →</a>
+  <h1 style="margin-top:14px">Agent Inbox : deux façons d'organiser le même socle</h1>
+  <p class="lead">Les deux versions partagent le même moteur : on voit en direct ce que font les agents, on agit sur l'essentiel, on corrige et l'agent apprend. Seule l'organisation change.</p>
+  <div class="two">
+    <a class="card opt" href="a.html"><span class="chip dark" style="align-self:flex-start">A</span><h2>Dashboard</h2>
+      <ul><li>Une page d'accueil : ce qui attend, regroupé par type de message</li><li>« Needs you » épinglé en haut</li><li>Bulk sur les likes et le spam, replies relus une par une ou par sélection</li><li>Activité en direct à droite, agents en réglage secondaire</li></ul>
+      <span class="go">Ouvrir A →</span></a>
+    <a class="card opt" href="b.html"><span class="chip dark" style="align-self:flex-start">B</span><h2>Par agent</h2>
+      <ul><li>On entre dans l'espace d'un agent (Lead par défaut)</li><li>Chaque agent : à valider, activité, guidelines</li><li>« Needs you » comme entrée à part dans la navigation</li><li>Réglages et feedback dans le contexte de l'agent</li></ul>
+      <span class="go">Ouvrir B →</span></a>
+  </div>
+  <div class="card common"><h3>Commun aux deux</h3><ul>
+    <li>4 agents : Lead, Support, Engagement, Modération</li><li>Mode suggestion : approuver, modifier, refuser</li>
+    <li>Actions natives : reply (+ DM produit), like, hide</li><li>Escalades et knowledge gaps jamais traités seuls</li>
+    <li>Nouveaux messages en direct toutes les ~10 s</li><li>Refus avec raison ou « mauvais agent » → apprentissage</li>
+    <li>Après 8 validations sans refus : proposition de passer en auto</li><li>Tout est annulable depuis le log</li>
+  </ul></div>
+</div>
+</body>
+</html>
