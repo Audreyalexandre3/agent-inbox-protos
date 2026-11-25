@@ -193,9 +193,14 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .ahd { display:flex; align-items:center; gap:14px; }
 .ahd .aav { width:48px; height:48px; border-radius:14px; }
 .ahd h1 { font-size:28px; font-weight:600; letter-spacing:-.02em; }
-.recap { margin-top:20px; padding:18px 20px; }
-.recap .rg { display:grid; grid-template-columns:repeat(4, 1fr); gap:10px; margin-top:12px; }
+.recap { margin-top:18px; }
+.recap > .row { font-size:13px; color:var(--muted); }
+.recap > .row b { color:var(--fg); font-weight:600; }
+.recap .rg { display:flex; flex-wrap:wrap; gap:0; margin-top:6px; }
+.recap .rg .st { background:none; box-shadow:none; border-radius:0; padding:0 28px 0 0; margin-right:28px; border-right:1px solid var(--line); }
+.recap .rg .st:last-child { border-right:0; margin-right:0; }
 .recap .rg .st b { font-size:26px; }
+.recap .rg .st.hot { background:none; box-shadow:none; }
 .needs { margin-top:16px; border-radius:20px; background:#fff; box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--red) 28%, transparent), 0 12px 32px -16px rgba(194,65,12,.18); padding:6px 18px; border-left:4px solid var(--red); }
 .needs-h { color:var(--red); }
 .needs-h .muted { color:var(--muted); }
@@ -542,7 +547,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     return `${header(`<b>Agentic Inbox</b><span class="cr">/ ${a.name}</span>`)}<div class="wrap">
       <div class="ahd"><span class="aav" style="background:${a.dot}">${ic(a.icon)}</span><div style="flex:1;min-width:0"><h1>${a.name}</h1><p class="muted">${a.role}</p></div>
         ${autoThemes.length ? `<span class="chip dark">${ic("bolt")}Auto: ${autoThemes.map((t) => TH[t].label.toLowerCase()).join(", ")}</span>` : `<span class="chip">Suggestions only</span>`}</div>
-      <section class="card recap"><div class="row"><b>Since Sunday</b><span class="muted" style="font-size:13px">${s.auto + s.you} handled · about ${s.saved} min saved</span></div>
+      <section class="recap"><div class="row"><b>Since Sunday</b><span class="muted" style="font-size:13px">${s.auto + s.you} handled · about ${s.saved} min saved</span></div>
         <div class="rg"><div class="st"><b>${s.auto}</b><span>Done on its own</span></div><div class="st"><b>${s.you}</b><span>Approved by you</span></div><div class="st ${s.needs ? "hot" : ""}"><b>${s.needs}</b><span>${s.needs ? ic("alert") : ""}Need${s.needs === 1 ? "s" : ""} you</span></div><div class="st"><b>${s.todo}</b><span>Suggestions to review</span></div></div></section>
       <div class="tabs"><button class="${S.tab === "suggestions" ? "on" : ""}" data-tab="suggestions">Suggestions<span class="k">${s.todo + s.needs}</span></button><button class="${S.tab === "config" ? "on" : ""}" data-tab="config">Agent configuration</button></div>
       ${S.tab === "config" ? config(a) : suggestions(a, s)}
