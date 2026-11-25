@@ -171,6 +171,10 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .log .caret::after { content:""; display:inline-block; width:2px; height:14px; margin-left:2px; vertical-align:-2px; background:var(--fg); animation:blink 1s steps(1) infinite; }
 .log .undo { font-size:12px; color:var(--muted); text-decoration:underline; }
 @keyframes blink { 50% { opacity:0; } }
+.value { display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:14px; font-size:13.5px; color:var(--muted); }
+.value span { display:inline-flex; gap:5px; align-items:baseline; }
+.value b { color:var(--fg); font-weight:600; font-size:15px; }
+.value span + span:not(.faint)::before { content:"·"; margin-right:13px; color:var(--line2); }
 .bh2 { display:flex; align-items:baseline; gap:10px; margin:26px 0 12px; }
 .bh2 h2 { font-size:18px; font-weight:600; letter-spacing:-.01em; }
 .bh2 .muted { font-size:13px; }
@@ -185,6 +189,12 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .bk.lead { }
 .bk.slim { background:var(--soft); box-shadow:none; padding:2px 20px; }
 .bk.slim .bk-h { padding:10px 0; }
+.mrow { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); font-size:14px; }
+.mrow .mn { font-weight:600; min-width:34px; display:inline-flex; }
+.mrow .mn svg { width:16px; height:16px; color:var(--green); }
+.mrow .ml { font-weight:500; white-space:nowrap; }
+.mrow .mx { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
+.mrow .bk-a { margin-left:auto; }
 .bk .more { display:flex; align-items:center; justify-content:center; gap:4px; }
 .bk .more svg { width:14px; height:14px; }
 .needs .it .who .chip { height:20px; }
@@ -395,6 +405,9 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   for (let k = 0; k < 30; k++) add({ theme: "scam", author: ["crypto.jenna", "win.iphone", "meta.help.desk", "fx.signals"][k % 4] + "_" + (k + 40), followers: 10 + (k * 37) % 300, text: scams[k % scams.length], conf: 0.98, why: "Scam with a link. Deleting removes it for everyone." });
   for (let k = 0; k < 10; k++) add({ theme: "insult", author: ["dan_r", "tr0ll_master", "k.vance", "no_name"][k % 4] + "_" + (k + 7), followers: 20 + k * 30, text: insults[k % insults.length], conf: 0.86, why: "Insult with no question or feedback to answer." });
 
+  // Needs you = suggestions the agent is not sure about (confidence under 75%). Spam stays out.
+  const UNSURE = { "Claire Dumas": "Health question about a child. Your website doesn't cover it.", "Mark Ellison": "Payment problem. It can't check the order or the refund.", "jules": "Your FAQ doesn't say if it's safe for pets." };
+  items.forEach((x) => { x.needs = x.conf < 0.75 && !["spam", "scam", "insult"].includes(x.theme) ? "Not sure: " + (UNSURE[x.author] || x.why) : null; });
   const LIVE = [
     { theme: "positive", author: "Mia", text: "spraying this every morning now 🤍", conf: 0.97 },
     { theme: "spam", author: "followers.now", text: "Get 10K followers for $9, link in bio", conf: 0.98, why: "Unrelated offer with a link in bio." },
@@ -411,7 +424,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   const S = {
     route: "overview", tab: "suggestions", actAgent: "all", actWho: "all", open: {}, edits: {}, scanned: 612,
     auto: { buy: false, b2b: false, question: false, positive: true, spam: false, scam: false, insult: false },
-    guides: { lead: AGENTS.lead.guide, support: AGENTS.support.guide, community: AGENTS.community.guide }, log: []
+    learned: { lead: [], support: [], community: [] }, guides: { lead: AGENTS.lead.guide, support: AGENTS.support.guide, community: AGENTS.community.guide }, log: []
   };
   let LID = 0;
   const log = (o) => { const e = { lid: ++LID, t: Date.now(), ids: [], ...o }; S.log.unshift(e); return e; };
@@ -452,10 +465,22 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     e.undone = true; e.ids.forEach((id) => { const x = items.find((y) => y.id === id); if (x) x.status = "pending"; });
     render(); toast("Put back in the feed");
   }
-  function dismiss(id) {
+  const REASONS = { tone: "Wrong tone", info: "Wrong information", noact: "Shouldn't act on this", theme: "Wrong theme or agent", other: "Something else" };
+  function dismiss(id, why) {
     const x = items.find((y) => y.id === id); if (!x) return; x.status = "dismissed";
-    const e = log({ agent: agentOf(x), icon: "x", text: `Dismissed the suggestion for ${x.author}`, q: x.text, by: "you", count: 0, ids: [id] });
-    render(); toast(`Noted. The ${AGENTS[agentOf(x)].name} agent will learn from it.`, () => undo(e.lid));
+    const r = REASONS[why] || "Not right";
+    S.learned[agentOf(x)].unshift({ r, q: x.text, t: Date.now() });
+    const e = log({ agent: agentOf(x), icon: "x", text: `Refused the suggestion for ${x.author} · ${r}`, q: x.text, by: "you", count: 0, ids: [id] });
+    render(); toast(`Noted: ${r.toLowerCase()}. The ${AGENTS[agentOf(x)].name} agent learns from it.`, () => { undo(e.lid); S.learned[agentOf(x)].shift(); });
+  }
+  function openReasons(btn, id) {
+    closeMenu(); const x = items.find((y) => y.id === id); if (!x) return;
+    const m = document.createElement("div"); m.className = "menu";
+    m.innerHTML = `<p>Why is it not right?</p>${Object.entries(REASONS).map(([k, v]) => `<button data-reason="${id}:${k}">${ic(k === "theme" ? "tag" : k === "noact" ? "x" : k === "info" ? "alert" : k === "tone" ? "msg" : "pen")}${v}</button>`).join("")}`;
+    document.body.appendChild(m); btn.classList.add("on"); m._btn = btn;
+    const rr = btn.getBoundingClientRect();
+    const top = rr.bottom + 6 + m.offsetHeight > innerHeight ? rr.top - m.offsetHeight - 6 : rr.bottom + 6;
+    m.style.top = top + "px"; m.style.left = Math.max(8, rr.right - m.offsetWidth) + "px";
   }
   function setAuto(th, on) {
     S.auto[th] = on;
@@ -552,20 +577,30 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     return `${header(`<b>Agentic Inbox</b><span class="cr">/ Overview</span>`)}<div class="wrap">
       <div class="hero"><div class="t"><div class="eyebrow">${ic("spark")}Your agents read ${S.scanned} messages since Sunday and handled ${autoN} on their own</div>
         <h1>Welcome back, Audrey.<span class="m">${nd} need${nd === 1 ? "s" : ""} you, ${leads} lead${leads === 1 ? "" : "s"} and ${left - nd - leads} quick approvals.</span></h1>
-        <p class="s">About ${Math.max(2, Math.round(nd * 1.5 + leads + (left - nd - leads) * 0.03))} minutes. Start with what needs you, then clear each group.</p></div>${ring(total - left, total)}</div>
+        <p class="s">About ${Math.max(2, Math.round(nd * 1.5 + leads + (left - nd - leads) * 0.03))} minutes. Start with what needs you, then clear each group.</p>
+        ${valueLine()}</div>${ring(total - left, total)}</div>
       ${needsOverview()}
-      <div class="bh2"><h2>Sorted by your agents</h2><span class="muted">${left - nd} suggestions in ${ORDER.filter((t) => feed(t).length).length} groups</span></div>
+      <div class="bh2"><h2>Sorted by your agents</h2><span class="muted">${left - nd} suggestions</span></div>
       <div class="buckets">${ORDER.map(bucket).join("")}</div>
       <div style="margin-top:16px">${liveTile(() => true, "Live from your agents", true, saved)}</div>
     </div>`;
   }
-  const ORDER = ["buy", "b2b", "question", "spam", "scam", "insult", "positive"];
+  const ORDER = ["buy", "b2b", "question", "mod", "positive"];
+  const MOD = ["spam", "scam", "insult"];
+  function valueLine() {
+    const spotted = items.filter((x) => (x.theme === "buy" || x.theme === "b2b") && x.at >= LAST).length;
+    const answered = items.filter((x) => (x.theme === "buy" || x.theme === "b2b") && x.status === "done").length;
+    const st = Object.keys(AGENTS).map(stats);
+    const auto = st.reduce((m, x) => m + x.auto, 0), you = st.reduce((m, x) => m + x.you, 0), saved = st.reduce((m, x) => m + x.saved, 0);
+    return `<div class="value"><span><b>${spotted}</b> leads spotted</span><span><b>${answered}</b> answered</span><span><b>${auto}</b> actions on their own</span><span><b>${you}</b> approved by you</span><span><b>~${saved} min</b> saved</span><span class="faint">since Sunday</span></div>`;
+  }
   function needsOverview() {
     const nd = needs();
     if (!nd.length) return `<section class="needs" style="padding:14px 18px"><div class="row" style="color:var(--green);font-weight:600">${ic("check")}Nothing needs you right now</div></section>`;
-    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents won't act on these alone</span></div>${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true })).join("")}</section>`;
+    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents aren't sure about these. Your call.</span></div>${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true })).join("")}</section>`;
   }
   function bucket(t) {
+    if (t === "mod") return modBucket();
     const th = TH[t], a = AGENTS[th.agent], xs = feed(t);
     const isLead = t === "buy" || t === "b2b";
     const chip = `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>`;
@@ -583,6 +618,16 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     return `<section class="card bk ${isLead ? "lead" : ""}"><div class="bk-h"><div class="bk-t"><span class="bk-c">${xs.length}</span><h3>${th.label}</h3>${chip}${xs.some((x) => x.fresh) ? '<span class="chip ok">New</span>' : ""}<span class="muted" style="font-size:13px">${sub}</span></div><div class="bk-a">${ctas}${open}${cog}</div></div>
       <div class="bk-items">${shown.map((x, i) => itemRow(x, i === 0)).join("")}</div>
       ${xs.length > shown.length ? `<button class="more" data-go="${a.id}" data-theme="${t}">See the ${xs.length - shown.length} others in the feed ${ic("right")}</button>` : ""}</section>`;
+  }
+  function modBucket() {
+    const a = AGENTS.community, all = MOD.flatMap((t) => feed(t));
+    const cog = `<button class="btn cog" data-go="${a.id}" data-tab="config" title="${a.name} configuration" aria-label="${a.name} configuration">${ic("gear")}</button>`;
+    const open = `<button class="btn sm" data-go="${a.id}" data-theme="spam">Open feed ${ic("right")}</button>`;
+    const chip = `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>`;
+    if (!all.length) return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>Spam and moderation</h3>${chip}<span class="chip ok">${ic("check")}All clear</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
+    const rows = MOD.map((t) => { const xs = feed(t), th = TH[t]; if (!xs.length) return `<div class="mrow"><span class="mn">${ic("check")}</span><span class="ml">${th.label}</span><span class="muted">All clear</span></div>`;
+      return `<div class="mrow"><span class="mn">${xs.length}</span><span class="ml">${th.label}</span><span class="muted mx">${esc(xs[0].text)}</span><span class="bk-a">${th.bulk.map((b) => `<button class="btn sm" data-bulk="${b.a}|${xs.map((x) => x.id).join(",")}">${ic(ACT[b.a].ic)}${b.l}</button>`).join("")}</span></div>`; }).join("");
+    return `<section class="card bk"><div class="bk-h"><div class="bk-t"><span class="bk-c">${all.length}</span><h3>Spam and moderation</h3>${chip}<span class="muted" style="font-size:13px">Bots, scams and insults, sorted by your agent</span></div><div class="bk-a"><button class="btn sm pri" data-clean="1">${ic("eyeoff")}Clean up all ${all.length}</button>${open}${cog}</div></div>${rows}</section>`;
   }
   function agentCard(a) {
     const s = stats(a.id);
@@ -623,12 +668,13 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
         ${xs.length > 5 ? `<button class="more" data-more="${t}">${S.open[t] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`;
     }).join("");
     const nd = needs(a.id);
-    const needsSec = nd.length ? `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · the agent won't act on these alone</span></div>${nd.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</section>` : "";
+    const needsSec = nd.length ? `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · the agent isn't sure about these. Your call.</span></div>${nd.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</section>` : "";
     return `${needsSec}${groups}<div style="margin-top:16px">${liveTile((e) => e.agent === a.id, "Activity", false, s.saved)}</div>`;
   }
   function config(a) {
     return `<div class="cfg"><section class="card"><div class="lbl">Guidelines</div><textarea class="field" data-guide="${a.id}">${esc(S.guides[a.id])}</textarea><p class="faint" style="font-size:12.5px;margin-top:6px">Plain words. The agent reads this before every suggestion.</p>
-        <div class="lbl" style="margin-top:22px">Knows from</div>${a.sources.map((s) => `<div class="row" style="padding:5px 0;font-size:14px">${ic("book")}${esc(s)}</div>`).join("")}</section>
+        <div class="lbl" style="margin-top:22px">Knows from</div>${a.sources.map((s) => `<div class="row" style="padding:5px 0;font-size:14px">${ic("book")}${esc(s)}</div>`).join("")}
+        <div class="lbl" style="margin-top:22px">Learned from your feedback</div>${S.learned[a.id].length ? S.learned[a.id].slice(0, 8).map((l) => `<div class="row" style="align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px"><span class="chip">${esc(l.r)}</span><span class="muted">“${esc(l.q)}”</span></div>`).join("") : `<p class="muted" style="font-size:13.5px">Nothing yet. Each refusal and its reason shows up here and shapes the next suggestions.</p>`}</section>
       <section class="card"><div class="lbl">Autonomy by theme</div>${a.themes.map((t) => { const th = TH[t]; return `<div class="mode"><p>${th.label}<span>${th.replies ? "Replies stay in suggestions for now" : S.auto[t] ? `The agent will ${ACT[th.act].w.toLowerCase()} on its own` : "You approve each one"}</span></p><div class="seg"><button class="${S.auto[t] ? "" : "on"}" data-auto="${t}:off">Suggest</button><button class="${S.auto[t] ? "on" : ""}" ${th.replies ? "disabled" : ""} data-auto="${t}:on">Auto</button></div></div>`; }).join("")}
         <p class="faint" style="font-size:12.5px;margin-top:10px">What it does on auto shows up live in Activity, with Undo.</p></section></div>`;
   }
@@ -694,6 +740,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const inMenu = e.target.closest(".menu"); closeMenu();
     if ((el = g("actagent"))) { S.actAgent = el.dataset.actagent; render(); return; }
     if ((el = g("actwho"))) { S.actWho = el.dataset.actwho; render(); return; }
+    if ((el = g("reason")) && inMenu) { const [id, k] = el.dataset.reason.split(":"); dismiss(id, k); return; }
     if (inMenu && !e.target.closest("button[data-undo], button[data-go]")) return;
     if ((el = g("tundo"))) { const f = $("#toast")._u; $("#toast").classList.remove("on"); f && f(); return; }
     if ((el = g("go"))) { S.route = el.dataset.go; S.tab = el.dataset.tab || "suggestions"; const ft = el.dataset.theme; if (ft) S.open[ft] = true; render(); $("#main").scrollTop = 0; if (ft) { const sec = document.getElementById("th-" + ft); if (sec) { $("#main").scrollTop = sec.offsetTop - 64; sec.animate([{ boxShadow: "0 0 0 3px #18181b" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 1400 }); } } return; }
@@ -704,7 +751,8 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       const ev = act([id], a); render(); if (ev) toast(`${ACT[a].past} ${x.author}`, () => undo(ev.lid)); return;
     }
     if ((el = g("bulk"))) { const [a, ids] = el.dataset.bulk.split("|"); const ev = act(ids.split(","), a); render(); if (ev) toast(ev.text, () => undo(ev.lid)); return; }
-    if ((el = g("dismiss"))) { dismiss(el.dataset.dismiss); return; }
+    if ((el = g("clean"))) { const evs = MOD.map((t) => { const ids = feed(t).map((x) => x.id); return ids.length ? act(ids, TH[t].act) : null; }).filter(Boolean); render(); const n = evs.reduce((m, e) => m + e.count, 0); toast(`Cleaned up ${n} comments: spam and insults hidden, scams deleted`, () => evs.forEach((e) => undo(e.lid))); return; }
+    if ((el = g("dismiss"))) { const open = document.querySelector(".menu"); if (!(open && open._btn === el)) openReasons(el, el.dataset.dismiss); return; }
     if ((el = g("undo"))) { undo(+el.dataset.undo); return; }
     if ((el = g("more"))) { const t = el.dataset.more; S.open[t] = !S.open[t]; render(); return; }
     if ((el = g("auto"))) { const [t, v] = el.dataset.auto.split(":"); if (S.auto[t] !== (v === "on")) setAuto(t, v === "on"); return; }
