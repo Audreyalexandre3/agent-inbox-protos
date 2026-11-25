@@ -171,6 +171,12 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .log .caret::after { content:""; display:inline-block; width:2px; height:14px; margin-left:2px; vertical-align:-2px; background:var(--fg); animation:blink 1s steps(1) infinite; }
 .log .undo { font-size:12px; color:var(--muted); text-decoration:underline; }
 @keyframes blink { 50% { opacity:0; } }
+.btn.cog { width:34px; padding:0; color:var(--muted); position:relative; }
+.btn.cog svg { width:17px; height:17px; transition:transform .4s cubic-bezier(.2,.9,.2,1); }
+.btn.cog:hover { color:var(--fg); }
+.btn.cog:hover svg { transform:rotate(60deg); }
+.btn.cog::after { content:attr(title); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); white-space:nowrap; padding:4px 8px; border-radius:7px; background:var(--fg); color:#fff; font-size:12px; opacity:0; pointer-events:none; transition:opacity .15s; }
+.btn.cog:hover::after { opacity:1; }
 .kebab { width:28px; height:28px; border-radius:8px; display:grid; place-items:center; color:var(--faint); }
 .kebab:hover, .kebab.on { background:var(--soft); color:var(--fg); }
 .kebab svg { width:16px; height:16px; }
@@ -298,7 +304,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>',
     right: '<path d="m9 18 6-6-6-6"/>', left: '<path d="m15 18-6-6 6-6"/>',
     alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>',
-    gear: '<circle cx="12" cy="12" r="3"/><path d="M12 2v3M12 19v3M4.2 4.2l2.1 2.1M17.7 17.7l2.1 2.1M2 12h3M19 12h3M4.2 19.8l2.1-2.1M17.7 6.3l2.1-2.1"/>',
+    gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
     tag: '<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/>',
     msg: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
     dots: '<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'
@@ -537,7 +543,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       <div class="ac-l">Latest suggestions</div>
       ${latest.length ? latest.map((x) => { const th = TH[x.theme]; return `<div class="sg"><span class="net ${x.net}">${x.net}</span><div style="min-width:0"><div class="tx"><b>${esc(x.author)}</b> ${esc(x.text)}</div><div class="meta">${x.needs ? `<span class="chip red" style="height:18px">${ic("alert")}Needs you</span>` : `<span class="chip" style="height:18px">${th.label}</span>`}${x.theme === "buy" || th.act === "reply" ? `<span class="dr">→ ${esc(draftOf(x) || "Write a reply")}</span>` : `<span class="dr">→ ${ACT[th.act].w}</span>`}<span class="faint">${rel(x.at)}</span></div></div>
         ${x.needs ? `<button class="btn sm" data-go="${a.id}">Open</button>` : `<button class="btn sm" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`}</div>`; }).join("") : `<div class="empty">All clear.</div>`}
-      <div class="ac-f"><button class="btn pri" data-go="${a.id}">Open feed ${ic("right")}</button><button class="btn" data-go="${a.id}" data-tab="config">${ic("gear")}Configure</button><span class="sp"></span>${s.todo + s.needs ? "" : '<span class="chip ok">All clear</span>'}</div></section>`;
+      <div class="ac-f"><button class="btn pri" data-go="${a.id}">Open feed ${ic("right")}</button><button class="btn cog" data-go="${a.id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button><span class="sp"></span>${s.todo + s.needs ? "" : '<span class="chip ok">All clear</span>'}</div></section>`;
   }
 
   // ---------- agent page
@@ -546,7 +552,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const autoThemes = a.themes.filter((t) => S.auto[t]);
     return `${header(`<b>Agentic Inbox</b><span class="cr">/ ${a.name}</span>`)}<div class="wrap">
       <div class="ahd"><span class="aav" style="background:${a.dot}">${ic(a.icon)}</span><div style="flex:1;min-width:0"><h1>${a.name}</h1><p class="muted">${a.role}</p></div>
-        ${autoThemes.length ? `<span class="chip dark">${ic("bolt")}Auto: ${autoThemes.map((t) => TH[t].label.toLowerCase()).join(", ")}</span>` : `<span class="chip">Suggestions only</span>`}</div>
+        ${autoThemes.length ? `<span class="chip dark">${ic("bolt")}Auto: ${autoThemes.map((t) => TH[t].label.toLowerCase()).join(", ")}</span>` : `<span class="chip">Suggestions only</span>`}<button class="btn cog" data-tab="config" title="Agent configuration" aria-label="Agent configuration">${ic("gear")}</button></div>
       <section class="recap"><div class="row"><b>Since Sunday</b><span class="muted" style="font-size:13px">${s.auto + s.you} handled · about ${s.saved} min saved</span></div>
         <div class="rg"><div class="st"><b>${s.auto}</b><span>Done on its own</span></div><div class="st"><b>${s.you}</b><span>Approved by you</span></div><div class="st ${s.needs ? "hot" : ""}"><b>${s.needs}</b><span>${s.needs ? ic("alert") : ""}Need${s.needs === 1 ? "s" : ""} you</span></div><div class="st"><b>${s.todo}</b><span>Suggestions to review</span></div></div></section>
       <div class="tabs"><button class="${S.tab === "suggestions" ? "on" : ""}" data-tab="suggestions">Suggestions<span class="k">${s.todo + s.needs}</span></button><button class="${S.tab === "config" ? "on" : ""}" data-tab="config">Agent configuration</button></div>
