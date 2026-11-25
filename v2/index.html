@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Inbox · V2 Hub and agents</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../shared.css">
+<style>
+/* Today look (same base as today-proto/next.html) */
+:root { --bg:#fafaf7; --fg:#18181b; --muted:#71717a; --faint:#a1a1aa; --line:#ebebe6; --line2:#dcdcd5; --soft:#f4f4f0; --hover:#fafaf7;
+  --accent:#ff6a3d; --green:#16a34a;
+  --shadow:0 1px 2px rgba(24,24,27,.04), 0 12px 32px -16px rgba(24,24,27,.10), 0 0 0 1px var(--line); }
+body { font:15px/1.5 var(--sans); letter-spacing:-.005em; }
+svg.i { width:18px; height:18px; stroke-width:1.8; }
+.btn { height:36px; padding:0 14px; border-radius:10px; font-size:14px; box-shadow:inset 0 0 0 1px var(--line2); }
+.btn.sm { height:32px; padding:0 12px; font-size:13px; border-radius:9px; }
+.btn.pri { background:var(--fg); color:#fff; box-shadow:none; }
+.btn.pri:hover { background:#3f3f46; }
+.card { border-radius:20px; box-shadow:var(--shadow); }
+.chip { height:24px; border-radius:8px; }
+.protobar a { color:#a1a1aa; text-decoration:none; }
+.protobar a:hover { color:#fff; }
+
+.shell { display:grid; grid-template-columns:84px 228px minmax(0, 1fr); height:calc(100vh - 40px); }
+.dock { display:flex; flex-direction:column; align-items:center; padding:18px 0; }
+.dock-in { display:flex; flex-direction:column; align-items:center; gap:6px; padding:10px 8px; border-radius:22px; background:#fff; box-shadow:0 0 0 1px var(--line); }
+.logo { width:40px; height:40px; border-radius:13px; display:grid; place-items:center; background:var(--fg); color:#fff; font-weight:600; font-size:18px; margin-bottom:10px; }
+.dk { position:relative; width:44px; height:44px; border-radius:14px; display:grid; place-items:center; color:var(--muted); }
+.dk:hover { background:var(--soft); color:var(--fg); }
+.dk.on { color:var(--fg); background:var(--soft); }
+.dk.on::before { content:""; position:absolute; left:-9px; top:12px; bottom:12px; width:3px; border-radius:3px; background:var(--fg); }
+.dk .badge { position:absolute; top:5px; right:3px; min-width:16px; height:16px; padding:0 4px; border-radius:8px; background:var(--accent); color:#fff; font-size:10px; font-weight:700; display:grid; place-items:center; }
+.dk .tip { position:absolute; left:52px; white-space:nowrap; padding:5px 9px; border-radius:8px; background:#fff; box-shadow:var(--shadow); font-size:12px; opacity:0; pointer-events:none; transition:opacity .15s; z-index:5; }
+.dk:hover .tip { opacity:1; }
+
+/* folder sub-nav */
+.folder { padding:22px 12px 18px 4px; display:flex; flex-direction:column; gap:2px; }
+.folder .fh { display:flex; align-items:center; gap:8px; padding:0 10px 12px; font-weight:600; font-size:15px; }
+.folder .fl { padding:14px 10px 6px; font-size:11.5px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
+.fi { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:8px 10px; border-radius:10px; font-size:14px; color:var(--muted); }
+.fi:hover { background:var(--soft); color:var(--fg); }
+.fi.on { background:#fff; color:var(--fg); font-weight:600; box-shadow:0 0 0 1px var(--line); }
+.fi .d { width:8px; height:8px; border-radius:50%; flex:none; }
+.fi .n { margin-left:auto; font-size:12px; color:var(--faint); font-weight:500; }
+.fi.sub { padding-left:22px; }
+.fi.soon { opacity:.5; cursor:default; }
+.folder .ft { margin-top:auto; padding:10px; font-size:12px; color:var(--faint); }
+
+.mainv { overflow:auto; min-width:0; }
+.wrap { max-width:1180px; margin:0 auto; padding:18px 32px 70px 16px; }
+.top { display:flex; align-items:center; gap:16px; margin-bottom:28px; }
+.crumb b { font-weight:600; font-size:16px; }
+.crumb span { color:var(--muted); font-size:13px; margin-left:8px; }
+.cmd { margin:0 auto; display:flex; align-items:center; gap:10px; width:min(440px, 36vw); height:42px; padding:0 8px 0 16px; border-radius:999px; background:#fff; box-shadow:0 0 0 1px var(--line); color:var(--muted); font-size:14px; }
+.cmd .ph { flex:1; text-align:left; }
+.kbd { display:inline-grid; place-items:center; min-width:22px; height:22px; padding:0 6px; border-radius:7px; font-size:11px; font-weight:600; color:var(--muted); background:var(--soft); }
+.pill { display:inline-flex; align-items:center; gap:8px; height:36px; padding:0 14px; border-radius:999px; background:#fff; box-shadow:0 0 0 1px var(--line); font-size:13px; font-weight:500; }
+
+/* hero */
+.hero { display:flex; align-items:flex-end; gap:32px; margin-bottom:26px; }
+.hero .t { flex:1; min-width:0; }
+.eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-bottom:10px; }
+.hero h1 { font-size:clamp(28px, 3vw, 40px); line-height:1.15; font-weight:600; letter-spacing:-.025em; }
+.hero h1 .m { color:var(--muted); display:block; font-weight:500; }
+.hero .s { margin-top:10px; color:var(--muted); }
+.ring { position:relative; width:96px; height:96px; flex:none; }
+.ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring circle { fill:none; stroke-width:6; }
+.ring .tr { stroke:var(--line); } .ring .vl { stroke:var(--fg); stroke-linecap:round; transition:stroke-dashoffset .8s cubic-bezier(.2,.9,.2,1); }
+.ring .c { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
+.ring .c b { display:block; font-size:20px; line-height:1; font-weight:600; letter-spacing:-.03em; }
+.ring .c small { color:var(--muted); font-size:12px; }
+
+/* sections */
+.sec { margin-top:22px; }
+.sh { display:flex; align-items:center; gap:10px; margin-bottom:10px; }
+.sh h2 { font-size:17px; font-weight:600; letter-spacing:-.01em; }
+.sh .n { color:var(--muted); }
+.sh .hint { margin-left:auto; color:var(--faint); font-size:13px; }
+.needs { border-radius:20px; background:#fff; box-shadow:inset 0 0 0 1.5px var(--fg), 0 12px 32px -16px rgba(24,24,27,.14); }
+.needs .it, .leadbox .it { padding:14px 18px; }
+.leadbox { overflow:hidden; }
+.lanes { display:grid; grid-template-columns:repeat(3, 1fr); gap:12px; }
+.lane { padding:18px; display:flex; flex-direction:column; gap:6px; cursor:pointer; }
+.lane:hover { box-shadow:0 0 0 1px var(--line2), 0 12px 32px -16px rgba(24,24,27,.18); }
+.lane .lh { display:flex; align-items:center; gap:8px; font-size:13.5px; color:var(--muted); }
+.lane b.big { font-size:34px; line-height:1; font-weight:600; letter-spacing:-.03em; margin-top:6px; }
+.lane .sub { font-size:13px; color:var(--muted); }
+.lane .acts { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.lane.ok { background:color-mix(in srgb, var(--green) 5%, #fff); box-shadow:inset 0 0 0 1px color-mix(in srgb, var(--green) 30%, transparent); }
+.lane.ok b.big { color:var(--green); }
+.genhead { display:flex; align-items:center; gap:8px; margin:24px 0 10px; }
+
+/* tables */
+.tbl { width:100%; border-collapse:collapse; font-size:13.5px; }
+.tbl th { text-align:left; font-weight:500; color:var(--faint); font-size:12px; padding:10px 12px; border-bottom:1px solid var(--line); white-space:nowrap; }
+.tbl td { padding:10px 12px; border-bottom:1px solid var(--line); vertical-align:top; }
+.tbl tr:last-child td { border-bottom:0; }
+.tbl tr:hover td { background:#fcfcfa; }
+.tbl tr.fresh td { background:#fffbea; }
+.tbl tr.undone td { opacity:.45; text-decoration:line-through; }
+.tbl .msg { max-width:420px; }
+.tbl .msg .who { color:var(--muted); font-size:12.5px; display:flex; gap:6px; align-items:center; }
+.tbl .msg .who b { color:var(--fg); font-weight:600; }
+.tbl .msg .tx { cursor:pointer; }
+.tbl .t { color:var(--faint); white-space:nowrap; font-size:12.5px; }
+.tbl .ra { text-align:right; white-space:nowrap; }
+.tbl textarea.draft { width:100%; }
+.tbl .sugg { margin-top:6px; }
+.tblcard { padding:4px 6px; overflow:auto; }
+.conf2 { display:inline-flex; align-items:center; gap:6px; color:var(--muted); font-size:12px; white-space:nowrap; }
+
+/* agent page */
+.agrid { display:grid; grid-template-columns:minmax(0, 1fr) 330px; gap:20px; align-items:start; }
+.ahead { display:flex; align-items:center; gap:14px; margin-bottom:22px; }
+.ahead .av { width:48px; height:48px; border-radius:15px; display:grid; place-items:center; color:#fff; }
+.ahead .av svg { width:22px; height:22px; }
+.ahead h1 { font-size:28px; font-weight:600; letter-spacing:-.02em; }
+.stats { display:flex; gap:22px; margin-left:auto; }
+.stats div b { display:block; font-size:22px; font-weight:600; letter-spacing:-.02em; line-height:1.1; }
+.stats div span { font-size:12.5px; color:var(--muted); }
+.filters { display:flex; gap:6px; flex-wrap:wrap; }
+.filters button { height:30px; padding:0 12px; border-radius:999px; background:#fff; box-shadow:inset 0 0 0 1px var(--line); font-size:13px; color:var(--muted); }
+.filters button.on { background:var(--fg); color:#fff; box-shadow:none; }
+
+/* slide-over panel (Today style) */
+.pscrim { position:fixed; inset:40px 0 0 0; background:rgba(24,24,27,.12); z-index:54; opacity:0; pointer-events:none; transition:opacity .2s; }
+.pscrim.on { opacity:1; pointer-events:auto; }
+.panel { position:fixed; top:40px; right:0; bottom:0; width:min(560px, 100vw); background:#fff; z-index:55; box-shadow:-24px 0 60px -30px rgba(0,0,0,.3), 0 0 0 1px var(--line); transform:translateX(102%); transition:transform .28s cubic-bezier(.2,.9,.2,1); display:flex; flex-direction:column; }
+.panel.on { transform:none; }
+.panel .ph { padding:18px 20px 0; }
+.panel .ph h3 { font-size:17px; font-weight:600; display:flex; align-items:center; gap:8px; }
+.ptabs { display:flex; gap:4px; margin-top:12px; border-bottom:1px solid var(--line); }
+.ptabs button { padding:8px 10px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; font-size:14px; }
+.ptabs button.on { color:var(--fg); border-color:var(--fg); font-weight:600; }
+.ptabs .k { font-size:12px; color:var(--faint); margin-left:3px; }
+.panel .pb { flex:1; overflow:auto; padding:6px 6px 10px; }
+.panel .pf { padding:12px 20px; border-top:1px solid var(--line); display:flex; align-items:center; gap:10px; }
+.panel .pb .it { padding:12px 14px; }
+.panel .bulkbar { bottom:8px; }
+
+@media (max-width:1100px) { .shell { grid-template-columns:84px 1fr; } .folder { display:none; } .agrid { grid-template-columns:1fr; } }
+@media (max-width:760px) { .shell { grid-template-columns:1fr; } .dock { display:none; } .lanes { grid-template-columns:1fr; } .cmd { display:none; } .wrap { padding:16px 16px 60px; } .stats { display:none; } }
+</style>
+</head>
+<body>
+<div class="protobar"><a href="../">← All versions</a><b>Agent Inbox</b><span class="chip dark" style="background:#fff;color:#18181b;height:22px">V2 · Hub + agents</span><span class="sp"></span><span class="hide-m faint">Back after 3 days · fake data</span><span id="metrics" class="row" style="gap:14px"></span><button onclick="location.reload()">Reset</button></div>
+<div class="shell">
+  <nav class="dock" id="dock"></nav>
+  <nav class="folder" id="folder"></nav>
+  <main class="mainv" id="main"></main>
+</div>
+<div class="pscrim" id="pscrim"></div>
+<aside class="panel" id="panel"></aside>
+<script src="../data.js"></script>
+<script src="../core.js"></script>
+<script>
+(function () {
+  const A = window.App, S = A.S, D = A.D, esc = A.esc, ic = A.ic;
+  const SPAM = ["spam", "scam", "insult"];
+  const NEEDS_CONF = 0.75; // V2: "Needs you" = suggestions the agent is not sure about
+  const isNeeds = (x) => x.conf < NEEDS_CONF && !SPAM.includes(x.type);
+  const G = {
+    needs: { label: "Needs you", f: isNeeds },
+    lead: { label: "Leads", f: (x) => x.type === "lead" && !isNeeds(x) },
+    question: { label: "Questions", f: (x) => x.type === "question" && !isNeeds(x) },
+    positive: { label: "Positive", f: (x) => x.type === "positive" },
+    spam: { label: "Spam and insults", f: (x) => SPAM.includes(x.type) }
+  };
+  const P = (k, extra = () => true) => A.pending((x) => G[k].f(x) && extra(x)).sort((a, b) => b.at - a.at);
+  const sure = (x) => x.conf >= 0.85;
+  let route = "hub", panelTab = null, agFilter = "all";
+  const INTENT_LABEL = { lead: "Lead", question: "Question", positive: "Positive", spam: "Spam", scam: "Scam", insult: "Insult" };
+
+  // ---------- nav
+  function dock() {
+    const n = A.pending().length;
+    return `<div class="dock-in"><div class="logo">a</div>
+      <button class="dk" title=""><span class="tip">Publishing</span>${ic("cal")}</button>
+      <button class="dk"><span class="tip">Archive</span>${ic("archive")}</button>
+      <button class="dk on" data-route="hub"><span class="tip">Agent Inbox</span>${ic("inbox")}<span class="badge">${n > 99 ? "99+" : n}</span></button>
+      </div><span style="flex:1"></span><span class="avatar" style="width:36px;height:36px;border-radius:50%;background:var(--line);display:grid;place-items:center;font-size:12px;font-weight:600">AA</span>`;
+  }
+  function folder() {
+    const cnt = (id) => A.pending((x) => x.agent === id).length;
+    return `<div class="fh">${ic("inbox")}Agent Inbox</div>
+      <button class="fi ${route === "hub" ? "on" : ""}" data-route="hub">${ic("spark")}Overview<span class="n">${A.pending().length}</span></button>
+      <div class="fl">Agents</div>
+      ${D.AGENTS.map((a) => `<button class="fi ${route === a.id ? "on" : ""}" data-route="${a.id}"><span class="d" style="background:${a.dot}"></span>${esc(a.name)}<span class="n">${cnt(a.id)}</span></button>`).join("")}
+      <button class="fi soon" title="After January"><span class="d" style="background:var(--line2)"></span>New agent<span class="n">Soon</span></button>
+      <div class="ft">${esc(D.BRAND.name)}<br>Instagram · Facebook · TikTok</div>`;
+  }
+  function topbar(title) {
+    return `<div class="top"><div class="crumb"><b>${title}</b><span>Wednesday, November 25</span></div>
+      <button class="cmd">${ic("spark")}<span class="ph">Search, act, or ask your agents</span><span class="kbd">⌘</span><span class="kbd">K</span></button>
+      <span class="pill"><span class="live"><span class="pulse"></span></span>${D.AGENTS.length} agents on</span></div>`;
+  }
+
+  // ---------- hub
+  function ring(done, total) {
+    const C = 2 * Math.PI * 42, pct = total ? done / total : 0;
+    return `<div class="ring"><svg viewBox="0 0 96 96"><circle class="tr" cx="48" cy="48" r="42"/><circle class="vl" cx="48" cy="48" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}"/></svg><div class="c"><div><b>${Math.round(pct * 100)}%</b><small>cleared</small></div></div></div>`;
+  }
+  function lane(k, opts) {
+    const xs = P(k), ids = xs.map((x) => x.id);
+    if (!xs.length) return `<div class="card lane ok" data-open-panel="${k}"><div class="lh">${opts.icon}${G[k].label}</div><b class="big">${ic("check")}</b><div class="sub">All done. New ones show up here.</div></div>`;
+    const s = xs.filter(sure);
+    let acts = "";
+    if (k === "question") acts = s.length ? `<button class="btn sm pri" data-bulk="${s.map((x) => x.id).join(",")}">${ic("send")}Send ${s.length} sure ones</button>` : "";
+    else if (k === "positive") acts = `<button class="btn sm pri" data-bulk="${ids.join(",")}">${ic("heart")}Like ${xs.length}</button>`;
+    else acts = `<button class="btn sm pri" data-bulk="${ids.join(",")}">${ic("broom")}Clean up ${xs.length}</button>`;
+    const fresh = xs.filter((x) => x.fresh).length;
+    return `<div class="card lane" data-open-panel="${k}"><div class="lh">${opts.icon}${G[k].label}${fresh ? `<span class="chip ok" style="margin-left:auto">+${fresh} new</span>` : ""}</div>
+      <b class="big">${xs.length}</b><div class="sub">${opts.sub(xs, s)}</div>
+      <div class="acts">${acts}<button class="btn sm" data-open-panel="${k}">Review</button></div></div>`;
+  }
+  function hub() {
+    const needs = P("needs"), leads = P("lead");
+    const total = S.items.filter((x) => x.at >= S.lastVisit).length;
+    const pend = A.pending().length;
+    const quick = pend - needs.length - leads.length;
+    const mins = Math.max(1, Math.round(needs.length * 1.5 + leads.length * 1 + quick * 0.03));
+    return `<div class="wrap">${topbar("Agent Inbox")}
+      <div class="hero"><div class="t"><div class="eyebrow">${ic("spark")}Your agents read ${S.scanned} messages since Sunday for ${esc(D.BRAND.name)}</div>
+        <h1>${pend ? "Welcome back, Audrey." : "All clear, Audrey."}<span class="m">${pend ? `${[leads.length ? `${leads.length} lead${leads.length > 1 ? "s" : ""}` : "", needs.length ? `${needs.length} call${needs.length > 1 ? "s" : ""} to make` : "", quick ? `${quick} quick approvals` : ""].filter(Boolean).join(", ").replace(/, ([^,]*)$/, " and $1")}.` : "Your agents keep reading new messages."}</span></h1>
+        <p class="s">${pend ? `About ${mins} minutes. Start at the top, your agents prepared the rest.` : "Nothing waits for you. New suggestions will show up here."}</p></div>
+        ${ring(total - pend, total)}</div>
+
+      <div class="sec"><div class="sh"><h2>Needs you</h2><span class="n">${needs.length}</span><span class="hint">Your agent is not sure. Your call.</span></div>
+        ${needs.length ? `<div class="needs items">${needs.map((x) => A.rowHTML(x, { showAgent: true, why: true })).join("")}</div>` : `<div class="card empty">Nothing needs you right now.</div>`}</div>
+
+      <div class="sec"><div class="sh"><h2>Leads</h2><span class="n">${leads.length}</span>${A.dot("lead")}<span class="hint">People ready to buy. Answer them first.</span></div>
+        ${leads.length ? `<div class="card leadbox items">${leads.map((x) => A.rowHTML(x, { why: true })).join("")}</div>` : `<div class="card empty">No lead waiting. New ones show up here first.</div>`}</div>
+
+      <div class="genhead"><h2 style="font-size:17px;font-weight:600">Everything else</h2>${A.dot("general")}<span class="faint" style="font-size:13px;margin-left:auto">Sorted by intent. Approve a whole group or review it.</span></div>
+      <div class="lanes">
+        ${lane("spam", { icon: ic("broom"), sub: (xs) => { const d = xs.filter((x) => x.act === "delete").length; return `${xs.length - d} to hide · ${d} scams to delete`; } })}
+        ${lane("question", { icon: ic("reply"), sub: (xs, s) => `${s.length} sure · ${xs.length - s.length} to read` })}
+        ${lane("positive", { icon: ic("heart"), sub: () => "Happy customers to like" })}
+      </div>
+
+      <div class="sec" style="margin-top:30px"><div class="sh"><h2>Activity</h2><span class="live"><span class="pulse"></span>live</span><span class="hint">Everything approved, newest first. Undo puts it back.</span></div>
+        <div class="card tblcard">${activityTable(() => true, 12)}</div></div>
+    </div>`;
+  }
+
+  // ---------- tables
+  function activityTable(filter, limit) {
+    const L = S.log.filter(filter).slice(0, limit || 200);
+    if (!L.length) return `<div class="empty">Nothing yet. What you approve shows up here.</div>`;
+    return `<table class="tbl"><thead><tr><th>When</th><th>Agent</th><th>What</th><th>Message</th><th>By</th><th></th></tr></thead><tbody>
+      ${L.map((e) => `<tr class="${e.undone ? "undone" : ""}"><td class="t">${A.rel(e.t)}</td><td>${A.dot(e.agent)}</td><td>${esc(e.text.charAt(0).toUpperCase() + e.text.slice(1))}${e.edited ? ' <span class="faint">(edited)</span>' : ""}</td><td class="muted" style="max-width:340px">${e.q ? "“" + esc(e.q.length > 90 ? e.q.slice(0, 90) + "…" : e.q) + "”" : ""}</td><td class="muted">${e.by === "agent" ? "Agent" : "You"}</td>
+        <td class="ra"><span class="fb lg" style="display:inline-flex;border:0;padding:0;animation:none"><span class="fb"><button class="${e.fb === "up" ? "on" : ""}" data-fb="${e.lid}:up" title="Good call">${ic("up")}</button><button class="${e.fb === "down" ? "on" : ""}" data-fb="${e.lid}:down" title="Bad call">${ic("down")}</button></span></span>${e.ids.length && !e.undone ? `<button class="btn sm" style="height:26px;margin-left:4px" data-undo="${e.lid}">Undo</button>` : ""}</td></tr>`).join("")}
+      </tbody></table>`;
+  }
+  function todoTable(xs) {
+    if (!xs.length) return `<div class="empty">Nothing to do here. New suggestions show up as messages arrive.</div>`;
+    const ids = xs.map((x) => x.id);
+    const all = ids.every((id) => S.sel.has(id));
+    return `<table class="tbl"><thead><tr><th style="width:28px"><span class="check ${all ? "on" : ""}" data-selall="${ids.join(",")}" style="cursor:pointer">${all ? ic("check") : ""}</span></th><th>Message</th><th>Intent</th><th>Suggested</th><th>Sure</th><th></th></tr></thead><tbody>
+      ${xs.map((x) => { const on = S.sel.has(x.id); return `<tr class="${x.fresh ? "fresh" : ""}"><td><span class="check ${on ? "on" : ""}" data-sel="${x.id}" style="cursor:pointer;margin-top:2px">${on ? ic("check") : ""}</span></td>
+        <td class="msg"><div class="who"><span class="net">${x.net}</span><b>${esc(x.author)}</b>· ${A.rel(x.at)}</div><div class="tx" data-open="${x.id}">${esc(x.text)}</div>
+          ${x.act === "reply" ? `<div class="sugg row" style="align-items:flex-start"><textarea class="draft" rows="1" data-draft="${x.id}">${esc(S.edits[x.id] ?? x.draft ?? "")}</textarea></div>${x.dm ? `<div class="faint" style="font-size:12px;margin-top:4px">+ DM: ${esc(x.dm)}</div>` : ""}` : ""}</td>
+        <td><span class="chip">${INTENT_LABEL[x.type] || ""}</span></td>
+        <td><span class="row" style="gap:6px;white-space:nowrap">${ic(A.actIcon[x.act])}${x.act === "reply" ? "Reply" : A.actWord[x.act]}</span></td>
+        <td><span class="conf2"><span class="conf" style="width:40px"><span style="width:${Math.round(x.conf * 100)}%"></span></span>${Math.round(x.conf * 100)}%</span></td>
+        <td class="ra"><button class="btn sm" data-approve="${x.id}">${A.actWord[x.act]}</button><button class="btn sm icon ghost" data-reject="${x.id}" title="Not right" style="box-shadow:none">${ic("x")}</button></td></tr>`; }).join("")}
+      </tbody></table>`;
+  }
+
+  // ---------- agent page
+  function agentPage(id) {
+    const a = A.agent(id);
+    const all = A.pending((x) => x.agent === id).sort((p, q) => q.at - p.at);
+    const types = [...new Set(all.map((x) => (SPAM.includes(x.type) ? "spam" : x.type)))];
+    const xs = all.filter((x) => agFilter === "all" || (agFilter === "spam" ? SPAM.includes(x.type) : x.type === agFilter));
+    const done = S.log.filter((e) => e.agent === id && !e.undone && e.ids.length && e.t >= S.lastVisit).reduce((s, e) => s + e.ids.length, 0);
+    const bulkable = xs.length && xs.every((x) => x.act !== "reply");
+    const sureReplies = xs.filter((x) => x.act === "reply" && sure(x));
+    return `<div class="wrap">${topbar("Agent Inbox")}
+      <div class="ahead"><span class="av" style="background:${a.dot}">${ic(id === "lead" ? "spark" : "inbox")}</span><div><h1>${esc(a.name)}</h1><p class="muted">${esc(a.role)}</p></div>
+        <div class="stats"><div><b>${all.length}</b><span>To do</span></div><div><b>${done}</b><span>Done since Sunday</span></div>${id === "lead" ? `<div><b>${S.items.filter((x) => x.type === "lead" && x.status !== "rejected").length}</b><span>Leads spotted</span></div>` : ""}</div></div>
+      <div class="agrid"><div style="min-width:0">
+        <div class="sh"><h2>To do</h2><span class="n">${all.length}</span><span class="sp"></span>
+          ${bulkable ? `<button class="btn sm pri" data-bulk="${xs.map((x) => x.id).join(",")}">${xs.every((x) => SPAM.includes(x.type)) ? ic("broom") + "Clean up " : xs.every((x) => x.act === "like") ? ic("heart") + "Like " : ic("check") + "Approve "}${xs.length}</button>` : sureReplies.length ? `<button class="btn sm pri" data-bulk="${sureReplies.map((x) => x.id).join(",")}">${ic("send")}Send ${sureReplies.length} sure ones</button>` : ""}</div>
+        ${types.length > 1 ? `<div class="filters" style="margin-bottom:10px"><button class="${agFilter === "all" ? "on" : ""}" data-agf="all">All ${all.length}</button>${types.map((t) => `<button class="${agFilter === t ? "on" : ""}" data-agf="${t}">${G[t] ? G[t].label : t} ${all.filter((x) => (t === "spam" ? SPAM.includes(x.type) : x.type === t)).length}</button>`).join("")}</div>` : ""}
+        <div class="card tblcard" style="max-height:560px">${todoTable(xs)}</div>${A.bulkbarHTML()}
+        <div class="sh" style="margin-top:26px"><h2>Activity</h2><span class="live"><span class="pulse"></span>live</span></div>
+        <div class="card tblcard">${activityTable((e) => e.agent === id, 50)}</div>
+      </div>
+      <aside class="card" style="padding:18px"><div class="row" style="margin-bottom:12px"><b>Settings and guidelines</b></div>${A.agentPanelHTML(id)}</aside></div>
+    </div>`;
+  }
+
+  // ---------- review panel (slide-over)
+  function panel() {
+    const k = panelTab; if (!k) return "";
+    const xs = P(k), ids = xs.map((x) => x.id);
+    const s = xs.filter(sure);
+    let foot = "";
+    if (xs.length) {
+      if (k === "question" || k === "lead" || k === "needs") foot = s.length && k !== "needs" ? `<button class="btn pri" data-bulk="${s.map((x) => x.id).join(",")}">${ic("send")}Send ${s.length} sure ones</button>` : "";
+      else foot = `<button class="btn pri" data-bulk="${ids.join(",")}">${k === "positive" ? ic("heart") + "Like" : ic("broom") + "Clean up"} ${xs.length}</button>`;
+    }
+    return `<div class="ph"><h3>${ic("inbox")}Review<span class="sp"></span><button class="btn sm icon ghost" data-closepanel style="box-shadow:none">${ic("x")}</button></h3>
+      <div class="ptabs">${Object.keys(G).map((t) => `<button class="${t === k ? "on" : ""}" data-ptab="${t}">${G[t].label}<span class="k">${P(t).length}</span></button>`).join("")}</div></div>
+      <div class="pb">${xs.length ? `<div style="padding:8px 8px 4px">${A.selectAllHTML(ids)}</div><div class="items">${xs.map((x) => A.rowHTML(x, { select: true, why: k === "needs" || k === "lead" })).join("")}</div>${A.bulkbarHTML()}` : '<div class="empty">All done here.</div>'}</div>
+      <div class="pf"><span class="muted" style="font-size:13px">${xs.length} left to decide</span><span class="sp"></span>${foot}</div>`;
+  }
+  function openPanel(k) { panelTab = k; S.sel.clear(); render(); A.$("#panel").classList.add("on"); A.$("#pscrim").classList.add("on"); }
+  function closePanel() { panelTab = null; S.sel.clear(); A.$("#panel").classList.remove("on"); A.$("#pscrim").classList.remove("on"); render(); }
+
+  function render() {
+    A.$("#dock").innerHTML = dock();
+    A.$("#folder").innerHTML = folder();
+    const main = A.$("#main"), st = main.scrollTop;
+    main.innerHTML = route === "hub" ? hub() : agentPage(route);
+    main.scrollTop = st; A.autosize(main);
+    const p = A.$("#panel"), pst = p.querySelector(".pb") ? p.querySelector(".pb").scrollTop : 0;
+    p.innerHTML = panel(); if (p.querySelector(".pb")) p.querySelector(".pb").scrollTop = pst; A.autosize(p);
+    const m = A.$("#metrics"); if (m) m.innerHTML = A.metricsHTML();
+  }
+  document.addEventListener("click", (e) => {
+    let el;
+    if ((el = e.target.closest("[data-route]"))) { route = el.dataset.route; agFilter = "all"; S.sel.clear(); render(); A.$("#main").scrollTop = 0; return; }
+    if ((el = e.target.closest("[data-agf]"))) { agFilter = el.dataset.agf; S.sel.clear(); render(); return; }
+    if ((el = e.target.closest("[data-ptab]"))) { panelTab = el.dataset.ptab; S.sel.clear(); render(); return; }
+    if (e.target.closest("[data-closepanel]") || e.target.id === "pscrim") { closePanel(); return; }
+    if ((el = e.target.closest("[data-open-panel]")) && !e.target.closest("[data-bulk]")) { openPanel(el.dataset.openPanel); return; }
+  });
+  A.on(render);
+})();
+</script>
+</body>
+</html>

@@ -355,6 +355,6 @@
   });
   document.addEventListener("keydown", (e) => { if (e.key === "Escape") { closeMenu(); closeDrawer(); } });
 
-  window.App = { D, S, $, esc, ic, agent, byId, pending, isHuman, rel, kfmt, dot, rowHTML, selectAllHTML, bulkbarHTML, logHTML, nudgeHTML, liveHTML, modeText, agentPanelHTML, appnavHTML, protobarHTML, counts, openDetail, openAgent, autosize, toast, emit, past, actWord, actIcon,
+  window.App = { metricsHTML, D, S, $, esc, ic, agent, byId, pending, isHuman, rel, kfmt, dot, rowHTML, selectAllHTML, bulkbarHTML, logHTML, nudgeHTML, liveHTML, modeText, agentPanelHTML, appnavHTML, protobarHTML, counts, openDetail, openAgent, autosize, toast, emit, past, actWord, actIcon,
     on: (f) => { subs.push(f); f(); } };
 })();
