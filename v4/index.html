@@ -347,7 +347,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   const ACT = { reply: { w: "Send", ic: "send", past: "Replied to" }, like: { w: "Like", ic: "heart", past: "Liked" }, hide: { w: "Hide", ic: "eyeoff", past: "Hid" }, delete: { w: "Delete", ic: "trash", past: "Deleted" } };
   const TH = {
     buy: { agent: "lead", label: "Ready to buy", act: "reply", bulk: [{ a: "reply", l: "Send the sure ones", sure: true }], replies: true },
-    b2b: { agent: "lead", label: "Wholesale and partnerships", act: "reply", bulk: [], replies: true },
+    b2b: { agent: "lead", label: "Wholesale and partnerships", act: "reply", bulk: [{ a: "reply", l: "Send the sure ones", sure: true }], replies: true },
     question: { agent: "support", label: "Questions", act: "reply", bulk: [{ a: "reply", l: "Send the sure ones", sure: true }], replies: true },
     positive: { agent: "community", label: "Positive comments", act: "like", bulk: [{ a: "like", l: "Like all" }] },
     spam: { agent: "community", label: "Spam", act: "hide", bulk: [{ a: "hide", l: "Hide all" }, { a: "delete", l: "Delete all" }] },
@@ -368,6 +368,10 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   add({ theme: "buy", author: "Tom Becker", followers: 310, ago: 1500, text: "does the discovery set ship to Canada?", draft: "Yes, we ship to Canada in 5 to 7 days. Link to the set is in your DMs.", dm: "Discovery set · $45", conf: 0.78, why: "Shipping question on a product ad." });
   add({ theme: "b2b", author: "Petal & Co Shop", followers: 3400, ago: 2900, text: "do you do wholesale for small shops? we have 3 stores", draft: "We do! What's the best email to send our wholesale sheet to?", conf: 0.81, why: "Wholesale request from a shop with 3 stores.", needs: "Wholesale: your rules say these come to you." });
 
+  add({ theme: "b2b", author: "Maison Lior Hotel", followers: 8200, ago: 180, text: "Hi! We'd love your Amber Night candles in our 24 rooms. Do you offer hotel pricing?", draft: "Hello! We'd love that. We have a hospitality offer from 20 candles. What's the best email to send it to?", conf: 0.88, why: "Hotel asking for volume pricing. Likely a repeat order." });
+  add({ theme: "b2b", author: "Studio Wed & Co", followers: 4100, ago: 760, text: "wedding planner here, we need 60 minis as guest gifts for June. possible with custom labels?", draft: "Congrats to the couple! 60 minis works. Custom labels are possible from 50 units. Can we continue by email?", conf: 0.84, why: "Event order of 60 units with customisation." });
+  add({ theme: "b2b", author: "Camille Roux", followers: 12400, ago: 1900, text: "love your brand! open to a collab for my December gift guide? 12k followers, mostly home decor", draft: "Thank you Camille! Happy to talk about your gift guide. I sent you a DM with the next steps.", conf: 0.79, why: "Creator collab request, audience matches home decor." });
+  add({ theme: "b2b", author: "Atelier Nord Concept Store", followers: 2600, ago: 3400, text: "Do you work with concept stores in Belgium? We'd like to stock the Linen Mist.", draft: "Yes, we do! I sent you our wholesale sheet by DM, with the minimum order and delivery to Belgium.", conf: 0.9, why: "Retailer asking to stock a product." });
   [["Olivia Grant", "how long does shipping take to the UK?", "UK orders arrive in 3 to 5 working days. Tracking is sent by email.", 0.93],
    ["Ben Carter", "is the wax vegan?", "Yes, it's 100% plant wax, vegan and cruelty free.", 0.97],
    ["Daniel K.", "how long does one candle burn?", "About 50 hours if you trim the wick before each use.", 0.95],
