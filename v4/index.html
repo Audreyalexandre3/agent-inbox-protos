@@ -174,24 +174,20 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .bh2 { display:flex; align-items:baseline; gap:10px; margin:26px 0 12px; }
 .bh2 h2 { font-size:18px; font-weight:600; letter-spacing:-.01em; }
 .bh2 .muted { font-size:13px; }
-.buckets { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:14px; }
-.bk { padding:16px 18px; display:flex; flex-direction:column; gap:6px; min-width:0; }
-.bk-h { display:flex; align-items:center; gap:6px; }
-.bk-h .btn.cog { width:30px; height:30px; border-radius:9px; }
-.bk-n { display:flex; align-items:baseline; gap:10px; margin-top:6px; }
-.bk-n b { font-size:32px; font-weight:600; letter-spacing:-.03em; line-height:1; display:inline-flex; }
-.bk-n b svg { width:26px; height:26px; color:var(--green); }
-.bk-n span { font-size:16px; font-weight:600; }
-.bk-s { font-size:13px; color:var(--muted); }
-.bk-pv { display:flex; flex-direction:column; gap:3px; font-size:13px; margin-top:4px; }
-.bk-pv div { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--muted); }
-.bk-pv b { color:var(--fg); font-weight:500; }
-.bk-f { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
-.bk.lead { box-shadow:inset 0 3px 0 #e8590c, var(--shadow); }
-.bk.auto, .bk.done { background:var(--soft); box-shadow:none; }
+.buckets { display:flex; flex-direction:column; gap:12px; }
+.bk { padding:6px 20px 8px; min-width:0; }
+.bk-h { display:flex; align-items:center; gap:12px; padding:12px 0 8px; flex-wrap:wrap; }
+.bk-t { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; min-width:0; }
+.bk-t h3 { font-size:16px; font-weight:600; letter-spacing:-.01em; }
+.bk-c { font-size:22px; font-weight:600; letter-spacing:-.03em; line-height:1; }
+.bk-a { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.bk-a .btn.cog { width:30px; height:30px; border-radius:9px; }
+.bk.lead { box-shadow:inset 3px 0 0 #e8590c, var(--shadow); }
+.bk.slim { background:var(--soft); box-shadow:none; padding:2px 20px; }
+.bk.slim .bk-h { padding:10px 0; }
+.bk .more { display:flex; align-items:center; justify-content:center; gap:4px; }
+.bk .more svg { width:14px; height:14px; }
 .needs .it .who .chip { height:20px; }
-@media (max-width:1100px) { .buckets { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
-@media (max-width:700px) { .buckets { grid-template-columns:1fr; } }
 .btn.cog { width:34px; padding:0; color:var(--muted); position:relative; }
 .btn.cog svg { width:17px; height:17px; transition:transform .4s cubic-bezier(.2,.9,.2,1); }
 .btn.cog:hover { color:var(--fg); }
@@ -566,20 +562,22 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   }
   function bucket(t) {
     const th = TH[t], a = AGENTS[th.agent], xs = feed(t);
-    const top = `<div class="bk-h"><span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>${xs.some((x) => x.fresh) ? '<span class="chip ok">New</span>' : ""}<span class="sp"></span><button class="btn cog" data-go="${a.id}" data-tab="config" title="${a.name} configuration" aria-label="${a.name} configuration">${ic("gear")}</button></div>`;
+    const isLead = t === "buy" || t === "b2b";
+    const chip = `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>`;
+    const cog = `<button class="btn cog" data-go="${a.id}" data-tab="config" title="${a.name} configuration" aria-label="${a.name} configuration">${ic("gear")}</button>`;
     const open = `<button class="btn sm" data-go="${a.id}" data-theme="${t}">Open feed ${ic("right")}</button>`;
     if (S.auto[t]) {
       const done = S.log.filter((e) => e.by === "agent" && !e.undone && e.agent === a.id && e.icon === ACT[th.act].ic).reduce((m, e) => m + (e.count || 0), 0);
-      return `<section class="card bk auto">${top}<div class="bk-n"><b>${done}</b><span>${th.label}</span></div><p class="bk-s"><span class="chip dark">${ic("bolt")}On auto</span> ${ACT[th.act].past.toLowerCase()} since Sunday. New ones are handled as they come.</p><div class="bk-f">${open}</div></section>`;
+      return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="chip dark">${ic("bolt")}On auto</span><span class="muted" style="font-size:13px">${done} ${ACT[th.act].past.toLowerCase()} since Sunday</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
     }
-    if (!xs.length) return `<section class="card bk done">${top}<div class="bk-n"><b>${ic("check")}</b><span>${th.label}</span></div><p class="bk-s">All clear. New ones show up here.</p><div class="bk-f">${open}</div></section>`;
+    if (!xs.length) return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="chip ok">${ic("check")}All clear</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
     const s = xs.filter(sure);
-    const ctas = th.bulk.map((b, i) => { const ids = (b.sure ? s : xs).map((x) => x.id); return ids.length ? `<button class="btn sm ${i === 0 ? "pri" : ""}" data-bulk="${b.a}|${ids.join(",")}">${ic(ACT[b.a].ic)}${b.sure ? `Send ${ids.length} sure` : `${b.l}`}</button>` : ""; }).join("");
-    const sub = th.act === "reply" ? `${s.length} ready to send · ${xs.length - s.length} to read first` : t === "positive" ? "Happy customers to like" : `${xs.length} ${t === "scam" ? "with links, deleting removes them for everyone" : "to clean up"}`;
-    return `<section class="card bk ${t === "buy" || t === "b2b" ? "lead" : ""}">${top}
-      <div class="bk-n"><b>${xs.length}</b><span>${th.label}</span></div><p class="bk-s">${sub}</p>
-      <div class="bk-pv">${xs.slice(0, 2).map((x) => `<div><b>${esc(x.author)}</b> ${esc(x.text)}</div>`).join("")}</div>
-      <div class="bk-f">${ctas}${open}</div></section>`;
+    const ctas = th.bulk.map((b, i) => { const ids = (b.sure ? s : xs).map((x) => x.id); return ids.length ? `<button class="btn sm ${i === 0 ? "pri" : ""}" data-bulk="${b.a}|${ids.join(",")}">${ic(ACT[b.a].ic)}${b.sure ? `Send ${ids.length} sure` : `${b.l} ${ids.length}`}</button>` : ""; }).join("");
+    const sub = th.act === "reply" ? `${s.length} ready to send · ${xs.length - s.length} to read first` : t === "scam" ? "Links to scams. Deleting removes them for everyone." : t === "positive" ? "Happy customers to like" : "To clean up";
+    const shown = isLead ? xs : xs.slice(0, 3);
+    return `<section class="card bk ${isLead ? "lead" : ""}"><div class="bk-h"><div class="bk-t"><span class="bk-c">${xs.length}</span><h3>${th.label}</h3>${chip}${xs.some((x) => x.fresh) ? '<span class="chip ok">New</span>' : ""}<span class="muted" style="font-size:13px">${sub}</span></div><div class="bk-a">${ctas}${open}${cog}</div></div>
+      <div class="bk-items">${shown.map((x, i) => itemRow(x, i === 0)).join("")}</div>
+      ${xs.length > shown.length ? `<button class="more" data-go="${a.id}" data-theme="${t}">See the ${xs.length - shown.length} others in the feed ${ic("right")}</button>` : ""}</section>`;
   }
   function agentCard(a) {
     const s = stats(a.id);
