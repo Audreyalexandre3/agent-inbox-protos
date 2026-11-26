@@ -244,6 +244,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 @media (max-width:1300px) { .m6-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } .ov6 { height:auto; } .act6 .tile .log { max-height:420px; } }
 @media (max-width:760px) { .m6-grid { grid-template-columns:1fr; } .hero6 { flex-wrap:wrap; } }
 .act7 { padding:18px 20px; }
+.wrap .act7 .log { max-height:520px; overflow:auto; }
 .act7 .a7-h h2 { font-size:15px; }
 .a7-h { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .a7-h h2 { font-size:17px; font-weight:600; letter-spacing:-.01em; }
@@ -1017,7 +1018,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
         ${xs.length > 10 ? `<button class="more" data-more="${a.id}">${S.open[a.id] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`
         : `<section class="card theme"><div class="th-h"><h3>Suggestions</h3><span class="chip ok">${ic("check")}All clear</span></div></section>`;
     }
-    return `${feedHTML}<div style="margin-top:16px">${liveTile((e) => e.agent === a.id, "Log", false, s.saved)}</div>`;
+    return `${feedHTML}<div style="margin-top:16px">${activitySection(a.id)}</div>`;
   }
   function config(a) {
     return `<div class="cfg"><section class="card"><div class="lbl">Guidelines</div><textarea class="field" data-guide="${a.id}">${esc(S.guides[a.id])}</textarea><p class="faint" style="font-size:12.5px;margin-top:6px">Plain words. The agent reads this before every suggestion.</p>
@@ -1029,15 +1030,17 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   }
 
   // ---------- activity (all agents)
-  function activitySection() {
-    const f = (e) => (S.actAgent === "all" || e.agent === S.actAgent) && (S.actWho === "all" || e.by === S.actWho);
-    const all = S.log.filter((e) => e.t >= LAST);
+  // One Log component for the overview and the agent pages. aid = scope it to one agent.
+  function activitySection(aid) {
+    const inScope = (e) => (aid ? e.agent === aid : S.actAgent === "all" || e.agent === S.actAgent);
+    const f = (e) => inScope(e) && (S.actWho === "all" || e.by === S.actWho);
+    const all = S.log.filter((e) => e.t >= LAST && (!aid || e.agent === aid));
     const autoN = all.filter((e) => e.by === "agent" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
     const youN = all.filter((e) => e.by === "you" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
-    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything your agents did since Sunday, live. ${autoN} on their own, ${youN} approved by you.</span><span class="sp"></span><span class="sv big">${ic("clock")}${fmtMin(S.log.filter(f).reduce((m, e) => m + savedOf(e), 0))} saved${S.actAgent !== "all" || S.actWho !== "all" ? " in this view" : " since Sunday"}</span></div>
-      <div class="filters a7-f"><button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>${Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.short}</button>`).join("")}
+    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything ${aid ? "this agent" : "your agents"} did since Sunday, live. ${autoN} on their own, ${youN} approved by you.</span><span class="sp"></span><span class="sv big">${ic("clock")}${fmtMin(S.log.filter(f).reduce((m, e) => m + savedOf(e), 0))} saved${(!aid && S.actAgent !== "all") || S.actWho !== "all" ? " in this view" : " since Sunday"}</span></div>
+      <div class="filters a7-f">${aid ? "" : `<button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>`}${aid ? "" : Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.short}</button>`).join("")}
         <span class="sp"></span><button class="${S.actWho === "all" ? "on" : ""}" data-actwho="all">Everyone</button><button class="${S.actWho === "agent" ? "on" : ""}" data-actwho="agent">${ic("bolt")}Auto</button><button class="${S.actWho === "you" ? "on" : ""}" data-actwho="you">You</button></div>
-      ${logHTML(f, { agent: true, quote: true, limit: 400 })}</section>`;
+      ${logHTML(f, { agent: !aid, quote: true, limit: 400 })}</section>`;
   }
   function activityPage() {
     const f = (e) => (S.actAgent === "all" || e.agent === S.actAgent) && (S.actWho === "all" || e.by === S.actWho);
