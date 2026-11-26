@@ -732,20 +732,15 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .theme.flat .th-h { padding:0 0 12px; }
 .theme.flat .more { border-top:0; }
 
-/* autonomy: selectable cards (as before) */
-.lvl { display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; padding:14px 16px; border-radius:var(--x-radius-inner, 12px); margin-top:8px; background:var(--ref-color-white); box-shadow:inset 0 0 0 1px var(--ref-color-grey-20); transition:box-shadow .15s, background .15s; }
-.lvl:hover { background:var(--ref-color-grey-05); }
-.lvl.on { box-shadow:inset 0 0 0 2px var(--x-ink, var(--ref-color-grey-150)); background:var(--ref-color-white); }
-.lvl .radio { width:18px; height:18px; border-radius:50%; box-shadow:inset 0 0 0 1.5px var(--ref-color-grey-60, #9aa0aa); flex:none; margin-top:2px; }
-.lvl.on .radio { box-shadow:inset 0 0 0 5px var(--x-ink, var(--ref-color-grey-150)); }
-.lvl b { display:block; font-size:15px; font-weight:700; color:var(--x-ink, var(--ref-color-grey-150)); }
-.lvl span span { display:block; margin-top:2px; font-size:14px; color:var(--ref-color-grey-80); line-height:1.45; }
+/* autonomy: DS radio cards */
+.lvl10 { width:100%; margin-top:8px; }
+.lvl10 .lvl10-d { display:block; margin-top:2px; font-size:var(--sys-text-style-body-size); color:var(--ref-color-grey-80); }
+.xt .lvl10.ap-radio-card.card { border-radius:var(--x-radius-inner); padding:14px 16px; }
 /* multi-select + bulk */
-.sc9-chk, .selall { display:inline-grid; place-items:center; width:20px; height:20px; flex:none; cursor:pointer; }
-.sc9-chk input, .selall input { width:18px; height:18px; margin:0; accent-color:var(--x-ink, var(--ref-color-grey-150)); cursor:pointer; }
+.sc9-chk.ap-checkbox-container, .selall.ap-checkbox-container { padding:4px; margin:-4px; flex:none; }
 .sc9-chk { opacity:.35; transition:opacity .15s; }
 .sc9:hover .sc9-chk, .sc9.sel .sc9-chk, .th-h.selecting ~ .sc9-list .sc9-chk { opacity:1; }
-.sc9.sel { border-color:var(--x-ink, var(--ref-color-grey-150)); box-shadow:0 0 0 1px var(--x-ink, var(--ref-color-grey-150)), var(--x-elevation-soft); }
+.sc9.sel { border-color:var(--ref-color-electric-blue-100); box-shadow:0 0 0 1px var(--ref-color-electric-blue-100), var(--x-elevation-soft); background:var(--ref-color-white); }
 .th-h .selall { margin-right:2px; }
 .bulkbar { align-items:center; }
 .bb-n { font-weight:700; color:var(--x-ink, var(--ref-color-grey-150)); margin-right:4px; }
@@ -1129,7 +1124,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
       : `<button class="ap-button primary ink" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
     return `<article class="sc9 ${x.fresh ? "fresh" : ""} ${opts.sel && S.sel.has(x.id) ? "sel" : ""}" id="it-${x.id}">
       <div class="sc9-msg">
-        <div class="sc9-who">${opts.sel ? `<label class="sc9-chk" title="Select"><input type="checkbox" data-sel="${x.id}" ${S.sel.has(x.id) ? "checked" : ""} aria-label="Select ${esc(x.author)}"></label>` : ""}<span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
+        <div class="sc9-who">${opts.sel ? `<label class="ap-checkbox-container sc9-chk" title="Select"><input type="checkbox" data-sel="${x.id}" ${S.sel.has(x.id) ? "checked" : ""} aria-label="Select ${esc(x.author)}"><i></i><span></span></label>` : ""}<span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
           <div class="sc9-id"><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${NETN[x.net] || x.net} · ${rel(x.at)}</span></div>
           <span class="sp"></span>${opts.theme ? `<span class="ap-status grey no-dot">${th.label}</span>` : ""}${x.fresh ? '<span class="ap-status blue">New</span>' : ""}</div>
         <p class="sc9-bubble">${esc(x.text)}</p>
@@ -1397,7 +1392,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
       const ids = xs.map((x) => x.id); [...S.sel].forEach((id) => { if (!ids.includes(id)) S.sel.delete(id); });
       const selN = ids.filter((id) => S.sel.has(id)).length, allOn = selN === ids.length;
       const selXs = xs.filter((x) => S.sel.has(x.id)), allReply = selXs.every((x) => TH[x.theme].act === "reply");
-      const selAll = `<label class="selall" title="${allOn ? "Clear selection" : "Select all"}"><input type="checkbox" data-selall="${a.id}" ${allOn ? "checked" : ""} ${selN && !allOn ? 'data-mixed="1"' : ""} aria-label="Select all suggestions"></label>`;
+      const selAll = `<label class="ap-checkbox-container selall ${selN && !allOn ? "indeterminate" : ""}" title="${allOn ? "Clear selection" : "Select all"}"><input type="checkbox" data-selall="${a.id}" ${allOn ? "checked" : ""} aria-label="Select all suggestions"><i></i><span></span></label>`;
       const headR = selN
         ? `<div class="acts bulkbar"><span class="bb-n">${selN} selected</span><button class="ap-button ghost grey" data-selclear="1">Clear</button><button class="ap-button stroked" data-brefuse="1">${ic("x")}Refuse ${selN}</button><button class="ap-button primary ink" data-bapprove="1">${ic(allReply ? "send" : "check")}${allReply ? "Send" : "Approve"} ${selN}</button></div>`
         : `<div class="acts">${agentBulk(a, xs)}</div>`;
@@ -1413,7 +1408,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
         <div class="lbl" style="margin-top:22px">Knows from</div>${a.sources.map((s) => `<div class="row" style="padding:5px 0;font-size:var(--sys-text-style-body-size)">${ic("book")}${esc(s)}</div>`).join("")}
         <div class="lbl" style="margin-top:22px">Learned from your feedback</div>${S.learned[a.id].length ? S.learned[a.id].slice(0, 8).map((l) => `<div class="row" style="align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:var(--sys-text-style-body-size)"><span class="chip">${esc(l.r)}</span><span class="muted">“${esc(l.q)}”</span></div>`).join("") : `<p class="muted" style="font-size:var(--sys-text-style-body-size)">Nothing yet. Each refusal and its reason shows up here and shapes the next suggestions.</p>`}</section>
       <section class="card"><div class="lbl">Autonomy</div>
-        ${[["off", "Off", "The agent doesn't read new messages. They stay untouched in your inbox."], ["suggest", "Suggest", "The agent prepares every action. You approve, edit or refuse."], ["auto", "Auto", "The agent acts on its own. Everything shows in the Log, with Undo."]].map(([k, l, d]) => `<button class="lvl ${S.mode[a.id] === k ? "on" : ""}" data-mode="${a.id}:${k}"><span class="radio"></span><span><b>${l}</b><span>${d}</span></span></button>`).join("")}
+        ${[["off", "Off", "The agent doesn't read new messages. They stay untouched in your inbox."], ["suggest", "Suggest", "The agent prepares every action. You approve, edit or refuse."], ["auto", "Auto", "The agent acts on its own. Everything shows in the Log, with Undo."]].map(([k, l, d]) => `<label class="ap-radio-card card lvl10"><input type="radio" name="mode-${a.id}" ${S.mode[a.id] === k ? "checked" : ""} data-mode="${a.id}:${k}"><div><div class="ap-radio-card-header"><span class="ap-radio-card-title">${l}</span></div><span class="lvl10-d">${d}</span></div></label>`).join("")}
         <p class="faint" style="font-size:var(--sys-text-style-caption-size);margin-top:10px">After a few approvals in a row, we suggest switching to Auto.</section></div>`;
   }
 
@@ -1474,7 +1469,6 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     $("#nudge").innerHTML = nudgeHTML();
     main.querySelectorAll("textarea.draft, textarea.draft92").forEach((t) => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; });
     typewriter();
-    main.querySelectorAll("[data-mixed]").forEach((c) => (c.indeterminate = true));
   }
   document.addEventListener("focusout", () => { if (deferred) setTimeout(() => { if (deferred) render(); }, 180); });
   let tt;

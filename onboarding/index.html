@@ -206,8 +206,7 @@ body.nonotes .note { display:none; }
 .choices { display:flex; gap:8px; flex-wrap:wrap; }
 .choice { padding:8px 12px; border-radius:999px; box-shadow:inset 0 0 0 1px var(--line); font-size:var(--sys-text-style-body-size); background:var(--ref-color-white); }
 .choice.on { box-shadow:inset 0 0 0 1px var(--ref-color-electric-blue-100); background:var(--ref-color-electric-blue-05); color:var(--ref-color-electric-blue-100); font-weight:700; }
-.chk { display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:var(--sys-text-style-body-size); }
-.chk input { margin-top:3px; accent-color:var(--ref-color-electric-blue-100); width:16px; height:16px; }
+.chk { align-items:flex-start !important; padding:8px 0; font-size:var(--sys-text-style-body-size); } .chk > i { margin-top:2px; }
 .chk small { display:block; color:var(--ink2); font-size:var(--sys-text-style-caption-size); }
 .preview { padding:12px 14px; border-radius:var(--sys-border-radius-lg); background:var(--soft); font-size:var(--sys-text-style-body-size); }
 .preview b { display:block; font-size:var(--sys-text-style-caption-size); color:var(--ink2); font-weight:400; margin-bottom:4px; }
@@ -635,15 +634,15 @@ body.nonotes .note { display:none; }
     const a = AGENTS[B.cur];
     let form = "";
     if (a.id === "engagement") form = `<div><div class="fld"><label>How do you sound with fans?</label></div><div class="choices" style="margin-top:8px">${["Warm", "Playful", "Professional"].map((x) => `<button class="choice ${B.tone === x ? "on" : ""}" data-tone="${x}">${x}</button>`).join("")}</div></div>
-      <label class="chk"><input type="checkbox" ${B.emoji ? "checked" : ""} data-emoji="1"><span>Use emojis<small>One at most per reply</small></span></label>
+      <label class="ap-checkbox-container chk"><input type="checkbox" ${B.emoji ? "checked" : ""} data-emoji="1"><i></i><span>Use emojis<small>One at most per reply</small></span></label>
       <div class="preview"><b>Preview</b>${B.tone === "Professional" ? "Thank you for your kind words, Maya." : B.tone === "Playful" ? "Your flat smells like a candle shop now? Mission accomplished, Maya" : "So happy it fills your home, Maya!"}${B.emoji ? " 🕯️" : ""}</div>`;
     else if (a.id === "moderation") form = `<div class="fld"><label>What should it hide?</label></div>
-      ${[["spam", "Spam and bots", "“Grow your followers”, fake giveaways"], ["scam", "Scams with links", "Deleted, not just hidden"], ["insult", "Insults and abuse", "Never real criticism of your products"], ["competitor", "Competitor promotions", "Comments pushing another brand"]].map(([k, l, d]) => `<label class="chk"><input type="checkbox" ${B.hide[k] ? "checked" : ""} data-hide="${k}"><span>${l}<small>${d}</small></span></label>`).join("")}`;
+      ${[["spam", "Spam and bots", "“Grow your followers”, fake giveaways"], ["scam", "Scams with links", "Deleted, not just hidden"], ["insult", "Insults and abuse", "Never real criticism of your products"], ["competitor", "Competitor promotions", "Comments pushing another brand"]].map(([k, l, d]) => `<label class="ap-checkbox-container chk"><input type="checkbox" ${B.hide[k] ? "checked" : ""} data-hide="${k}"><i></i><span>${l}<small>${d}</small></span></label>`).join("")}`;
     else if (a.id === "support") form = `<div class="fld"><label>Where should it find answers?</label><small>We found these pages on your website</small></div>
       ${["halden.co/faq", "halden.co/shipping", "halden.co/returns"].map((u) => `<div class="src">${ic("bookmark")}<span>${u}</span><span class="ap-status grey no-dot">Deduced, to confirm</span><span class="ok">✓ Read</span></div>`).join("")}
       <button class="ap-button stroked" style="align-self:flex-start" onclick="return false">${ic("plus")}Add a page or a document</button>`;
     else if (a.id === "lead") form = `<div class="fld"><label>Your shop</label><div style="display:flex;gap:8px;align-items:center"><input class="inp" value="${esc(B.shop)}" data-bshop="1"><span class="ap-status grey no-dot">Deduced from halden.co</span></div><small>24 products found. Lead-gen matches each question to the right product.</small></div>
-      <label class="chk"><input type="checkbox" ${B.dm ? "checked" : ""} data-bdm="1"><span>Send the product link by DM<small>Never in public</small></span></label>
+      <label class="ap-checkbox-container chk"><input type="checkbox" ${B.dm ? "checked" : ""} data-bdm="1"><i></i><span>Send the product link by DM<small>Never in public</small></span></label>
       <div class="fld"><label>A code for people ready to buy? <small>(optional)</small></label><input class="inp" placeholder="e.g. WELCOME10" value="${esc(B.promo)}" data-bpromo="1"></div>`;
     else form = `<div class="fld"><label>Where should business requests go?</label><div style="display:flex;gap:8px;align-items:center"><input class="inp" value="${esc(B.email)}" data-bemail="1"><span class="ap-status grey no-dot">Deduced, to confirm</span></div><small>Partnerships thanks them, asks one question to qualify, then moves to email.</small></div>`;
     const done = B.unlocked.includes(a.id);
