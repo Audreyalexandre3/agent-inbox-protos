@@ -585,7 +585,7 @@ body.nonotes .note { display:none; }
     else if (!t) {
       body = `<div class="card q"><h2 class="qh">All 5 agents are trained 🎉</h2><p style="color:var(--ink2);margin-top:6px">They will use your answers as their first guidelines. You can change them anytime in each agent's configuration.</p>
       ${S.sync.done ? "" : `<p style="margin-top:14px" class="ap-status green">Finishing the sync…</p>`}</div>
-      <div class="card kt"><div class="kt-ic">${ic("sparkles")}</div><div class="kt-t"><b>Keep training on your real messages</b><span>Your agents are already preparing answers to messages from ${esc(S.company)}'s inbox. Send, edit or refuse a few while the sync runs: each choice makes them sharper.</span></div>
+      <div class="card kt"><div class="kt-ic">${ic("sparkles")}</div><div class="kt-t"><b>Keep training on other messages analyzed</b><span>Your agents are already preparing answers to messages from ${esc(S.company)}'s inbox. Send, edit or refuse a few while the sync runs: each choice makes them sharper.</span></div>
         <button class="ap-button primary orange" data-real="1"><span>Train on real messages</span>${ic("arrow-right")}</button></div>`; }
     else {
       const a = agent(t.a), net = netOf(t.net);
