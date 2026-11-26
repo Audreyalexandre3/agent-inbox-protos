@@ -283,6 +283,28 @@ body.nonotes .note { display:none; }
 .fbx { margin-top:var(--ref-spacing-sm); }
 .qfoot { display:flex; justify-content:flex-end; margin-top:var(--ref-spacing-sm); }
 .agents .ap-status { flex:none; }
+
+/* training item: same card as the inbox suggestions (customer message / agent / actions) */
+.q9-top { display:flex; align-items:center; gap:8px; margin-bottom:var(--ref-spacing-xs, 10px); }
+.sc9 { background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:var(--sys-border-radius-lg); overflow:hidden; }
+.sc9-msg { padding:16px 20px 14px; }
+.sc9-who { display:flex; align-items:center; gap:10px; }
+.sc9-av { position:relative; width:36px; height:36px; border-radius:50%; background:var(--ref-color-grey-10); color:var(--ref-color-grey-100); display:grid; place-items:center; font-size:var(--sys-text-style-caption-size); font-weight:700; flex:none; }
+.sc9-av .nb9 { position:absolute; right:-4px; bottom:-3px; width:16px; height:16px; border-radius:50%; display:grid; place-items:center; font-size:8px; font-weight:700; color:var(--ref-color-white); box-shadow:0 0 0 2px var(--ref-color-white); }
+.sc9-id { display:flex; flex-direction:column; min-width:0; }
+.sc9-id b { font-size:var(--sys-text-style-body-size); font-weight:700; color:var(--ref-color-grey-100); }
+.sc9-id span { font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sc9-bubble { margin:10px 0 0 46px; padding:10px 14px; background:var(--ref-color-grey-05); border-radius:4px var(--sys-border-radius-lg) var(--sys-border-radius-lg) var(--sys-border-radius-lg); font-size:var(--sys-text-style-body-size); line-height:1.5; color:var(--ref-color-grey-100); width:fit-content; max-width:calc(100% - 46px); }
+.sc9-ai { margin:0 12px; padding:12px 14px 14px; border-radius:var(--sys-border-radius-lg); background:var(--ref-color-electric-blue-05); box-shadow:inset 3px 0 0 var(--ag); }
+.sc9-aih { display:flex; align-items:center; gap:8px; font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); }
+.sc9-aih b { color:var(--ref-color-grey-100); font-weight:700; font-size:var(--sys-text-style-body-size); }
+.sc9-agav { width:20px; height:20px; border-radius:var(--sys-border-radius-md); display:grid; place-items:center; color:var(--ref-color-white); flex:none; font-size:11px; }
+.sc9-agav i { color:var(--ref-color-white) !important; }
+.sc9-ai .opts { margin-top:10px; }
+.sc9-why { display:flex; align-items:flex-start; gap:6px; margin-top:10px; font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-100); }
+.sc9-why i { margin-top:2px; color:var(--ref-color-electric-blue-100); }
+.sc9-act { display:flex; align-items:center; gap:var(--ref-spacing-xxs, 6px); margin-top:12px; padding:10px 12px 10px 20px; border-top:1px solid var(--ref-color-grey-20); }
+.sc9-act .ap-button[disabled] { opacity:.45; pointer-events:none; }
 </style>
 </head>
 <body>
@@ -481,14 +503,24 @@ body.nonotes .note { display:none; }
       ${S.sync.done ? "" : `<p style="margin-top:14px" class="ap-status green">Finishing the sync…</p>`}</div>`;
     else {
       const a = agent(t.a), net = netOf(t.net);
-      body = `<div class="card q"><div style="display:flex;align-items:center;gap:8px"><span class="ap-status blue">Training ${a.n}</span><span class="ap-status grey no-dot">${A.i + 1} of ${TRAIN.length}</span><span style="flex:1"></span><span class="cap">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>
-        <div class="ctx" style="margin-top:14px"><span class="ph"></span><div>On your post<br><b>${esc(POST)}</b></div></div>
-        <div class="msg"><div class="who"><span class="nchip" style="background:${net.c};width:20px;height:20px">${net.s}</span><b>${esc(t.who)}</b> commented</div><p>${esc(t.text)}</p></div>
-        <div class="qq">What would you do?</div>
-        <div class="opts">${t.opts.map(([icn, l, d], k) => { const editable = /^“/.test(d), on = A.picked === k;
+      const ini = t.who.replace(/[^A-Za-zÀ-ÿ ._]/g, "").split(/[ ._]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
+      const needText = A.picked != null && (A.picked === "other" || /^“/.test((t.opts[A.picked] || [])[2] || "")) && !A.text.trim();
+      body = `<div class="q9-top"><span class="ap-status blue">Training ${a.n}</span><span class="ap-status grey no-dot">${A.i + 1} of ${TRAIN.length}</span><span style="flex:1"></span><span class="cap">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>
+        <article class="sc9">
+          <div class="sc9-msg">
+            <div class="sc9-who"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span>
+              <div class="sc9-id"><b>${esc(t.who)}</b><span>Commented on your post · ${esc(POST)}</span></div></div>
+            <p class="sc9-bubble">${esc(t.text)}</p>
+          </div>
+          <div class="sc9-ai" style="--ag:${a.c}">
+            <div class="sc9-aih"><span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b><span>What would you do with messages like this?</span></div>
+            <div class="opts">${t.opts.map(([icn, l, d], k) => { const editable = /^“/.test(d), on = A.picked === k;
           return `<div class="ap-radio-card card" data-pick="${k}" role="radio" aria-checked="${on}" tabindex="0"><input type="radio" name="aopt" tabindex="-1" ${on ? "checked" : ""}><div><div class="ap-radio-card-header">${ic(icn)}<span class="ap-radio-card-title">${l}</span></div>${on && editable ? `<span class="editwrap"><textarea class="ap-textarea-field aedit" rows="2" data-atext="1" aria-label="Edit the reply">${esc(A.text)}</textarea><small>${ic("pen")}Edit the reply as you would write it</small></span>` : `<span>${esc(d)}</span>${editable ? `<span class="hint">${ic("pen")}Editable</span>` : ""}`}</div></div>`; }).join("")}
-          <div class="ap-radio-card card" data-pick="other" role="radio" aria-checked="${A.picked === "other"}" tabindex="0"><input type="radio" name="aopt" tabindex="-1" ${A.picked === "other" ? "checked" : ""}><div><div class="ap-radio-card-header">${ic("pen")}<span class="ap-radio-card-title">Other</span></div>${A.picked === "other" ? `<span class="editwrap"><textarea class="ap-textarea-field aedit" rows="2" data-atext="1" placeholder="Write your reply, or tell ${a.n} what to do. Ex: “Reply with a heart and ask them to tag a friend”">${esc(A.text)}</textarea><small>${ic("sparkles")}${a.n} turns this into a rule for messages like this one</small></span>` : `<span>Write your own reply or instruction</span>`}</div></div></div>
-        ${A.picked != null ? `<div class="ap-infobox success fbx"><i class="ap-icon-sparkles"></i><div class="ap-infobox-content"><div class="ap-infobox-texts"><span class="ap-infobox-message" id="afb">${afb(a)}</span></div></div></div><div class="qfoot"><button class="ap-button primary orange" data-anext="1" ${(A.picked === "other" || /^“/.test((t.opts[A.picked] || [])[2] || "")) && !A.text.trim() ? "disabled" : ""}><span>Next</span>${ic("arrow-right")}</button></div>` : ""}</div>`;
+              <div class="ap-radio-card card" data-pick="other" role="radio" aria-checked="${A.picked === "other"}" tabindex="0"><input type="radio" name="aopt" tabindex="-1" ${A.picked === "other" ? "checked" : ""}><div><div class="ap-radio-card-header">${ic("pen")}<span class="ap-radio-card-title">Other</span></div>${A.picked === "other" ? `<span class="editwrap"><textarea class="ap-textarea-field aedit" rows="2" data-atext="1" placeholder="Write your reply, or tell ${a.n} what to do. Ex: “Reply with a heart and ask them to tag a friend”">${esc(A.text)}</textarea><small>${ic("sparkles")}${a.n} turns this into a rule for messages like this one</small></span>` : `<span>Write your own reply or instruction</span>`}</div></div></div>
+            ${A.picked != null ? `<div class="sc9-why">${ic("sparkles")}<span id="afb">${afb(a)}</span></div>` : ""}
+          </div>
+          <div class="sc9-act"><span class="cap">${A.picked == null ? "Pick an answer to continue" : "Your answer becomes a first guideline"}</span><span style="flex:1"></span><button class="ap-button primary orange" data-anext="1" ${A.picked == null || needText ? "disabled" : ""}><span>Next</span>${ic("arrow-right")}</button></div>
+        </article>`;
     }
     return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>Answer a few typical messages. Each answer teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
       ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}

@@ -657,6 +657,34 @@ body { font-family:var(--sans); color:var(--ref-color-grey-100); background:var(
 .menu { border-radius:var(--sys-border-radius-lg); }
 .nudge7 { border-radius:var(--app-radius-card); }
 .protobar { background:var(--ref-color-grey-150); }
+
+/* suggestion card: customer message / agent suggestion / actions */
+.sc9-list { display:flex; flex-direction:column; gap:12px; padding:4px 0 8px; }
+.sc9 { background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:var(--sys-border-radius-lg); overflow:hidden; transition:opacity .3s, box-shadow .2s; }
+.sc9:hover { box-shadow:var(--sys-elevation-floating, 0 2px 8px rgba(0,0,0,.06)); }
+.sc9.fresh { border-color:var(--ref-color-electric-blue-40, #9fb6ff); }
+.sc9-msg { padding:16px 20px 14px; }
+.sc9-who { display:flex; align-items:center; gap:10px; }
+.sc9-av { position:relative; width:36px; height:36px; border-radius:50%; background:var(--ref-color-grey-10, #eef0f3); color:var(--ref-color-grey-100); display:grid; place-items:center; font-size:var(--sys-text-style-caption-size); font-weight:700; flex:none; }
+.sc9-av .net { position:absolute; right:-4px; bottom:-3px; width:16px; height:16px; font-size:8px; border-radius:50%; box-shadow:0 0 0 2px var(--ref-color-white); }
+.net.IG { background:var(--ref-color-instagram, #d62976); } .net.FB { background:var(--ref-color-facebook, #1877f2); } .net.TT { background:var(--ref-color-grey-150, #111); }
+.sc9-id { display:flex; flex-direction:column; min-width:0; }
+.sc9-id b { font-size:var(--sys-text-style-body-size); font-weight:700; color:var(--ref-color-grey-100); }
+.sc9-id span { font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); }
+.sc9-bubble { margin:10px 0 0 46px; padding:10px 14px; background:var(--ref-color-grey-05); border-radius:4px var(--sys-border-radius-lg) var(--sys-border-radius-lg) var(--sys-border-radius-lg); font-size:var(--sys-text-style-body-size); line-height:1.5; color:var(--ref-color-grey-100); width:fit-content; max-width:calc(100% - 46px); }
+.sc9-ai { margin:0 12px; padding:12px 14px 14px; border-radius:var(--sys-border-radius-lg); background:var(--ref-color-electric-blue-05); box-shadow:inset 3px 0 0 var(--ag); }
+.sc9-aih { display:flex; align-items:center; gap:8px; font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); }
+.sc9-aih b { color:var(--ref-color-grey-100); font-weight:700; font-size:var(--sys-text-style-body-size); }
+.sc9-conf { display:inline-flex; align-items:center; gap:6px; padding:2px 8px; border-radius:var(--sys-border-radius-md); background:var(--ref-color-white); font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-100); white-space:nowrap; }
+.sc9-conf .conf { width:36px; height:4px; border-radius:2px; background:var(--ref-color-grey-20); overflow:hidden; display:inline-block; } .sc9-conf .conf > span { display:block; height:100%; border-radius:2px; }
+.sc9-conf.hi .conf > span { background:var(--ref-color-green-100, #2fa36b); }
+.sc9-conf.lo .conf > span { background:var(--ref-color-grey-60, #9aa0aa); }
+.sc9-ai .i9-in { margin-top:10px; background:var(--ref-color-white); }
+.sc9-why { display:flex; align-items:flex-start; gap:6px; margin-top:10px; font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); }
+.sc9-why svg { width:13px; height:13px; margin-top:2px; flex:none; }
+.sc9-why b { color:var(--ref-color-grey-100); font-weight:700; }
+.sc9-act { display:flex; align-items:center; gap:var(--ref-spacing-xxs, 6px); margin-top:12px; padding:10px 12px; border-top:1px solid var(--ref-color-grey-20); }
+.sc9-act .ap-button[disabled] { opacity:.45; pointer-events:none; }
 </style>
 </head>
 <body>
@@ -961,25 +989,38 @@ body { font-family:var(--sans); color:var(--ref-color-grey-100); background:var(
       <div class="saved"><div class="orb">${ic("spark")}</div><div><b>~${savedMin} min saved since Sunday</b><span>Everything your agents did on their own, and what you approved</span></div></div>
       ${logHTML(filter, { agent: agentChip, quote: !lim, fade: agentChip && !lim, limit: lim || (agentChip ? 9 : 40) })}</section>`;
   }
+  const NETN = { IG: "Instagram", FB: "Facebook", TT: "TikTok", LI: "LinkedIn", X: "X" };
+  const initials = (n) => (n || "?").replace(/[^A-Za-zÀ-ÿ ]/g, "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
   function itemRow(x, first, opts = {}) {
     const th = TH[x.theme], a = AGENTS[th.agent];
     const alt = th.bulk.find((b) => b.a !== th.act && b.a !== "reply");
     const reply = th.act === "reply";
     const why = x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why;
-    const what = reply ? "suggests this reply" : th.act === "like" ? "suggests liking this comment" : th.act === "delete" ? "suggests deleting this comment" : "suggests hiding this comment";
-    const primary = reply ? `<button class="ap-button secondary orange" data-do="${x.id}:reply">${ic("send")}Send</button>` : `<button class="ap-button secondary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
-    return `<div class="it it9 ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
-      <div class="i9-who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span>${opts.theme ? `<span class="ap-status grey no-dot">${th.label}</span>` : ""}${x.fresh ? '<span class="ap-status blue">New</span>' : ""}</div>
-      <p class="i9-msg">${esc(x.text)}</p>
-      <div class="i9-s">
-        <div class="i9-sh"><span class="i9-av" style="background:${a.dot}">${ic(a.icon)}</span><b>${a.short}</b><span>${what}</span><span class="sp"></span><span class="i9-conf"><span class="conf"><span style="width:${Math.round(x.conf * 100)}%"></span></span>${Math.round(x.conf * 100)}% sure</span></div>
-        ${reply ? `<div class="ap-textarea-field autoresize i9-in"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="Write a reply…">${esc(draftOf(x))}</textarea></div>
-          ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}` : ""}
-        <div class="i9-why">${ic("spark")}${esc(why)}</div>
+    const what = reply ? "Suggested reply" : th.act === "like" ? "Suggests liking this comment" : th.act === "delete" ? "Suggests deleting this comment" : "Suggests hiding this comment";
+    const pct = Math.round(x.conf * 100), ok = sure(x);
+    const draft = reply ? draftOf(x) : "";
+    const empty = reply && !String(draft).trim();
+    const primary = reply
+      ? `<button class="ap-button secondary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Send reply</button>`
+      : `<button class="ap-button secondary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
+    return `<article class="sc9 ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
+      <div class="sc9-msg">
+        <div class="sc9-who"><span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
+          <div class="sc9-id"><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${NETN[x.net] || x.net} · ${rel(x.at)}</span></div>
+          <span class="sp"></span>${opts.theme ? `<span class="ap-status grey no-dot">${th.label}</span>` : ""}${x.fresh ? '<span class="ap-status blue">New</span>' : ""}</div>
+        <p class="sc9-bubble">${esc(x.text)}</p>
       </div>
-      <div class="i9-a">${alt ? `<button class="ap-button ghost grey" data-do="${x.id}:${alt.a}">${ACT[alt.a].w} instead</button>` : ""}<span class="sp"></span><button class="ap-button stroked" data-dismiss="${x.id}">${ic("x")}Refuse</button>${primary}</div>
-    </div>`;
+      <div class="sc9-ai" style="--ag:${a.dot}">
+        <div class="sc9-aih"><span class="i9-av" style="background:${a.dot}">${ic(a.icon)}</span><b>${a.short} agent</b><span class="sc9-what">${what}</span><span class="sp"></span>
+          <span class="sc9-conf ${ok ? "hi" : "lo"}" title="How sure the agent is"><span class="conf"><span style="width:${pct}%"></span></span>${pct}% sure</span></div>
+        ${reply ? `<div class="ap-textarea-field autoresize i9-in"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : "Write a reply…"}">${esc(draft)}</textarea></div>
+          ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}` : ""}
+        <div class="sc9-why">${ic("spark")}<span><b>Why:</b> ${esc(why)}</span></div>
+      </div>
+      <div class="sc9-act">${alt ? `<button class="ap-button ghost grey" data-do="${x.id}:${alt.a}">${ic(ACT[alt.a].ic)}${ACT[alt.a].w} instead</button>` : ""}<span class="sp"></span><button class="ap-button ghost grey" data-dismiss="${x.id}">${ic("x")}Refuse</button>${primary}</div>
+    </article>`;
   }
+
 
   // ---------- overview
   // ---------- V5 overview: shortcuts on the left, simple counter cards
@@ -1136,7 +1177,7 @@ body { font-family:var(--sans); color:var(--ref-color-grey-100); background:var(
   function needsOverview() {
     const nd = needs();
     if (!nd.length) return `<section class="needs" style="padding:14px 18px"><div class="row" style="color:var(--green);font-weight:600">${ic("check")}Nothing needs you right now</div></section>`;
-    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents aren't sure about these. Your call.</span></div>${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true })).join("")}</section>`;
+    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents aren't sure about these. Your call.</span></div><div class="sc9-list">${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true })).join("")}</div></section>`;
   }
   function bucket(t) {
     if (t === "mod") return modBucket();
@@ -1155,7 +1196,7 @@ body { font-family:var(--sans); color:var(--ref-color-grey-100); background:var(
     const sub = th.act === "reply" ? `${s.length} ready to send · ${xs.length - s.length} to read first` : t === "scam" ? "Links to scams. Deleting removes them for everyone." : t === "positive" ? "Happy customers to like" : "To clean up";
     const shown = isLead ? xs : xs.slice(0, 3);
     return `<section class="card bk ${isLead ? "lead" : ""}"><div class="bk-h"><div class="bk-t"><span class="bk-c">${xs.length}</span><h3>${th.label}</h3>${chip}${xs.some((x) => x.fresh) ? '<span class="ap-status blue">New</span>' : ""}<span class="muted" style="font-size:13px">${sub}</span></div><div class="bk-a">${ctas}${open}${cog}</div></div>
-      <div class="bk-items">${shown.map((x, i) => itemRow(x, i === 0)).join("")}</div>
+      <div class="bk-items sc9-list">${shown.map((x, i) => itemRow(x, i === 0)).join("")}</div>
       ${xs.length > shown.length ? `<button class="more" data-go="${a.id}" data-theme="${t}">See the ${xs.length - shown.length} others in the feed ${ic("right")}</button>` : ""}</section>`;
   }
   function modBucket() {
@@ -1208,7 +1249,7 @@ body { font-family:var(--sans); color:var(--ref-color-grey-100); background:var(
       const xs = pend((x) => agentOf(x) === a.id).sort((p, q) => q.at - p.at);
       const shown = S.open[a.id] ? xs : xs.slice(0, 10);
       feedHTML = xs.length ? `<section class="card theme"><div class="th-h"><h3>Suggestions</h3><span class="n">${xs.length}</span>${xs.some((x) => x.fresh) ? '<span class="ap-status blue">New</span>' : ""}<div class="acts">${agentBulk(a, xs)}</div></div>
-        ${shown.map((x, i) => itemRow(x, i === 0, { theme: a.themes.length > 1 })).join("")}
+        <div class="sc9-list">${shown.map((x, i) => itemRow(x, i === 0, { theme: a.themes.length > 1 })).join("")}</div>
         ${xs.length > 10 ? `<button class="more" data-more="${a.id}">${S.open[a.id] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`
         : `<section class="card theme"><div class="th-h"><h3>Suggestions</h3><span class="ap-status green">All clear</span></div></section>`;
     }
@@ -1289,7 +1330,7 @@ body { font-family:var(--sans); color:var(--ref-color-grey-100); background:var(
   }
   document.addEventListener("input", (e) => {
     const t = e.target;
-    if (t.dataset.draft) { S.edits[t.dataset.draft] = t.value; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+    if (t.dataset.draft) { S.edits[t.dataset.draft] = t.value; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; const b = document.querySelector(`[data-send="${t.dataset.draft}"]`); if (b) b.disabled = !t.value.trim(); }
     if (t.dataset.guide) S.guides[t.dataset.guide] = t.value;
   });
   document.addEventListener("click", (e) => {
