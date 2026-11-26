@@ -776,6 +776,25 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
 .theme.flat { background:none; border:0; box-shadow:none; padding:0; }
 .theme.flat .th-h { padding:0 0 12px; }
 .theme.flat .more { border-top:0; }
+
+/* autonomy: selectable cards (as before) */
+.lvl { display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; padding:14px 16px; border-radius:var(--x-radius-inner, 12px); margin-top:8px; background:var(--ref-color-white); box-shadow:inset 0 0 0 1px var(--ref-color-grey-20); transition:box-shadow .15s, background .15s; }
+.lvl:hover { background:var(--ref-color-grey-05); }
+.lvl.on { box-shadow:inset 0 0 0 2px var(--x-ink, var(--ref-color-grey-150)); background:var(--ref-color-white); }
+.lvl .radio { width:18px; height:18px; border-radius:50%; box-shadow:inset 0 0 0 1.5px var(--ref-color-grey-60, #9aa0aa); flex:none; margin-top:2px; }
+.lvl.on .radio { box-shadow:inset 0 0 0 5px var(--x-ink, var(--ref-color-grey-150)); }
+.lvl b { display:block; font-size:15px; font-weight:700; color:var(--x-ink, var(--ref-color-grey-150)); }
+.lvl span span { display:block; margin-top:2px; font-size:14px; color:var(--ref-color-grey-80); line-height:1.45; }
+/* multi-select + bulk */
+.sc9-chk, .selall { display:inline-grid; place-items:center; width:20px; height:20px; flex:none; cursor:pointer; }
+.sc9-chk input, .selall input { width:18px; height:18px; margin:0; accent-color:var(--x-ink, var(--ref-color-grey-150)); cursor:pointer; }
+.sc9-chk { opacity:.35; transition:opacity .15s; }
+.sc9:hover .sc9-chk, .sc9.sel .sc9-chk, .th-h.selecting ~ .sc9-list .sc9-chk { opacity:1; }
+.sc9.sel { border-color:var(--x-ink, var(--ref-color-grey-150)); box-shadow:0 0 0 1px var(--x-ink, var(--ref-color-grey-150)), var(--x-elevation-soft); }
+.th-h .selall { margin-right:2px; }
+.bulkbar { align-items:center; }
+.bb-n { font-weight:700; color:var(--x-ink, var(--ref-color-grey-150)); margin-right:4px; }
+.theme.flat .th-h { position:sticky; top:48px; z-index:5; background:var(--ref-color-grey-bg); padding-top:12px; }
 </style>
 </head>
 <body>
@@ -947,6 +966,33 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
   }
 
   // ---------- actions
+  S.sel = new Set();
+  // bulk on a selection: approve = each item's own action (replies with no text are skipped), refuse = one reason for all
+  function bulkApprove() {
+    const xs = [...S.sel].map((id) => items.find((x) => x.id === id)).filter((x) => x && x.status === "pending");
+    const skipped = xs.filter((x) => TH[x.theme].act === "reply" && !draftOf(x).trim());
+    const ok = xs.filter((x) => !skipped.includes(x));
+    const byTheme = {}; ok.forEach((x) => (byTheme[x.theme] = byTheme[x.theme] || []).push(x.id));
+    const evs = Object.entries(byTheme).map(([t, ids]) => act(ids, TH[t].act)).filter(Boolean);
+    S.sel = new Set(skipped.map((x) => x.id)); render();
+    const n = evs.reduce((m, e) => m + e.count, 0);
+    toast(`Done for ${n} suggestion${n > 1 ? "s" : ""}${skipped.length ? ` · ${skipped.length} left selected: write a reply first` : ""}`, () => evs.forEach((e) => undo(e.lid)));
+  }
+  function bulkDismiss(why) {
+    const xs = [...S.sel].map((id) => items.find((x) => x.id === id)).filter((x) => x && x.status === "pending"); if (!xs.length) return;
+    const r = REASONS[why] || "Not right", ag = agentOf(xs[0]);
+    xs.forEach((x) => { x.status = "dismissed"; S.streak[agentOf(x)] = 0; S.learned[agentOf(x)].unshift({ r, q: x.text, t: Date.now() }); });
+    const e = log({ agent: ag, icon: "x", text: `Refused ${xs.length} suggestions · ${r}`, q: "", by: "you", count: 0, ids: xs.map((x) => x.id) });
+    S.sel = new Set(); render();
+    toast(`Refused ${xs.length}: ${r.toLowerCase()}. The ${AGENTS[ag].name} agent learns from it.`, () => { undo(e.lid); xs.forEach(() => S.learned[ag].shift()); });
+  }
+  function openBulkReasons(btn) {
+    closeMenu(); const m = document.createElement("div"); m.className = "menu";
+    m.innerHTML = `<p>Why are these not right?</p>${Object.entries(REASONS).map(([k, v]) => `<button data-breason="${k}">${ic(k === "theme" ? "tag" : k === "noact" ? "x" : k === "info" ? "alert" : k === "tone" ? "msg" : "pen")}${v}</button>`).join("")}`;
+    document.body.appendChild(m); btn.classList.add("on"); m._btn = btn;
+    const rr = btn.getBoundingClientRect();
+    m.style.top = (rr.bottom + 6) + "px"; m.style.left = Math.max(8, rr.right - m.offsetWidth) + "px";
+  }
   function act(ids, a, by = "you") {
     const xs = ids.map((id) => items.find((x) => x.id === id)).filter((x) => x && x.status === "pending");
     if (!xs.length) return null;
@@ -1094,9 +1140,9 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     const primary = reply
       ? `<button class="ap-button primary ink" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Send reply</button>`
       : `<button class="ap-button primary ink" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
-    return `<article class="sc9 ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
+    return `<article class="sc9 ${x.fresh ? "fresh" : ""} ${opts.sel && S.sel.has(x.id) ? "sel" : ""}" id="it-${x.id}">
       <div class="sc9-msg">
-        <div class="sc9-who"><span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
+        <div class="sc9-who">${opts.sel ? `<label class="sc9-chk" title="Select"><input type="checkbox" data-sel="${x.id}" ${S.sel.has(x.id) ? "checked" : ""} aria-label="Select ${esc(x.author)}"></label>` : ""}<span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
           <div class="sc9-id"><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${NETN[x.net] || x.net} · ${rel(x.at)}</span></div>
           <span class="sp"></span>${opts.theme ? `<span class="ap-status grey no-dot">${th.label}</span>` : ""}${x.fresh ? '<span class="ap-status blue">New</span>' : ""}</div>
         <p class="sc9-bubble">${esc(x.text)}</p>
@@ -1339,8 +1385,15 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     else {
       const xs = pend((x) => agentOf(x) === a.id).sort((p, q) => q.at - p.at);
       const shown = S.open[a.id] ? xs : xs.slice(0, 10);
-      feedHTML = xs.length ? `<section class="theme flat"><div class="th-h"><h3>Suggestions</h3><span class="n">${xs.length}</span>${xs.some((x) => x.fresh) ? '<span class="ap-status blue">New</span>' : ""}<div class="acts">${agentBulk(a, xs)}</div></div>
-        <div class="sc9-list">${shown.map((x, i) => itemRow(x, i === 0, { theme: a.themes.length > 1 })).join("")}</div>
+      const ids = xs.map((x) => x.id); [...S.sel].forEach((id) => { if (!ids.includes(id)) S.sel.delete(id); });
+      const selN = ids.filter((id) => S.sel.has(id)).length, allOn = selN === ids.length;
+      const selXs = xs.filter((x) => S.sel.has(x.id)), allReply = selXs.every((x) => TH[x.theme].act === "reply");
+      const selAll = `<label class="selall" title="${allOn ? "Clear selection" : "Select all"}"><input type="checkbox" data-selall="${a.id}" ${allOn ? "checked" : ""} ${selN && !allOn ? 'data-mixed="1"' : ""} aria-label="Select all suggestions"></label>`;
+      const headR = selN
+        ? `<div class="acts bulkbar"><span class="bb-n">${selN} selected</span><button class="ap-button ghost grey" data-selclear="1">Clear</button><button class="ap-button stroked" data-brefuse="1">${ic("x")}Refuse ${selN}</button><button class="ap-button primary ink" data-bapprove="1">${ic(allReply ? "send" : "check")}${allReply ? "Send" : "Approve"} ${selN}</button></div>`
+        : `<div class="acts">${agentBulk(a, xs)}</div>`;
+      feedHTML = xs.length ? `<section class="theme flat"><div class="th-h ${selN ? "selecting" : ""}">${selAll}<h3>Suggestions</h3><span class="n">${xs.length}</span>${xs.some((x) => x.fresh) ? '<span class="ap-status blue">New</span>' : ""}${headR}</div>
+        <div class="sc9-list">${shown.map((x, i) => itemRow(x, i === 0, { theme: a.themes.length > 1, sel: true })).join("")}</div>
         ${xs.length > 10 ? `<button class="more" data-more="${a.id}">${S.open[a.id] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`
         : `<section class="card theme"><div class="th-h"><h3>Suggestions</h3><span class="ap-status green">All clear</span></div></section>`;
     }
@@ -1351,7 +1404,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
         <div class="lbl" style="margin-top:22px">Knows from</div>${a.sources.map((s) => `<div class="row" style="padding:5px 0;font-size:14px">${ic("book")}${esc(s)}</div>`).join("")}
         <div class="lbl" style="margin-top:22px">Learned from your feedback</div>${S.learned[a.id].length ? S.learned[a.id].slice(0, 8).map((l) => `<div class="row" style="align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px"><span class="chip">${esc(l.r)}</span><span class="muted">“${esc(l.q)}”</span></div>`).join("") : `<p class="muted" style="font-size:13.5px">Nothing yet. Each refusal and its reason shows up here and shapes the next suggestions.</p>`}</section>
       <section class="card"><div class="lbl">Autonomy</div>
-        ${[["off", "Off", "The agent doesn't read new messages. They stay untouched in your inbox."], ["suggest", "Suggest", "The agent prepares every action. You approve, edit or refuse."], ["auto", "Auto", "The agent acts on its own. Everything shows in the Log, with Undo."]].map(([k, l, d]) => `<label class="ap-radio-container lvl92"><input type="radio" name="mode-${a.id}" ${S.mode[a.id] === k ? "checked" : ""} data-mode="${a.id}:${k}"><span><b>${l}</b><br><small>${d}</small></span></label>`).join("")}
+        ${[["off", "Off", "The agent doesn't read new messages. They stay untouched in your inbox."], ["suggest", "Suggest", "The agent prepares every action. You approve, edit or refuse."], ["auto", "Auto", "The agent acts on its own. Everything shows in the Log, with Undo."]].map(([k, l, d]) => `<button class="lvl ${S.mode[a.id] === k ? "on" : ""}" data-mode="${a.id}:${k}"><span class="radio"></span><span><b>${l}</b><span>${d}</span></span></button>`).join("")}
         <p class="faint" style="font-size:12.5px;margin-top:10px">After a few approvals in a row, we suggest switching to Auto.</section></div>`;
   }
 
@@ -1412,6 +1465,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     $("#nudge").innerHTML = nudgeHTML();
     main.querySelectorAll("textarea.draft, textarea.draft92").forEach((t) => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; });
     typewriter();
+    main.querySelectorAll("[data-mixed]").forEach((c) => (c.indeterminate = true));
   }
   document.addEventListener("focusout", () => { if (deferred) setTimeout(() => { if (deferred) render(); }, 180); });
   let tt;
@@ -1430,6 +1484,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     const inMenu = e.target.closest(".menu"); closeMenu();
     if ((el = g("actagent"))) { S.actAgent = el.dataset.actagent; render(); return; }
     if ((el = g("actwho"))) { S.actWho = el.dataset.actwho; render(); return; }
+    if ((el = g("breason")) && inMenu) { bulkDismiss(el.dataset.breason); return; }
     if ((el = g("reason")) && inMenu) { const [id, k] = el.dataset.reason.split(":"); dismiss(id, k); return; }
     if (inMenu && !e.target.closest("button[data-undo], button[data-go]")) return;
     if ((el = g("tundo"))) { const f = $("#toast")._u; $("#toast").classList.remove("on"); f && f(); return; }
@@ -1456,6 +1511,11 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
       if (a === "reply" && !draftOf(x).trim()) { toast("Write a reply first"); return; }
       const ev = act([id], a); render(); if (ev) toast(`${ACT[a].past} ${x.author}`, () => undo(ev.lid)); return;
     }
+    if ((el = g("sel"))) { const id = el.dataset.sel; S.sel.has(id) ? S.sel.delete(id) : S.sel.add(id); render(); return; }
+    if ((el = g("selall"))) { const xs = pend((x) => agentOf(x) === el.dataset.selall).map((x) => x.id); const all = xs.every((id) => S.sel.has(id)); S.sel = all ? new Set() : new Set(xs); render(); return; }
+    if ((el = g("selclear"))) { S.sel = new Set(); render(); return; }
+    if ((el = g("bapprove"))) { bulkApprove(); return; }
+    if ((el = g("brefuse"))) { const open = document.querySelector(".menu"); if (!(open && open._btn === el)) openBulkReasons(el); return; }
     if ((el = g("bulk"))) { const [a, ids] = el.dataset.bulk.split("|"); const ev = act(ids.split(","), a); render(); if (ev) toast(ev.text, () => undo(ev.lid)); return; }
     if ((el = g("clean"))) { const evs = MOD.map((t) => { const ids = feed(t).map((x) => x.id); return ids.length ? act(ids, TH[t].act) : null; }).filter(Boolean); render(); const n = evs.reduce((m, e) => m + e.count, 0); toast(`Cleaned up ${n} comments: spam and insults hidden, scams deleted`, () => evs.forEach((e) => undo(e.lid))); return; }
     if ((el = g("dismiss"))) { const open = document.querySelector(".menu"); if (!(open && open._btn === el)) openReasons(el, el.dataset.dismiss); return; }
