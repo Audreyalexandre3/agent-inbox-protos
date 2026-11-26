@@ -389,6 +389,19 @@ body.nonotes .note { display:none; }
     { a: "lead", who: "Tom Becker", net: "FB", text: "does the discovery set ship to Canada?", opts: [["reply", "Reply and send the product link", "“Yes, in 5 to 7 days. Link to the set in your DMs.”"], ["single-chat-bubble", "Reply in DM only", "Keep the conversation private"], ["close", "I'll answer myself", "Always ask me for buyers"]] },
     { a: "partnerships", who: "Maison Lior Hotel", net: "IG", text: "We'd love your candles in our 24 rooms. Hotel pricing?", opts: [["reply", "Qualify and move to email", "“We'd love that! What's the best email for our hospitality offer?”"], ["user", "Forward to my team", "Send it to hello@halden.co"], ["close", "I'll answer myself", "Always ask me for partnerships"]] }
   ];
+  // the agent's first suggestion on each training message (same card as the inbox)
+  const SUG = [
+    { f: "642", act: "reply", what: "Suggests liking and replying", draft: "So happy it fills your home, Maya! 🕯️", conf: 88, why: "Positive comment from a returning customer." },
+    { f: "1.1K", act: "like", conf: 90, why: "Positive comment, a friend is tagged." },
+    { f: "37", act: "hide", conf: 94, why: "Spam." },
+    { f: "18", act: "delete", conf: 96, why: "Scam with a link." },
+    { f: "905", act: "reply", draft: "UK orders arrive in 3 to 5 working days, tracking by email.", conf: 92, why: "Shipping page found on your website." },
+    { f: "310", act: "reply", draft: "Sorry about that! Trim the wick to 5 mm, DM us if it's still weak.", conf: 68, why: "Complaint. Tip found in your care guide, check the tone." },
+    { f: "1.4K", act: "reply", draft: "In stock! It ships in 24 h, link in your DMs 💛", conf: 90, why: "Buying question, product in stock." },
+    { f: "1.2K", act: "reply", draft: "Yes, in 5 to 7 days. Link to the set in your DMs.", conf: 81, why: "Buying question, shipping page found." },
+    { f: "4.6K", act: "reply", draft: "We'd love that! Could you email hello@halden.co with your dates? We'll send our hotel pricing.", conf: 79, why: "Business request, wholesale page found." }
+  ];
+  TRAIN.forEach((t, i) => Object.assign(t, SUG[i] || {}));
   const STREAM = [
     ["moderation", "IG", "DM us to grow your followers fast 🚀", "Spam · hidden in Suggest mode"],
     ["engagement", "IG", "best candle I've ever owned", "Positive · like ready"],
@@ -417,12 +430,13 @@ body.nonotes .note { display:none; }
   const REAL_ACT = { reply: ["paper-plane", "Send reply"], like: ["heart", "Like"], hide: ["eye-off", "Hide"], delete: ["trash", "Delete"] };
   const REAL_WHAT = { reply: "Suggested reply", like: "Suggests liking this comment", hide: "Suggests hiding this comment", delete: "Suggests deleting this comment" };
   const REAL_WHY = ["Wrong information", "Wrong tone", "Shouldn't reply to this", "I'll handle these myself"];
+  const ACT_PAST = { like: "Liked it", hide: "Hid it", delete: "Deleted it" };
   const agent = (id) => AGENTS.find((a) => a.id === id);
   const netOf = (s) => NETS.find((n) => n.s === s) || NETS[0];
   const total = () => Math.round(2980 * Math.max(1, Object.keys(S.connected).length) / 3);
 
   // ---------- variant state
-  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [], answers: [], real: false, ri: 0, rtext: null, refusing: false, rdone: 0, rby: {} };
+  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [], answers: [], real: false, ri: 0, rtext: null, refusing: false, rother: null, rdone: 0, rby: {} };
   const B = { cur: 0, unlocked: [], tone: "Warm", emoji: true, hide: { spam: true, scam: true, insult: true, competitor: false }, shop: "halden.co/shop", promo: "", dm: true, email: "hello@halden.co" };
   const C = { stream: [], counts: { read: 0, lead: 0, support: 0, engagement: 0, moderation: 0, partnerships: 0 }, tried: 0 };
   const Dc = { msgs: [], wait: false, idx: 0 };
@@ -543,6 +557,33 @@ body.nonotes .note { display:none; }
     return `Got it. ${a.n} will do the same with messages like this one.`;
   }
   const realAvail = () => Math.min(REAL.length, 3 + Math.floor(S.sync.pct * (REAL.length - 3)));
+  function sugCard(x, headHTML, cap) {
+    const a = agent(x.a), net = netOf(x.net);
+    const ini = x.who.replace(/[^A-Za-zÀ-ÿ ._&]/g, "").split(/[ ._&]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
+    const reply = x.act === "reply", text = A.rtext ?? x.draft ?? "", empty = reply && !text.trim(), ok = x.conf >= 85;
+    const av = `<span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b>`;
+    const ai = A.rother != null
+      ? `<div class="sc9-aih">${av}<span>What should it do with messages like this?</span></div>
+         <textarea class="ap-textarea-field aedit rt" rows="2" data-rother="1" placeholder="Ex: “Reply with a heart and ask them to tag a friend”">${esc(A.rother)}</textarea>
+         <div class="sc9-why">${ic("sparkles")}<span>${a.n} turns this into a rule for messages like this one.</span></div>`
+      : A.refusing
+      ? `<div class="sc9-aih">${av}<span>What was wrong? It helps the agent learn.</span></div>
+         <div class="rw">${REAL_WHY.map((r) => `<button class="ap-button stroked" data-rwhy="${esc(r)}">${r}</button>`).join("")}<button class="ap-button stroked" data-rotherb="1">${ic("pen")}Tell it what to do</button></div>`
+      : `<div class="sc9-aih">${av}<span>${x.what || REAL_WHAT[x.act]}</span><span style="flex:1"></span><span class="sc9-conf ${ok ? "hi" : "lo"}"><span class="conf"><span style="width:${x.conf}%"></span></span>${x.conf}% sure</span></div>
+         ${reply ? `<textarea class="ap-textarea-field aedit rt" rows="2" data-rtext="1" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(text)}</textarea>` : ""}
+         <div class="sc9-why">${ic("sparkles")}<span><b>Why:</b> ${esc(x.why)}</span></div>`;
+    const acts = A.rother != null
+      ? `<span class="cap">Becomes a rule for ${a.n}</span><span style="flex:1"></span><button class="ap-button ghost grey" data-rback="1">Back</button><button class="ap-button primary ink" data-rsave="1" ${A.rother.trim() ? "" : "disabled"}>${ic("check")}Save instruction</button>`
+      : A.refusing
+      ? `<span class="cap">Pick a reason, or</span><button class="ap-button ghost grey" data-rwhy="">Skip</button><span style="flex:1"></span><button class="ap-button ghost grey" data-rback="1">Back</button>`
+      : `<span class="cap">${cap}</span><span style="flex:1"></span><button class="ap-button ghost grey" data-rrefuse="1">${ic("close")}Refuse</button><button class="ap-button primary ink" data-rdo="1" ${empty ? "disabled" : ""}>${ic(REAL_ACT[x.act][0])}${reply && x.what ? "Like and reply" : REAL_ACT[x.act][1]}</button>`;
+    return headHTML + `<article class="sc9">
+      <div class="sc9-msg"><div class="sc9-who"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span>
+        <div class="sc9-id"><b>${esc(x.who)}</b><span>${x.f || "—"} followers · ${net.n || net.s} · just now</span></div></div>
+        <p class="sc9-bubble">${esc(x.text)}</p></div>
+      <div class="sc9-ai" style="--ag:${a.c}">${ai}</div>
+      <div class="sc9-act">${acts}</div></article>`;
+  }
   function realCard() {
     const x = REAL[A.ri];
     const head = (right) => `<div class="q9-top"><span class="ap-status blue">Keep training</span><span class="ap-status grey no-dot">${A.rdone} reviewed</span><span style="flex:1"></span>${right}</div>`;
@@ -552,29 +593,22 @@ body.nonotes .note { display:none; }
         <p style="color:var(--ink2);margin-top:6px">${more ? "New messages arrive as the sync goes on. The next one shows up here in a few seconds." : `You reviewed ${A.rdone} real messages. Your agents will apply what they learned to the rest of the inbox.`}</p>
         ${more ? `<p style="margin-top:14px" class="ap-status green">Syncing…</p>` : ""}</div>`;
     }
-    const a = agent(x.a), net = netOf(x.net);
-    const ini = x.who.replace(/[^A-Za-zÀ-ÿ ._&]/g, "").split(/[ ._&]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
-    const reply = x.act === "reply", text = A.rtext ?? x.draft ?? "", empty = reply && !text.trim(), ok = x.conf >= 85;
-    const ai = A.refusing
-      ? `<div class="sc9-aih"><span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b><span>What was wrong? It helps the agent learn.</span></div>
-         <div class="rw">${REAL_WHY.map((r) => `<button class="ap-button stroked" data-rwhy="${esc(r)}">${r}</button>`).join("")}</div>`
-      : `<div class="sc9-aih"><span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b><span>${REAL_WHAT[x.act]}</span><span style="flex:1"></span><span class="sc9-conf ${ok ? "hi" : "lo"}"><span class="conf"><span style="width:${x.conf}%"></span></span>${x.conf}% sure</span></div>
-         ${reply ? `<textarea class="ap-textarea-field aedit rt" rows="2" data-rtext="1" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(text)}</textarea>` : ""}
-         <div class="sc9-why">${ic("sparkles")}<span><b>Why:</b> ${esc(x.why)}</span></div>`;
-    const acts = A.refusing
-      ? `<span class="cap">Pick a reason, or</span><button class="ap-button ghost grey" data-rwhy="">Skip</button><span style="flex:1"></span><button class="ap-button ghost grey" data-rback="1">Back</button>`
-      : `<span class="cap">Real message · just synced</span><span style="flex:1"></span><button class="ap-button ghost grey" data-rrefuse="1">${ic("close")}Refuse</button><button class="ap-button primary ink" data-rdo="1" ${empty ? "disabled" : ""}>${ic(REAL_ACT[x.act][0])}${REAL_ACT[x.act][1]}</button>`;
-    return head(`<span class="cap">${realAvail() - A.ri - 1} more waiting</span><button class="ap-button ghost grey" data-realstop="1">Stop training</button>`) + `<article class="sc9">
-      <div class="sc9-msg"><div class="sc9-who"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span>
-        <div class="sc9-id"><b>${esc(x.who)}</b><span>${x.f} followers · ${net.n || net.s} · just now</span></div></div>
-        <p class="sc9-bubble">${esc(x.text)}</p></div>
-      <div class="sc9-ai" style="--ag:${a.c}">${ai}</div>
-      <div class="sc9-act">${acts}</div></article>`;
+    return sugCard(x, head(`<span class="cap">${realAvail() - A.ri - 1} more waiting</span><button class="ap-button ghost grey" data-realstop="1">Stop training</button>`), "Real message · just synced");
+  }
+  // one action on the current card (quiz message or real message) = one training signal
+  function learn(choice, text) {
+    const t = TRAIN[A.i];
+    if (!t) return realLearn(choice, text);
+    A.answers.push({ a: t.a, msg: t.text, choice, text: text || "" });
+    A.trained[t.a] = (A.trained[t.a] || 0) + 1; A.rtext = null; A.refusing = false; A.rother = null;
+    const need = TRAIN.filter((x) => x.a === t.a).length;
+    if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); } else toast(`${agent(t.a).n} learned from this`);
+    A.i++; render();
   }
   function realLearn(choice, text) {
     const x = REAL[A.ri]; if (!x) return;
     A.answers.push({ a: x.a, msg: x.text, choice, text: text || "" });
-    A.rby[x.a] = (A.rby[x.a] || 0) + 1; A.rdone++; A.ri++; A.rtext = null; A.refusing = false;
+    A.rby[x.a] = (A.rby[x.a] || 0) + 1; A.rdone++; A.ri++; A.rtext = null; A.refusing = false; A.rother = null;
     toast(`${agent(x.a).n} learned from this`);
     render();
   }
@@ -588,29 +622,12 @@ body.nonotes .note { display:none; }
       <div class="card kt"><div class="kt-ic">${ic("sparkles")}</div><div class="kt-t"><b>Keep training on other messages analyzed</b><span>Your agents are already preparing answers to messages from ${esc(S.company)}'s inbox. Send, edit or refuse a few while the sync runs: each choice makes them sharper.</span></div>
         <button class="ap-button primary orange" data-real="1"><span>Train on real messages</span>${ic("arrow-right")}</button></div>`; }
     else {
-      const a = agent(t.a), net = netOf(t.net);
-      const ini = t.who.replace(/[^A-Za-zÀ-ÿ ._]/g, "").split(/[ ._]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
-      const needText = A.picked != null && (A.picked === "other" || /^“/.test((t.opts[A.picked] || [])[2] || "")) && !A.text.trim();
-      body = `<div class="q9-top"><span class="ap-status blue">Training ${a.n}</span><span class="ap-status grey no-dot">${A.i + 1} of ${TRAIN.length}</span><span style="flex:1"></span><span class="cap">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>
-        <article class="sc9">
-          <div class="sc9-msg">
-            <div class="sc9-who"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span>
-              <div class="sc9-id"><b>${esc(t.who)}</b><span>Commented on your post · ${esc(POST)}</span></div></div>
-            <p class="sc9-bubble">${esc(t.text)}</p>
-          </div>
-          <div class="sc9-ai" style="--ag:${a.c}">
-            <div class="sc9-aih"><span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b><span>What would you do with messages like this?</span></div>
-            <div class="opts">${t.opts.map(([icn, l, d], k) => { const editable = /^“/.test(d), on = A.picked === k;
-          return `<div class="ap-radio-card card" data-pick="${k}" role="radio" aria-checked="${on}" tabindex="0"><input type="radio" name="aopt" tabindex="-1" ${on ? "checked" : ""}><div><div class="ap-radio-card-header">${ic(icn)}<span class="ap-radio-card-title">${l}</span></div>${on && editable ? `<span class="editwrap"><textarea class="ap-textarea-field aedit" rows="2" data-atext="1" aria-label="Edit the reply">${esc(A.text)}</textarea><small>${ic("pen")}Edit the reply as you would write it</small></span>` : `<span>${esc(d)}</span>${editable ? `<span class="hint">${ic("pen")}Editable</span>` : ""}`}</div></div>`; }).join("")}
-              <div class="ap-radio-card card" data-pick="other" role="radio" aria-checked="${A.picked === "other"}" tabindex="0"><input type="radio" name="aopt" tabindex="-1" ${A.picked === "other" ? "checked" : ""}><div><div class="ap-radio-card-header">${ic("pen")}<span class="ap-radio-card-title">Other</span></div>${A.picked === "other" ? `<span class="editwrap"><textarea class="ap-textarea-field aedit" rows="2" data-atext="1" placeholder="Write your reply, or tell ${a.n} what to do. Ex: “Reply with a heart and ask them to tag a friend”">${esc(A.text)}</textarea><small>${ic("sparkles")}${a.n} turns this into a rule for messages like this one</small></span>` : `<span>Write your own reply or instruction</span>`}</div></div></div>
-            ${A.picked != null ? `<div class="sc9-why">${ic("sparkles")}<span id="afb">${afb(a)}</span></div>` : ""}
-          </div>
-          <div class="sc9-act"><span class="cap">${A.picked == null ? "Pick an answer to continue" : "Your answer becomes a first guideline"}</span><span style="flex:1"></span><button class="ap-button primary orange" data-anext="1" ${A.picked == null || needText ? "disabled" : ""}><span>Next</span>${ic("arrow-right")}</button></div>
-        </article>`;
+      const a = agent(t.a);
+      body = sugCard(t, `<div class="q9-top"><span class="ap-status blue">Training ${a.n}</span><span class="ap-status grey no-dot">${A.i + 1} of ${TRAIN.length}</span><span style="flex:1"></span><span class="cap">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>`, "Send, edit or refuse: it teaches the agent");
     }
-    return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>Answer a few typical messages. Each answer teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
+    return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>See what your agents would do with a few typical messages. Send, edit or refuse: each choice teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
       ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}
-      ${note("<b>Variant A · Train (quiz, inspired by Blabla).</b> Fake messages shaped by the business category. Each answer is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime. Once the quiz is done, Keep training serves real synced messages with the same card as the inbox: send, edit or refuse with a reason, each choice is a training signal.")}</div></div>`;
+      ${note("<b>Variant A · Train (inspired by Blabla).</b> Fake messages shaped by the business category, each with the agent's suggestion in the inbox card. Send, edit or refuse with a reason or an instruction: each choice is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime. Once the quiz is done, Keep training serves real synced messages with the same card as the inbox: send, edit or refuse with a reason, each choice is a training signal.")}</div></div>`;
   }
 
   // ---------- B · Unlock your agents (micro-config, prefilled)
@@ -744,7 +761,8 @@ body.nonotes .note { display:none; }
   function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
   function resetSync() { clearInterval(syncT); S.sync = { start: 0, pct: 0, done: false }; C.stream = []; Object.keys(C.counts).forEach((k) => (C.counts[k] = 0)); C.tried = 0; Dc.msgs = []; Dc.idx = 0; Dc.wait = false; }
 
-  document.addEventListener("input", (e) => { if (e.target.dataset.rtext) { A.rtext = e.target.value; const b = document.querySelector("[data-rdo]"); if (b) b.disabled = !A.rtext.trim(); return; }
+  document.addEventListener("input", (e) => { if (e.target.dataset.rother) { A.rother = e.target.value; const b = document.querySelector("[data-rsave]"); if (b) b.disabled = !A.rother.trim(); return; }
+    if (e.target.dataset.rtext) { A.rtext = e.target.value; const b = document.querySelector("[data-rdo]"); if (b) b.disabled = !A.rtext.trim(); return; }
     if (e.target.dataset.atext) { A.text = e.target.value; const t = TRAIN[A.i]; const f = document.getElementById("afb"); if (f) f.textContent = afb(agent(t.a)); const nb = document.querySelector("[data-anext]"); if (nb) nb.disabled = !A.text.trim(); return; }
     const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
     if (e.target.dataset.bshop) B.shop = e.target.value; if (e.target.dataset.bpromo) B.promo = e.target.value; if (e.target.dataset.bemail) B.email = e.target.value; });
@@ -767,10 +785,12 @@ body.nonotes .note { display:none; }
     if ((el = g("real"))) { A.real = true; render(); return; }
     if ((el = g("realstop"))) { A.real = false; render(); return; }
     if ((el = g("rrefuse"))) { A.refusing = true; render(); return; }
-    if ((el = g("rback"))) { A.refusing = false; render(); return; }
-    if ((el = g("rwhy"))) { const r = el.dataset.rwhy; realLearn(r ? "Refused: " + r.toLowerCase() : "Refused the suggestion"); return; }
-    if ((el = g("rdo"))) { if (el.disabled) return; const x = REAL[A.ri]; if (x.act !== "reply") { realLearn(`${REAL_ACT[x.act][1]}d it`.replace("Liked it", "Liked it").replace("Hided", "Hid")); return; }
-      const t = (A.rtext ?? x.draft ?? "").trim(); realLearn(!x.draft ? "Wrote the reply" : t === x.draft ? "Sent the reply" : "Edited the reply", t !== x.draft ? t : ""); return; }
+    if ((el = g("rback"))) { if (A.rother != null) { A.rother = null; } else A.refusing = false; render(); return; }
+    if ((el = g("rotherb"))) { A.rother = ""; render(); const ta = document.querySelector("[data-rother]"); if (ta) ta.focus(); return; }
+    if ((el = g("rsave"))) { if (el.disabled) return; const r = A.rother.trim(); const cur = TRAIN[A.i] || REAL[A.ri]; A.custom.push({ a: cur.a, rule: r }); learn("Custom rule", r); return; }
+    if ((el = g("rwhy"))) { const r = el.dataset.rwhy; learn(r ? "Refused: " + r.toLowerCase() : "Refused the suggestion"); return; }
+    if ((el = g("rdo"))) { if (el.disabled) return; const x = TRAIN[A.i] || REAL[A.ri]; if (x.act !== "reply") { learn(ACT_PAST[x.act]); return; }
+      const t = (A.rtext ?? x.draft ?? "").trim(); learn(!x.draft ? "Wrote the reply" : t === x.draft ? "Sent the reply" : "Edited the reply", t !== x.draft ? t : ""); return; }
     if ((el = g("anext"))) { if (el.disabled) return; const t = TRAIN[A.i]; if (A.picked === "other") A.custom.push({ a: t.a, rule: A.text.trim() }); A.answers.push({ a: t.a, msg: t.text, choice: A.picked === "other" ? "Custom rule" : t.opts[A.picked][1], text: A.text.trim() }); A.text = ""; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
       if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); }
       A.i++; A.picked = null; render(); return; }
