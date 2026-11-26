@@ -607,7 +607,7 @@ body.nonotes .note { display:none; }
   function go(i) {
     if (FX && FLOW[Math.max(0, Math.min(FLOW.length - 1, i))].k === "inbox") {
       try { sessionStorage.setItem("fx_training", JSON.stringify({ first: S.first, company: S.company, nets: Object.keys(S.connected), answers: A.answers, custom: A.custom, unlocked: A.unlocked, total: total() })); } catch (err) {}
-      location.href = "../first-experience/ready.html"; return;
+      location.href = "../first-experience/inbox.html?firstrun=1"; return;
     } S.step = Math.max(0, Math.min(FLOW.length - 1, i)); if (FLOW[S.step].k === "sync" && !Object.keys(S.connected).length) { S.connected = { instagram: true, facebook: true, tiktok: true }; } window.scrollTo(0, 0); render(); }
   let tt;
   function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
