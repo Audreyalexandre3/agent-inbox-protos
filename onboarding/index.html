@@ -184,7 +184,18 @@ body.nonotes .note { display:none; }
 .opt i { margin-top:2px; color:var(--ink2); }
 .opt b { display:block; } .opt span { display:block; color:var(--ink2); font-size:13px; margin-top:2px; }
 .opt.pick { box-shadow:inset 0 0 0 2px var(--navy); background:#fff; }
-.fb { display:flex; align-items:center; gap:10px; margin-top:14px; padding:10px 12px; border-radius:10px; background:var(--butter); color:var(--butter-ink); font-size:13.5px; animation:pop .3s ease; }
+.opt { cursor:pointer; }
+.opt .hint { display:inline-flex !important; align-items:center; gap:4px; margin-top:4px; font-size:12px; color:var(--blue) !important; }
+.opt .hint i { font-size:12px; }
+.editwrap { display:flex !important; flex-direction:column; gap:6px; margin-top:8px; }
+.aedit { width:100%; padding:9px 11px; border-radius:var(--sys-border-radius-sm, 4px); border:1px solid var(--line); background:#fff; font:inherit; font-size:14px; line-height:1.45; color:var(--ink); resize:vertical; outline:none; cursor:text; }
+.aedit:focus { border-color:var(--blue); }
+.editwrap small { display:inline-flex !important; align-items:center; gap:5px; font-size:12px; color:var(--ink2); }
+.editwrap small i { font-size:12px; }
+.opt.other { border-style:dashed; box-shadow:none; border:1px dashed var(--line); }
+.opt.other.pick { border:0; box-shadow:inset 0 0 0 2px var(--navy); }
+.btn-pri[disabled] { background:var(--line); cursor:not-allowed; }
+.fb { align-items:center; gap:10px; margin-top:14px; padding:10px 12px; border-radius:10px; background:var(--butter); color:var(--butter-ink); font-size:13.5px; animation:pop .3s ease; }
 .toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%, 20px); opacity:0; background:var(--navy); color:#fff; padding:10px 16px; border-radius:10px; font-size:13.5px; z-index:60; transition:all .25s; pointer-events:none; }
 .toast.on { transform:translate(-50%, 0); opacity:1; }
 
@@ -331,7 +342,7 @@ body.nonotes .note { display:none; }
   const total = () => Math.round(2980 * Math.max(1, Object.keys(S.connected).length) / 3);
 
   // ---------- variant state
-  const A = { i: 0, picked: null, trained: {}, unlocked: [] };
+  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [] };
   const B = { cur: 0, unlocked: [], tone: "Warm", emoji: true, hide: { spam: true, scam: true, insult: true, competitor: false }, shop: "halden.co/shop", promo: "", dm: true, email: "hello@halden.co" };
   const C = { stream: [], counts: { read: 0, lead: 0, support: 0, engagement: 0, moderation: 0, partnerships: 0 }, tried: 0 };
   const Dc = { msgs: [], wait: false, idx: 0 };
@@ -443,6 +454,13 @@ body.nonotes .note { display:none; }
       const need = TRAIN.filter((t) => t.a === a.id).length, got = A.trained[a.id] || 0;
       return `<button class="ag ${unlocked ? "" : "locked"} ${cur ? "cur" : ""}" ${mode === "B" ? `data-bag="${i}"` : ""}><span class="av ${unlocked ? "unl" : ""}" style="background:${a.c}">${ic(a.i)}</span><span class="t"><b>${a.n}</b><span>${unlocked ? "Unlocked · " + a.role.toLowerCase() : a.role}</span>${mode === "A" ? `<span class="pips">${Array.from({ length: need }, (_, k) => `<i class="${k < got ? "f" : ""}">.</i>`).join("")}</span>` : ""}</span>${unlocked ? `<span class="chip ok">${ic("check")}</span>` : `<span class="lock">${ic("feature-lock")}</span>`}</button>`; }).join("")}</div>`;
   }
+  function afb(a) {
+    const t = TRAIN[A.i]; if (!t) return "";
+    if (A.picked === "other") return A.text.trim() ? `Got it. ${a.n} saves this as a custom rule.` : `Write your reply or instruction to continue.`;
+    const d = (t.opts[A.picked] || [])[2] || "";
+    if (/^“/.test(d)) { const orig = d.replace(/^“|”$/g, ""); return A.text.trim() === orig ? `Got it. ${a.n} will answer like this.` : A.text.trim() ? `Got it. ${a.n} learns from your edit and will answer like this.` : `Write the reply to continue.`; }
+    return `Got it. ${a.n} will do the same with messages like this one.`;
+  }
   function variantA() {
     const t = TRAIN[A.i];
     let body;
@@ -454,8 +472,10 @@ body.nonotes .note { display:none; }
         <div class="ctx" style="margin-top:14px"><span class="ph"></span><div>On your post<br><b style="color:var(--ink)">${esc(POST)}</b></div></div>
         <div class="msg"><div class="who"><span class="nchip" style="background:${net.c};width:20px;height:20px">${net.s}</span><b>${esc(t.who)}</b> commented</div><p>${esc(t.text)}</p></div>
         <div class="qq">What would you do?</div>
-        <div class="opts">${t.opts.map(([icn, l, d], k) => `<button class="opt ${A.picked === k ? "pick" : ""}" data-pick="${k}">${ic(icn)}<span><b>${l}</b><span>${esc(d)}</span></span></button>`).join("")}</div>
-        ${A.picked != null ? `<div class="fb">${ic("sparkles")}<span>Got it. ${a.n} will do the same with messages like this one.</span><span style="flex:1"></span><button class="btn btn-pri btn-sm" data-anext="1">Next ${ic("arrow-right")}</button></div>` : ""}</div>`;
+        <div class="opts">${t.opts.map(([icn, l, d], k) => { const editable = /^“/.test(d), on = A.picked === k;
+          return `<div class="opt ${on ? "pick" : ""}" data-pick="${k}" role="button" tabindex="0">${ic(icn)}<span style="flex:1;min-width:0"><b>${l}</b>${on && editable ? `<span class="editwrap"><textarea class="aedit" rows="2" data-atext="1" aria-label="Edit the reply">${esc(A.text)}</textarea><small>${ic("pen")}Edit the reply as you would write it</small></span>` : `<span>${esc(d)}</span>${editable ? `<span class="hint">${ic("pen")}Editable</span>` : ""}`}</span></div>`; }).join("")}
+          <div class="opt other ${A.picked === "other" ? "pick" : ""}" data-pick="other" role="button" tabindex="0">${ic("pen")}<span style="flex:1;min-width:0"><b>Other</b>${A.picked === "other" ? `<span class="editwrap"><textarea class="aedit" rows="2" data-atext="1" placeholder="Write your reply, or tell ${a.n} what to do. Ex: “Reply with a heart and ask them to tag a friend”">${esc(A.text)}</textarea><small>${ic("sparkles")}${a.n} turns this into a rule for messages like this one</small></span>` : `<span>Write your own reply or instruction</span>`}</span></div></div>
+        ${A.picked != null ? `<div class="fb">${ic("sparkles")}<span id="afb">${afb(a)}</span><span style="flex:1"></span><button class="btn btn-pri btn-sm" data-anext="1" ${(A.picked === "other" || /^“/.test((t.opts[A.picked] || [])[2] || "")) && !A.text.trim() ? "disabled" : ""}>Next ${ic("arrow-right")}</button></div>` : ""}</div>`;
     }
     return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>Answer a few typical messages. Each answer teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
       ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}
@@ -587,7 +607,8 @@ body.nonotes .note { display:none; }
   function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
   function resetSync() { clearInterval(syncT); S.sync = { start: 0, pct: 0, done: false }; C.stream = []; Object.keys(C.counts).forEach((k) => (C.counts[k] = 0)); C.tried = 0; Dc.msgs = []; Dc.idx = 0; Dc.wait = false; }
 
-  document.addEventListener("input", (e) => { const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
+  document.addEventListener("input", (e) => { if (e.target.dataset.atext) { A.text = e.target.value; const t = TRAIN[A.i]; const f = document.getElementById("afb"); if (f) f.textContent = afb(agent(t.a)); const nb = document.querySelector("[data-anext]"); if (nb) nb.disabled = !A.text.trim(); return; }
+    const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
     if (e.target.dataset.bshop) B.shop = e.target.value; if (e.target.dataset.bpromo) B.promo = e.target.value; if (e.target.dataset.bemail) B.email = e.target.value; });
   document.addEventListener("change", (e) => { const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
     if (e.target.dataset.emoji) { B.emoji = e.target.checked; render(); } if (e.target.dataset.hide) B.hide[e.target.dataset.hide] = e.target.checked; if (e.target.dataset.bdm) B.dm = e.target.checked; });
@@ -602,8 +623,10 @@ body.nonotes .note { display:none; }
     if ((el = g("prev"))) { go(S.step - 1); return; }
     if ((el = g("net"))) { const k = el.dataset.net; if (S.connected[k]) { delete S.connected[k]; render(); return; } S.connecting = k; render(); setTimeout(() => { S.connected[k] = true; S.connecting = null; render(); }, 900); return; }
     // A
-    if ((el = g("pick"))) { A.picked = +el.dataset.pick; render(); return; }
-    if ((el = g("anext"))) { const t = TRAIN[A.i]; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
+    if ((el = g("pick"))) { if (e.target.closest("textarea")) return; const v = el.dataset.pick === "other" ? "other" : +el.dataset.pick; if (A.picked === v) return;
+      A.picked = v; const t = TRAIN[A.i]; const d = v === "other" ? "" : t.opts[v][2]; A.text = /^“/.test(d) ? d.replace(/^“|”$/g, "") : "";
+      render(); const ta = document.querySelector(".aedit"); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } return; }
+    if ((el = g("anext"))) { if (el.disabled) return; const t = TRAIN[A.i]; if (A.picked === "other") A.custom.push({ a: t.a, rule: A.text.trim() }); A.text = ""; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
       if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); }
       A.i++; A.picked = null; render(); return; }
     // B
