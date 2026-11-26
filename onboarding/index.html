@@ -1,0 +1,595 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Inbox · First experience</title>
+<!-- mode: html-prototype · design-archie (light) · DS tokens + Averta from @agorapulse/ui-theme via jsDelivr -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/desktop_variables.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/font-face.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-symbol@latest/icons/ap-icons.css">
+<style>
+:root {
+  --navy:#0A1B33; --navy-h:#13294A; --orange:#FF3C00; --butter:#F7FFC5; --butter-ink:#4B5710; --butter-dot:#8A9B2E;
+  --ink: var(--ref-color-grey-100, #344563); --ink2: var(--ref-color-grey-80, #5D6A82); --line: var(--ref-color-grey-20, #D6DAE0);
+  --soft: var(--ref-color-grey-05, #F5F5F7); --bg: var(--ref-color-grey-bg, #F9F9FA); --blue: var(--ref-color-electric-blue-100, #178DFE);
+  --blue-05: var(--ref-color-electric-blue-05, #F3F9FF); --green: var(--ref-color-green-150, #0F821D); --green-10: var(--ref-color-green-10, #ECF7ED);
+  --r-card:12px; --r-btn:8px; --font: var(--ref-font-family, Averta), system-ui, sans-serif;
+}
+* { box-sizing:border-box; }
+[hidden] { display:none !important; }
+html, body { margin:0; height:100%; }
+body { font-family:var(--font); font-size:14px; line-height:1.45; color:var(--ink); background:#fff; -webkit-font-smoothing:antialiased; }
+button, input, select, textarea { font:inherit; color:inherit; }
+button { cursor:pointer; border:0; background:none; padding:0; }
+h1, h2, h3, p { margin:0; }
+i[class^="ap-icon-"] { font-size:16px; line-height:1; }
+
+/* prototype bar (not product) */
+.pb { position:sticky; top:0; z-index:40; display:flex; align-items:center; gap:14px; flex-wrap:wrap; padding:8px 14px; background:#0A1019; color:#a1a1aa; font-size:12.5px; }
+.pb b { color:#fff; }
+.pb .grp { display:flex; align-items:center; gap:6px; }
+.pb .seg { display:flex; background:#1f2430; border-radius:8px; padding:3px; gap:2px; }
+.pb .seg button { color:#a1a1aa; padding:4px 9px; border-radius:6px; white-space:nowrap; }
+.pb .seg button.on { background:#fff; color:#0A1019; font-weight:600; }
+.pb .sp { flex:1; }
+.pb .lnk { color:#a1a1aa; text-decoration:none; padding:4px 8px; border-radius:6px; }
+.pb .lnk:hover, .pb button.lnk:hover { color:#fff; background:#1f2430; }
+.steps { display:flex; gap:4px; align-items:center; }
+.steps button { width:22px; height:6px; border-radius:3px; background:#2c3340; }
+.steps button.done { background:#6b7280; } .steps button.on { background:#fff; }
+
+/* buttons (navy primary, per 26/11 review) */
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:8px; height:40px; padding:0 18px; border-radius:var(--r-btn); font-weight:600; font-size:14px; white-space:nowrap; transition:background .15s; }
+.btn-pri { background:var(--navy); color:#fff; }
+.btn-pri:hover { background:var(--navy-h); }
+.btn-pri[disabled] { background:var(--line); color:#fff; cursor:not-allowed; }
+.btn-sec { background:#fff; box-shadow:inset 0 0 0 1px var(--line); color:var(--ink); }
+.btn-sec:hover { background:var(--soft); }
+.btn-ghost { color:var(--ink2); padding:0 10px; }
+.btn-ghost:hover { background:var(--soft); color:var(--ink); }
+.btn-wide { width:100%; }
+.btn-sm { height:32px; padding:0 12px; font-size:13px; }
+
+/* ===== Archie onboarding (as in production) ===== */
+.ob { min-height:calc(100vh - 44px); background:#fff radial-gradient(1200px 600px at 85% -10%, #FFE7DA 0%, rgba(255,231,218,0) 60%), radial-gradient(900px 500px at -10% 110%, #FDFFE5 0%, rgba(253,255,229,0) 60%); display:flex; flex-direction:column; }
+.ob-top { padding:22px 32px; }
+.ob-top img { width:178px; display:block; }
+.ob-mid { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:30px 24px 60px; }
+.ob-col { width:440px; max-width:100%; }
+.ob-title { text-align:center; margin-bottom:20px; }
+.ob-title h1 { font-size:28px; line-height:1.2; font-weight:600; color:var(--navy); letter-spacing:-.01em; }
+.ob-title p { margin-top:8px; color:var(--ink2); font-size:15px; }
+.acard { background:#fff; border-radius:16px; box-shadow:0 0 0 1px var(--line), 0 20px 50px -30px rgba(10,27,51,.25); padding:28px; display:flex; flex-direction:column; gap:16px; }
+.fld { display:flex; flex-direction:column; gap:6px; }
+.fld label { font-weight:600; font-size:13.5px; color:var(--ink); }
+.fld small { color:var(--ink2); font-size:12.5px; }
+.inp { height:40px; padding:0 12px; border-radius:6px; border:1px solid var(--line); background:#fff; outline:none; width:100%; }
+.inp:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-05); }
+select.inp { appearance:auto; }
+.code { display:flex; gap:8px; }
+.code input { width:44px; height:48px; text-align:center; font-size:20px; font-weight:600; border:1px solid var(--line); border-radius:8px; }
+.or { display:flex; align-items:center; gap:10px; color:var(--ink2); font-size:12.5px; }
+.or::before, .or::after { content:""; flex:1; height:1px; background:var(--line); }
+.sso { display:flex; flex-direction:column; gap:8px; }
+.sso .btn { width:100%; }
+.g { width:18px; height:18px; }
+.cfoot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; }
+.free { text-align:center; color:var(--ink2); font-size:12.5px; }
+.have { text-align:center; margin-top:16px; color:var(--ink2); font-size:13.5px; }
+.have a { color:var(--blue); text-decoration:none; font-weight:600; }
+.link { color:var(--blue); font-weight:600; font-size:13px; }
+/* signup editorial split */
+.edit { display:grid; grid-template-columns:1.1fr 440px; gap:64px; max-width:1100px; width:100%; align-items:center; }
+.hero h1 { font-size:46px; line-height:1.1; font-weight:600; color:var(--navy); letter-spacing:-.02em; }
+.hero .rot { color:var(--orange); display:inline-block; min-width:4ch; }
+.hero p { margin-top:18px; font-size:17px; color:var(--ink2); max-width:480px; }
+.trust { display:flex; align-items:center; gap:14px; margin-top:28px; color:var(--ink2); font-size:13px; flex-wrap:wrap; }
+.trust b { color:var(--ink); }
+.trust .dot { width:4px; height:4px; border-radius:50%; background:var(--line); }
+/* connect */
+.nets { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
+.net { display:flex; align-items:center; gap:10px; padding:12px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); text-align:left; background:#fff; transition:box-shadow .15s; }
+.net:hover { box-shadow:inset 0 0 0 1px var(--blue); }
+.net .lg { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; color:#fff; font-weight:700; font-size:12px; flex:none; }
+.net .t { flex:1; min-width:0; } .net .t b { display:block; font-size:14px; } .net .t span { display:block; font-size:12px; color:var(--ink2); }
+.net.on { box-shadow:inset 0 0 0 1px var(--green); background:var(--green-10); }
+.net.wait .t span::after { content:"…"; }
+.connected { font-size:12.5px; color:var(--ink2); }
+.strike { text-decoration:line-through; color:var(--ink2); font-size:13px; }
+
+/* notes (proto annotations) */
+.note { position:relative; margin-top:12px; padding:10px 12px 10px 34px; border-radius:10px; background:#FFF8D6; color:#5c4a00; font-size:12.5px; line-height:1.45; box-shadow:inset 0 0 0 1px #F2DE8A; }
+.note::before { content:"✎"; position:absolute; left:12px; top:9px; font-size:13px; }
+.note b { color:#3d3100; }
+body.nonotes .note { display:none; }
+
+/* ===== Sync onboarding (agentic inbox) ===== */
+.sy { min-height:calc(100vh - 44px); background:var(--bg); display:flex; flex-direction:column; }
+.sy-top { display:flex; align-items:center; gap:16px; padding:16px 28px; background:#fff; border-bottom:1px solid var(--line); }
+.sy-top img { width:120px; }
+.sbar { flex:1; display:flex; align-items:center; gap:14px; max-width:820px; margin:0 auto; }
+.sbar .tx { white-space:nowrap; font-size:13.5px; } .sbar .tx b { color:var(--navy); }
+.track { flex:1; height:8px; border-radius:4px; background:var(--soft); overflow:hidden; box-shadow:inset 0 0 0 1px var(--line); }
+.track span { display:block; height:100%; background:var(--navy); border-radius:4px; transition:width .4s ease; }
+.track.done span { background:var(--green); }
+.nchips { display:flex; gap:6px; }
+.nchip { width:22px; height:22px; border-radius:6px; display:grid; place-items:center; font-size:10px; font-weight:700; color:#fff; position:relative; }
+.nchip.ok::after { content:"✓"; position:absolute; right:-5px; bottom:-5px; width:13px; height:13px; border-radius:50%; background:var(--green); color:#fff; font-size:9px; display:grid; place-items:center; box-shadow:0 0 0 2px #fff; }
+.sy-main { flex:1; width:100%; max-width:1080px; margin:0 auto; padding:28px 24px 60px; }
+.sy-h { display:flex; align-items:flex-end; gap:20px; margin-bottom:20px; }
+.sy-h > div { flex:1; }
+.sy-h h1 { font-size:26px; font-weight:600; color:var(--navy); letter-spacing:-.01em; }
+.sy-h p { margin-top:6px; color:var(--ink2); font-size:15px; }
+.readybar { display:flex; align-items:center; gap:14px; padding:14px 18px; margin-bottom:18px; border-radius:var(--r-card); background:#fff; box-shadow:inset 0 0 0 1px var(--green); animation:pop .35s ease; }
+.readybar .ic { width:34px; height:34px; border-radius:50%; background:var(--green-10); color:var(--green); display:grid; place-items:center; font-weight:700; }
+.readybar div { flex:1; } .readybar b { color:var(--navy); font-size:15px; } .readybar p { color:var(--ink2); font-size:13px; margin-top:2px; }
+@keyframes pop { from { transform:translateY(-6px); opacity:0; } }
+.card { background:#fff; border-radius:var(--r-card); box-shadow:inset 0 0 0 1px var(--line); }
+.chip { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 9px; border-radius:999px; font-size:12px; font-weight:500; background:var(--soft); color:var(--ink); white-space:nowrap; }
+.chip.butter { background:var(--butter); color:var(--butter-ink); }
+.chip.ok { background:var(--green-10); color:var(--green); }
+.chip .d { width:6px; height:6px; border-radius:50%; }
+.ded { font-size:11.5px; color:var(--butter-ink); background:var(--butter); padding:2px 8px; border-radius:999px; font-weight:500; }
+
+/* agents rail (shared by A and B) */
+.two { display:grid; grid-template-columns:300px minmax(0, 1fr); gap:18px; align-items:start; }
+.agents { padding:8px; position:sticky; top:16px; }
+.ag { display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; width:100%; text-align:left; }
+.ag .av { width:34px; height:34px; border-radius:10px; display:grid; place-items:center; color:#fff; flex:none; position:relative; }
+.ag .av i { font-size:16px; }
+.ag.locked .av { background:var(--soft) !important; color:var(--ink2); }
+.ag .t { flex:1; min-width:0; } .ag .t b { display:block; font-size:14px; color:var(--ink); } .ag .t span { display:block; font-size:12px; color:var(--ink2); }
+.ag.cur { background:var(--blue-05); }
+.ag .pips { display:flex; gap:3px; margin-top:4px; } .ag .pips i { width:14px; height:4px; border-radius:2px; background:var(--line); font-size:0; } .ag .pips i.f { background:var(--navy); }
+.lock { font-size:14px; color:var(--ink2); }
+.unl { animation:unl .6s ease; }
+@keyframes unl { 0% { transform:scale(.9); } 50% { transform:scale(1.08); } 100% { transform:none; } }
+
+/* A · train */
+.q { padding:22px; }
+.q .ctx { display:flex; gap:10px; padding:10px; border-radius:10px; background:var(--soft); font-size:13px; color:var(--ink2); }
+.q .ctx .ph { width:44px; height:44px; border-radius:8px; background:repeating-linear-gradient(45deg, #e6e8ec, #e6e8ec 6px, #eef0f3 6px, #eef0f3 12px); flex:none; }
+.msg { margin-top:14px; }
+.msg .who { display:flex; align-items:center; gap:8px; font-size:13px; color:var(--ink2); } .msg .who b { color:var(--ink); }
+.msg p { margin-top:6px; font-size:18px; line-height:1.4; color:var(--navy); }
+.qq { margin-top:18px; font-weight:600; color:var(--ink); }
+.opts { display:flex; flex-direction:column; gap:8px; margin-top:10px; }
+.opt { display:flex; align-items:flex-start; gap:10px; padding:12px 14px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); text-align:left; background:#fff; }
+.opt:hover { box-shadow:inset 0 0 0 1px var(--blue); background:var(--blue-05); }
+.opt i { margin-top:2px; color:var(--ink2); }
+.opt b { display:block; } .opt span { display:block; color:var(--ink2); font-size:13px; margin-top:2px; }
+.opt.pick { box-shadow:inset 0 0 0 2px var(--navy); background:#fff; }
+.fb { display:flex; align-items:center; gap:10px; margin-top:14px; padding:10px 12px; border-radius:10px; background:var(--butter); color:var(--butter-ink); font-size:13.5px; animation:pop .3s ease; }
+.toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%, 20px); opacity:0; background:var(--navy); color:#fff; padding:10px 16px; border-radius:10px; font-size:13.5px; z-index:60; transition:all .25s; pointer-events:none; }
+.toast.on { transform:translate(-50%, 0); opacity:1; }
+
+/* B · unlock */
+.cfg { padding:22px; display:flex; flex-direction:column; gap:18px; }
+.cfg h2 { font-size:20px; color:var(--navy); font-weight:600; }
+.cfg .sub { color:var(--ink2); margin-top:4px; }
+.choices { display:flex; gap:8px; flex-wrap:wrap; }
+.choice { padding:8px 12px; border-radius:999px; box-shadow:inset 0 0 0 1px var(--line); font-size:13.5px; background:#fff; }
+.choice.on { box-shadow:inset 0 0 0 2px var(--navy); font-weight:600; }
+.chk { display:flex; align-items:flex-start; gap:10px; padding:8px 0; font-size:14px; }
+.chk input { margin-top:3px; accent-color:var(--navy); width:16px; height:16px; }
+.chk small { display:block; color:var(--ink2); font-size:12.5px; }
+.preview { padding:12px 14px; border-radius:10px; background:var(--soft); font-size:13.5px; }
+.preview b { display:block; font-size:12px; color:var(--ink2); font-weight:500; margin-bottom:4px; }
+.src { display:flex; align-items:center; gap:10px; padding:9px 12px; border-radius:8px; box-shadow:inset 0 0 0 1px var(--line); font-size:13.5px; }
+.src .ok { color:var(--green); font-weight:600; font-size:12.5px; margin-left:auto; }
+
+/* C · live */
+.live3 { display:grid; grid-template-columns:minmax(0, 1fr) 360px; gap:18px; align-items:start; }
+.counters { display:grid; grid-template-columns:repeat(2, 1fr); gap:12px; }
+.cnt { padding:18px; }
+.cnt .n { font-size:34px; font-weight:600; color:var(--navy); letter-spacing:-.02em; line-height:1; font-variant-numeric:tabular-nums; }
+.cnt .l { margin-top:6px; color:var(--ink2); font-size:13.5px; display:flex; align-items:center; gap:6px; }
+.cnt.big { grid-column:1 / -1; display:flex; align-items:center; gap:18px; }
+.cnt.big .n { font-size:44px; }
+.feed { padding:14px 16px; max-height:520px; overflow:hidden; -webkit-mask-image:linear-gradient(#000 80%, transparent); mask-image:linear-gradient(#000 80%, transparent); }
+.feed h3 { font-size:15px; display:flex; align-items:center; gap:8px; color:var(--ink); margin-bottom:6px; }
+.fi { display:flex; gap:10px; padding:10px 0; border-top:1px solid var(--line); animation:pop .4s ease; font-size:13px; }
+.fi:first-of-type { border-top:0; }
+.fi .nb { width:20px; height:20px; border-radius:6px; display:grid; place-items:center; font-size:9.5px; font-weight:700; color:#fff; flex:none; }
+.fi p { color:var(--ink); } .fi .tag { margin-top:4px; }
+.pulse { width:8px; height:8px; border-radius:50%; background:var(--butter-dot); box-shadow:0 0 0 0 rgba(138,155,46,.5); animation:ping 2s infinite; }
+@keyframes ping { 70% { box-shadow:0 0 0 7px rgba(138,155,46,0); } 100% { box-shadow:0 0 0 0 rgba(138,155,46,0); } }
+.try { padding:18px; margin-top:12px; animation:pop .4s ease; }
+.try .row { display:flex; gap:8px; margin-top:12px; }
+.draft { margin-top:10px; padding:10px 12px; border-radius:8px; border:1px solid var(--line); font-size:14px; width:100%; resize:none; }
+
+/* D · chat */
+.chat { max-width:720px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+.bub { display:flex; gap:10px; align-items:flex-start; animation:pop .35s ease; }
+.bub .av { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; flex:none; background:#fff; box-shadow:inset 0 0 0 1px var(--line); }
+.bub .av img { width:20px; }
+.bub .bx { background:#fff; border-radius:12px; box-shadow:inset 0 0 0 1px var(--line); padding:12px 14px; max-width:560px; font-size:14.5px; }
+.bub.me { flex-direction:row-reverse; }
+.bub.me .bx { background:var(--navy); color:#fff; box-shadow:none; }
+.bub .bx .ctx { margin-top:10px; padding:10px; border-radius:8px; background:var(--soft); font-size:13.5px; color:var(--ink); }
+.qr { display:flex; gap:8px; flex-wrap:wrap; padding-left:40px; animation:pop .35s ease; }
+.qr button { padding:8px 14px; border-radius:999px; box-shadow:inset 0 0 0 1px var(--navy); color:var(--navy); font-weight:600; font-size:13.5px; background:#fff; }
+.qr button:hover { background:var(--navy); color:#fff; }
+.stat { display:inline-flex; align-items:center; gap:8px; height:28px; padding:0 12px; border-radius:999px; background:var(--butter); color:var(--butter-ink); font-size:13px; font-weight:500; }
+.typing { display:inline-flex; gap:4px; } .typing i { width:6px; height:6px; border-radius:50%; background:var(--ink2); animation:bl 1s infinite; font-size:0; } .typing i:nth-child(2) { animation-delay:.15s; } .typing i:nth-child(3) { animation-delay:.3s; }
+@keyframes bl { 50% { opacity:.25; } }
+
+/* ===== Day 1 inbox (V0 = log) ===== */
+.app { display:grid; grid-template-columns:248px minmax(0, 1fr); min-height:calc(100vh - 44px); background:var(--bg); }
+.nav { background:#fff; border-right:1px solid var(--line); padding:18px 10px; display:flex; flex-direction:column; gap:2px; }
+.nav img { width:150px; margin:2px 8px 18px; }
+.ni { display:flex; align-items:center; gap:10px; padding:8px 10px; border-radius:8px; color:var(--ink); font-size:14px; text-align:left; width:100%; }
+.ni i { color:var(--ink2); } .ni:hover { background:var(--soft); }
+.ni.on { background:var(--blue-05); color:#0E72D6; } .ni.on i { color:#0E72D6; }
+.ni.sub { padding-left:36px; font-size:13.5px; } .ni .d { width:7px; height:7px; border-radius:50%; margin-left:-16px; margin-right:2px; }
+.ni .n { margin-left:auto; font-size:12px; color:var(--ink2); }
+.inbox { padding:28px 32px; max-width:980px; }
+.inbox h1 { font-size:24px; font-weight:600; color:var(--navy); }
+.inbox .lead { color:var(--ink2); margin-top:6px; font-size:15px; }
+.wait { display:flex; align-items:center; gap:12px; margin-top:18px; padding:14px 16px; }
+.wait b { color:var(--navy); }
+.log { margin-top:14px; padding:6px 18px; }
+.log h2 { font-size:16px; color:var(--ink); display:flex; align-items:center; gap:8px; padding:12px 0 6px; }
+.li { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--line); font-size:13.5px; }
+.li .ag2 { font-size:12px; color:var(--ink2); display:inline-flex; align-items:center; gap:5px; }
+.li .sp { flex:1; } .li time { font-size:12px; color:var(--ink2); }
+@media (max-width:960px) { .edit, .two, .live3 { grid-template-columns:1fr; } .hero h1 { font-size:34px; } .agents { position:static; } }
+</style>
+</head>
+<body>
+<div class="pb" id="pb"></div>
+<main id="root"></main>
+<div class="toast" id="toast"></div>
+<script>
+(function () {
+  const $ = (s) => document.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const ic = (n) => `<i class="ap-icon-${n}"></i>`;
+  const params = new URLSearchParams(location.search);
+
+  // ---------- flow
+  const FLOW = [
+    { k: "signup", l: "Sign up" }, { k: "verify", l: "Verify email" }, { k: "user", l: "Let's set you up" }, { k: "company", l: "About your company" },
+    { k: "connect", l: "Connect profiles" }, { k: "sync", l: "Agentic onboarding (sync)" }, { k: "inbox", l: "Day 1 inbox" }
+  ];
+  const VARIANTS = { A: "Train your agents", B: "Unlock your agents", C: "Watch it sort", D: "Chat with Archie" };
+  const S = {
+    step: Math.max(0, FLOW.findIndex((f) => f.k === params.get("step"))), variant: VARIANTS[params.get("v")] ? params.get("v") : "A",
+    syncSec: params.get("sync") === "120" ? 120 : 20, notes: params.get("notes") !== "0",
+    email: "jane@halden.co", first: "Jane", last: "Doe", company: "Halden & Co", size: "11 - 50 employees", tool: "No / Native (Direct from Social Media Platform)",
+    connected: {}, connecting: null, sync: { start: 0, pct: 0, done: false }
+  };
+
+  // ---------- data (fake, shaped by the company's category: e-commerce, home fragrance)
+  const NETS = [
+    { k: "instagram", n: "Instagram", c: "linear-gradient(135deg,#f9ce34,#ee2a7b,#6228d7)", s: "IG", acc: "@haldenandco" },
+    { k: "facebook", n: "Facebook", c: "#1877F2", s: "FB", acc: "Halden & Co" },
+    { k: "tiktok", n: "TikTok", c: "#111", s: "TT", acc: "@halden.co" },
+    { k: "linkedin", n: "LinkedIn", c: "#0A66C2", s: "in", acc: "Halden & Co" },
+    { k: "x", n: "X", c: "#111", s: "X", acc: "@haldenandco" },
+    { k: "threads", n: "Threads", c: "#111", s: "@", acc: "@haldenandco" },
+    { k: "youtube", n: "YouTube", c: "#FF0000", s: "▶", acc: "Halden & Co" }
+  ];
+  const AGENTS = [
+    { id: "engagement", n: "Engagement", c: "#2f9e44", i: "heart", role: "Likes and thanks happy customers" },
+    { id: "moderation", n: "Moderation", c: "#7950f2", i: "eye-off", role: "Hides spam, scams and abuse" },
+    { id: "support", n: "Support", c: "#1c7ed6", i: "single-chat-bubble", role: "Answers questions from your website" },
+    { id: "lead", n: "Lead-gen", c: "#e8590c", i: "target", role: "Answers people ready to buy" },
+    { id: "partnerships", n: "Partnerships", c: "#0c8599", i: "megaphone", role: "Handles wholesale and creators" }
+  ];
+  const POST = "Amber Night is back. Warm, smoky, made for long evenings.";
+  const TRAIN = [
+    { a: "engagement", who: "Maya Lin", net: "IG", text: "obsessed with this smell 😍 my whole flat smells amazing", opts: [["heart", "Like it", "A quick thank-you, no words needed"], ["reply", "Like and reply", "“So happy it fills your home, Maya! 🕯️”"], ["close", "Do nothing", "Leave it as is"]] },
+    { a: "engagement", who: "Lucas", net: "TT", text: "@juliebrd we need this for the living room", opts: [["heart", "Like it", "Show you saw it"], ["reply", "Like and reply", "“Great taste, Julie will love it!”"], ["close", "Do nothing", "Leave it as is"]] },
+    { a: "moderation", who: "promo_boost_24", net: "IG", text: "DM us to grow your followers fast 🚀🚀 link in bio", opts: [["eye-off", "Hide it", "Only the author and their friends still see it"], ["trash", "Delete it", "It disappears for everyone"], ["close", "Leave it", "Keep it visible"]] },
+    { a: "moderation", who: "crypto.jenna", net: "FB", text: "I made $4,800 this week with BTC, check my bio", opts: [["trash", "Delete it", "Scams with links go for good"], ["eye-off", "Hide it", "Keep a trace, hide it from others"], ["close", "Leave it", "Keep it visible"]] },
+    { a: "support", who: "Olivia Grant", net: "IG", text: "how long does shipping take to the UK?", opts: [["reply", "Reply with your shipping page", "“UK orders arrive in 3 to 5 working days, tracking by email.”"], ["single-chat-bubble", "Move to DM", "“Hi Olivia! I sent you a DM with the details.”"], ["close", "I'll answer myself", "Always ask me for these"]] },
+    { a: "support", who: "Alex Moreau", net: "IG", text: "Smell faded after a week, a bit disappointed", opts: [["reply", "Apologise and help", "“Sorry about that! Trim the wick to 5 mm, DM us if it's still weak.”"], ["eye-off", "Hide it", "Not recommended for criticism"], ["close", "I'll answer myself", "Always ask me for complaints"]] },
+    { a: "lead", who: "Lena Park", net: "IG", text: "need this for my mom's birthday on Friday, still in stock?", opts: [["reply", "Reply and send the product link", "“In stock! It ships in 24 h, link in your DMs 💛”"], ["single-chat-bubble", "Reply in DM only", "Keep the conversation private"], ["close", "I'll answer myself", "Always ask me for buyers"]] },
+    { a: "lead", who: "Tom Becker", net: "FB", text: "does the discovery set ship to Canada?", opts: [["reply", "Reply and send the product link", "“Yes, in 5 to 7 days. Link to the set in your DMs.”"], ["single-chat-bubble", "Reply in DM only", "Keep the conversation private"], ["close", "I'll answer myself", "Always ask me for buyers"]] },
+    { a: "partnerships", who: "Maison Lior Hotel", net: "IG", text: "We'd love your candles in our 24 rooms. Hotel pricing?", opts: [["reply", "Qualify and move to email", "“We'd love that! What's the best email for our hospitality offer?”"], ["user", "Forward to my team", "Send it to hello@halden.co"], ["close", "I'll answer myself", "Always ask me for partnerships"]] }
+  ];
+  const STREAM = [
+    ["moderation", "IG", "DM us to grow your followers fast 🚀", "Spam · hidden in Suggest mode"],
+    ["engagement", "IG", "best candle I've ever owned", "Positive · like ready"],
+    ["lead", "IG", "where can I buy the amber one??", "Buying question · reply drafted"],
+    ["support", "FB", "is the wax vegan?", "Question · answered from your FAQ"],
+    ["engagement", "TT", "cozy season = this candle", "Positive · like ready"],
+    ["moderation", "FB", "Congrats! Free iPhone, link in bio", "Scam · delete suggested"],
+    ["partnerships", "IG", "wedding planner here, 60 minis for June?", "Business request · reply drafted"],
+    ["support", "IG", "can I return an opened candle?", "Question · answered from your returns page"],
+    ["lead", "FB", "is the 20% valid on the minis too?", "Buying question · reply drafted"],
+    ["engagement", "IG", "Linen Mist on my pillow every night", "Positive · like ready"]
+  ];
+  const agent = (id) => AGENTS.find((a) => a.id === id);
+  const netOf = (s) => NETS.find((n) => n.s === s) || NETS[0];
+  const total = () => Math.round(2980 * Math.max(1, Object.keys(S.connected).length) / 3);
+
+  // ---------- variant state
+  const A = { i: 0, picked: null, trained: {}, unlocked: [] };
+  const B = { cur: 0, unlocked: [], tone: "Warm", emoji: true, hide: { spam: true, scam: true, insult: true, competitor: false }, shop: "halden.co/shop", promo: "", dm: true, email: "hello@halden.co" };
+  const C = { stream: [], counts: { read: 0, lead: 0, support: 0, engagement: 0, moderation: 0, partnerships: 0 }, tried: 0 };
+  const Dc = { msgs: [], wait: false, idx: 0 };
+
+  // ---------- proto bar
+  function pb() {
+    $("#pb").innerHTML = `<b>Agentic Inbox · first experience</b>
+      <div class="steps">${FLOW.map((f, i) => `<button title="${esc(f.l)}" class="${i < S.step ? "done" : i === S.step ? "on" : ""}" data-step="${i}"></button>`).join("")}</div>
+      <span style="color:#fff">${esc(FLOW[S.step].l)}</span><span class="sp"></span>
+      <div class="grp">Sync variant <div class="seg">${Object.entries(VARIANTS).map(([k, v]) => `<button class="${S.variant === k ? "on" : ""}" data-variant="${k}" title="${v}">${k} · ${v}</button>`).join("")}</div></div>
+      <div class="grp">Sync time <div class="seg"><button class="${S.syncSec === 20 ? "on" : ""}" data-sync="20">20 s</button><button class="${S.syncSec === 120 ? "on" : ""}" data-sync="120">2 min</button></div></div>
+      <button class="lnk" data-notes="1">${S.notes ? "Hide" : "Show"} notes</button><button class="lnk" data-restart="1">Restart</button>`;
+  }
+  const note = (html) => `<div class="note">${html}</div>`;
+
+  // ---------- Archie onboarding (as in production)
+  const top = `<div class="ob-top"><img src="assets/Full_Logo_principal_Archie_orange.svg" alt="Archie"></div>`;
+  const WORDS = ["webinar", "article", "PDF", "podcast", "keynote"];
+  let rotT; let rotI = 0;
+  function startRotator() { clearInterval(rotT); rotT = setInterval(() => { const el = $(".rot"); if (!el) return clearInterval(rotT); rotI = (rotI + 1) % WORDS.length; el.textContent = WORDS[rotI]; }, 2200); }
+  const sso = `<div class="sso"><button class="btn btn-sec" data-next="1"><svg class="g" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.2l7.9 6.1C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.4 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>Sign up with Google</button>
+    <button class="btn btn-sec" data-next="1"><svg class="g" viewBox="0 0 24 24"><path fill="#111" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-4zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4z"/></svg>Sign up with Apple</button></div>`;
+  function scrSignup() {
+    return `<div class="ob">${top}<div class="ob-mid" style="align-items:center"><div class="edit">
+      <div class="hero"><h1>Turn your <span class="rot">${WORDS[rotI]}</span><br>into a week of posts.</h1>
+        <p>Text posts, images, and short clips, already captioned, all in your voice and ready to schedule.</p>
+        <div class="trust"><span><b>15 years</b> in social</span><span class="dot"></span><span><b>31,000+</b> customers worldwide</span><span class="dot"></span><span>by <b>Agorapulse</b></span></div></div>
+      <div><div class="acard">${sso}<div class="or">or</div>
+        <div class="fld"><label for="em">Enter business email</label><input id="em" class="inp" placeholder="business@email.com" value="${esc(S.email)}" data-bind="email"></div>
+        <button class="btn btn-pri btn-wide" data-next="1">Continue</button><p class="free">Free to start · No credit card needed</p></div>
+        <p class="have">Already have an account? <a href="#" data-next="0">Log in</a></p>
+        ${note("<b>Archie onboarding kept as is.</b> Same screens and copy as production (archie.app signup, editorial step). Only the buttons follow the 26/11 review: navy instead of orange.")}</div>
+    </div></div></div>`;
+  }
+  function scrVerify() {
+    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col"><div class="ob-title"><h1>Check your inbox</h1><p>We sent a code to ${esc(S.email)}</p></div>
+      <div class="acard"><div class="fld"><label>Enter business email</label><input class="inp" value="${esc(S.email)}" disabled></div>
+        <div class="fld"><label>Enter verification code</label><small>Check your emails and enter the code provided</small>
+          <div class="code">${"482913".split("").map((d) => `<input maxlength="1" value="${d}">`).join("")}</div></div>
+        <a class="link" href="#" onclick="return false">Resend code</a>
+        <div class="cfoot"><button class="btn btn-ghost" data-prev="1">Back</button><button class="btn btn-pri" data-next="1">Continue</button></div></div></div></div></div>`;
+  }
+  function scrUser() {
+    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col"><div class="ob-title"><h1>Let’s set you up</h1></div>
+      <div class="acard"><div class="fld"><label>First name</label><input class="inp" placeholder="Jane" value="${esc(S.first)}" data-bind="first"></div>
+        <div class="fld"><label>Last name</label><input class="inp" placeholder="Doe" value="${esc(S.last)}" data-bind="last"></div>
+        <div class="cfoot"><button class="btn btn-ghost" data-prev="1">Back</button><button class="btn btn-pri" data-next="1">Continue</button></div></div></div></div></div>`;
+  }
+  function scrCompany() {
+    const sizes = ["Only me", "2 - 10 employees", "11 - 50 employees", "51 - 200 employees", "201 - 1000 employees", "1,001+ employees"];
+    const tools = ["No / Native (Direct from Social Media Platform)", "Yes, Hootsuite", "Yes, Sprout Social", "Yes, Meltwater", "Yes, Brandwatch", "Yes, Sprinklr Social", "Yes, another tool"];
+    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col"><div class="ob-title"><h1>About your company</h1></div>
+      <div class="acard"><div class="fld"><label>Company name</label><input class="inp" placeholder="Acme Corp" value="${esc(S.company)}" data-bind="company"></div>
+        <div class="fld"><label>How many people work there?</label><select class="inp" data-bind="size">${sizes.map((x) => `<option ${x === S.size ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+        <div class="fld"><label>Is your company already using a Social Media Management tool?</label><select class="inp" data-bind="tool">${tools.map((x) => `<option ${x === S.tool ? "selected" : ""}>${x}</option>`).join("")}</select></div>
+        <div class="cfoot"><button class="btn btn-ghost" data-prev="1">Back</button><button class="btn btn-pri" data-next="1">Continue</button></div></div></div></div></div>`;
+  }
+  function scrConnect() {
+    const n = Object.keys(S.connected).length;
+    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col" style="width:560px"><div class="ob-title"><h1>Tailor your content creation</h1><p>Add your social profiles to assess your brand type, tone of voice and brand guidelines</p></div>
+      <div class="acard"><div class="nets">${NETS.map((x) => { const on = S.connected[x.k], w = S.connecting === x.k;
+        return `<button class="net ${on ? "on" : ""} ${w ? "wait" : ""}" data-net="${x.k}"><span class="lg" style="background:${x.c}">${x.s}</span><span class="t"><b>${x.n}</b><span>${on ? "Connected · " + esc(x.acc) : w ? "Connecting" : "Connect"}</span></span>${on ? `<span class="chip ok">${ic("check")}</span>` : ""}</button>`; }).join("")}</div>
+        <div class="connected">${n ? `${n} connected profile${n > 1 ? "s" : ""}` : "Connect at least one profile to continue"}</div>
+        <div class="cfoot"><span class="strike" title="Removed: the inbox needs a profile from day 1">Skip for now</span><button class="btn btn-pri" data-next="1" ${n ? "" : "disabled"}>Continue</button></div></div>
+      ${note("<b>Decision 26/11:</b> the “Skip for now” option is removed. Users who skip connect later anyway, and the Agentic Inbox needs a profile from the start.")}
+      ${note("<b>Open question:</b> the connect step uses the existing connect (Facebook, Instagram, LinkedIn, Threads, TikTok, X, YouTube). For the inbox, should Archie support every network Agorapulse already supports (Google Business Profile, Pinterest…)? Not the case in Archie today.")}
+    </div></div></div>`;
+  }
+
+  // ---------- sync engine
+  let syncT;
+  function startSync() {
+    if (S.sync.start) return;
+    S.sync.start = Date.now();
+    clearInterval(syncT);
+    syncT = setInterval(() => {
+      const p = Math.min(1, (Date.now() - S.sync.start) / (S.syncSec * 1000));
+      S.sync.pct = p;
+      if (p >= 1 && !S.sync.done) { S.sync.done = true; clearInterval(syncT); render(); toast("Your inbox is synced"); return; }
+      if (S.variant === "C") liveTick(p);
+      updateBar();
+    }, 400);
+  }
+  function syncBar() {
+    const nets = NETS.filter((x) => S.connected[x.k]);
+    const p = S.sync.pct, done = S.sync.done, read = Math.round(total() * p);
+    return `<div class="sy-top"><img src="assets/Full_Logo_principal_Archie_orange.svg" alt="Archie">
+      <div class="sbar"><span class="tx" id="sbtx">${done ? `<b>Inbox ready</b> · ${total().toLocaleString("en-US")} messages sorted` : `<b>Syncing your inbox</b> · ${read.toLocaleString("en-US")} of ~${total().toLocaleString("en-US")} messages`}</span>
+        <div class="track ${done ? "done" : ""}"><span id="sbfill" style="width:${Math.round(p * 100)}%"></span></div>
+        <div class="nchips">${nets.map((x, i) => `<span class="nchip ${p > (i + 1) / (nets.length + 1) || done ? "ok" : ""}" style="background:${x.c}" title="${x.n}">${x.s}</span>`).join("")}</div></div></div>`;
+  }
+  function updateBar() {
+    const p = S.sync.pct; const f = $("#sbfill"), t = $("#sbtx");
+    if (f) f.style.width = Math.round(p * 100) + "%";
+    if (t && !S.sync.done) t.innerHTML = `<b>Syncing your inbox</b> · ${Math.round(total() * p).toLocaleString("en-US")} of ~${total().toLocaleString("en-US")} messages`;
+    document.querySelectorAll(".nchip").forEach((el, i, all) => el.classList.toggle("ok", p > (i + 1) / (all.length + 1)));
+  }
+  const readyBar = () => S.sync.done ? `<div class="readybar"><span class="ic">✓</span><div><b>Your inbox is ready</b><p>${total().toLocaleString("en-US")} messages sorted. Your agents already prepared suggestions.</p></div><button class="btn btn-pri" data-next="1">Open my inbox ${ic("arrow-right")}</button></div>` : "";
+
+  // ---------- A · Train your agents (quiz, unlock one by one)
+  function agentsRail(mode) {
+    return `<div class="card agents">${AGENTS.map((a, i) => {
+      const unlocked = mode === "A" ? A.unlocked.includes(a.id) : B.unlocked.includes(a.id);
+      const cur = mode === "A" ? (TRAIN[A.i] && TRAIN[A.i].a === a.id) : B.cur === i;
+      const need = TRAIN.filter((t) => t.a === a.id).length, got = A.trained[a.id] || 0;
+      return `<button class="ag ${unlocked ? "" : "locked"} ${cur ? "cur" : ""}" ${mode === "B" ? `data-bag="${i}"` : ""}><span class="av ${unlocked ? "unl" : ""}" style="background:${a.c}">${ic(a.i)}</span><span class="t"><b>${a.n}</b><span>${unlocked ? "Unlocked · " + a.role.toLowerCase() : a.role}</span>${mode === "A" ? `<span class="pips">${Array.from({ length: need }, (_, k) => `<i class="${k < got ? "f" : ""}">.</i>`).join("")}</span>` : ""}</span>${unlocked ? `<span class="chip ok">${ic("check")}</span>` : `<span class="lock">${ic("feature-lock")}</span>`}</button>`; }).join("")}</div>`;
+  }
+  function variantA() {
+    const t = TRAIN[A.i];
+    let body;
+    if (!t) body = `<div class="card q"><h2 style="font-size:20px;color:var(--navy)">All 5 agents are trained 🎉</h2><p style="color:var(--ink2);margin-top:6px">They will use your answers as their first guidelines. You can change them anytime in each agent's configuration.</p>
+      ${S.sync.done ? "" : `<p style="margin-top:14px" class="chip butter"><span class="pulse"></span>Finishing the sync…</p>`}</div>`;
+    else {
+      const a = agent(t.a), net = netOf(t.net);
+      body = `<div class="card q"><div style="display:flex;align-items:center;gap:8px"><span class="chip"><span class="d" style="background:${a.c}"></span>Training ${a.n}</span><span class="chip">${A.i + 1} / ${TRAIN.length}</span><span style="flex:1"></span><span style="font-size:12.5px;color:var(--ink2)">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>
+        <div class="ctx" style="margin-top:14px"><span class="ph"></span><div>On your post<br><b style="color:var(--ink)">${esc(POST)}</b></div></div>
+        <div class="msg"><div class="who"><span class="nchip" style="background:${net.c};width:20px;height:20px">${net.s}</span><b>${esc(t.who)}</b> commented</div><p>${esc(t.text)}</p></div>
+        <div class="qq">What would you do?</div>
+        <div class="opts">${t.opts.map(([icn, l, d], k) => `<button class="opt ${A.picked === k ? "pick" : ""}" data-pick="${k}">${ic(icn)}<span><b>${l}</b><span>${esc(d)}</span></span></button>`).join("")}</div>
+        ${A.picked != null ? `<div class="fb">${ic("sparkles")}<span>Got it. ${a.n} will do the same with messages like this one.</span><span style="flex:1"></span><button class="btn btn-pri btn-sm" data-anext="1">Next ${ic("arrow-right")}</button></div>` : ""}</div>`;
+    }
+    return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>Answer a few typical messages. Each answer teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
+      ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}
+      ${note("<b>Variant A · Train (quiz, inspired by Blabla).</b> Fake messages shaped by the business category. Each answer is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime.")}</div></div>`;
+  }
+
+  // ---------- B · Unlock your agents (micro-config, prefilled)
+  function variantB() {
+    const a = AGENTS[B.cur];
+    let form = "";
+    if (a.id === "engagement") form = `<div><div class="fld"><label>How do you sound with fans?</label></div><div class="choices" style="margin-top:8px">${["Warm", "Playful", "Professional"].map((x) => `<button class="choice ${B.tone === x ? "on" : ""}" data-tone="${x}">${x}</button>`).join("")}</div></div>
+      <label class="chk"><input type="checkbox" ${B.emoji ? "checked" : ""} data-emoji="1"><span>Use emojis<small>One at most per reply</small></span></label>
+      <div class="preview"><b>Preview</b>${B.tone === "Professional" ? "Thank you for your kind words, Maya." : B.tone === "Playful" ? "Your flat smells like a candle shop now? Mission accomplished, Maya" : "So happy it fills your home, Maya!"}${B.emoji ? " 🕯️" : ""}</div>`;
+    else if (a.id === "moderation") form = `<div class="fld"><label>What should it hide?</label></div>
+      ${[["spam", "Spam and bots", "“Grow your followers”, fake giveaways"], ["scam", "Scams with links", "Deleted, not just hidden"], ["insult", "Insults and abuse", "Never real criticism of your products"], ["competitor", "Competitor promotions", "Comments pushing another brand"]].map(([k, l, d]) => `<label class="chk"><input type="checkbox" ${B.hide[k] ? "checked" : ""} data-hide="${k}"><span>${l}<small>${d}</small></span></label>`).join("")}`;
+    else if (a.id === "support") form = `<div class="fld"><label>Where should it find answers?</label><small>We found these pages on your website</small></div>
+      ${["halden.co/faq", "halden.co/shipping", "halden.co/returns"].map((u) => `<div class="src">${ic("bookmark")}<span>${u}</span><span class="ded">Deduced, to confirm</span><span class="ok">✓ Read</span></div>`).join("")}
+      <button class="btn btn-sec btn-sm" style="align-self:flex-start" onclick="return false">${ic("plus")}Add a page or a document</button>`;
+    else if (a.id === "lead") form = `<div class="fld"><label>Your shop</label><div style="display:flex;gap:8px;align-items:center"><input class="inp" value="${esc(B.shop)}" data-bshop="1"><span class="ded">Deduced from halden.co</span></div><small>24 products found. Lead-gen matches each question to the right product.</small></div>
+      <label class="chk"><input type="checkbox" ${B.dm ? "checked" : ""} data-bdm="1"><span>Send the product link by DM<small>Never in public</small></span></label>
+      <div class="fld"><label>A code for people ready to buy? <small>(optional)</small></label><input class="inp" placeholder="e.g. WELCOME10" value="${esc(B.promo)}" data-bpromo="1"></div>`;
+    else form = `<div class="fld"><label>Where should business requests go?</label><div style="display:flex;gap:8px;align-items:center"><input class="inp" value="${esc(B.email)}" data-bemail="1"><span class="ded">Deduced, to confirm</span></div><small>Partnerships thanks them, asks one question to qualify, then moves to email.</small></div>`;
+    const done = B.unlocked.includes(a.id);
+    const body = `<div class="card cfg"><div style="display:flex;align-items:center;gap:12px"><span class="ag" style="padding:0;width:auto"><span class="av" style="background:${a.c}">${ic(a.i)}</span></span><div style="flex:1"><h2>${a.n}</h2><p class="sub">${a.role}. ${B.cur + 1} of ${AGENTS.length}.</p></div>${done ? `<span class="chip ok">${ic("check")}Unlocked</span>` : ""}</div>
+      ${form}
+      <div style="display:flex;gap:8px;justify-content:flex-end"><button class="btn btn-ghost" data-bskip="1">Later</button><button class="btn btn-pri" data-bunlock="1">${done ? "Next agent" : "Unlock " + a.n} ${ic("arrow-right")}</button></div></div>`;
+    return `<div class="sy-h"><div><h1>While we sync, set up your agents</h1><p>Most answers are already filled from ${esc(S.company)}'s website. Check them and unlock each agent.</p></div></div>
+      ${readyBar()}<div class="two">${agentsRail("B")}<div>${body}
+      ${note("<b>Variant B · Unlock (micro-config).</b> Collects what enriches the knowledge base (FAQ, shop, tone, moderation rules) while the sync runs. Everything we can deduce is prefilled and flagged “Deduced, to confirm”, so the user only validates. Order: Engagement first.")}</div></div>`;
+  }
+
+  // ---------- C · Watch it sort (live stream)
+  let cIdx = 0;
+  function liveTick(p) {
+    const target = Math.round(total() * p);
+    C.counts.read = target;
+    C.counts.lead = Math.round(target * 0.003); C.counts.support = Math.round(target * 0.006); C.counts.engagement = Math.round(target * 0.05); C.counts.moderation = Math.round(target * 0.05); C.counts.partnerships = Math.round(target * 0.0015);
+    if (Math.random() < 0.55) { C.stream.unshift(STREAM[cIdx++ % STREAM.length]); C.stream = C.stream.slice(0, 9); }
+    if (S.variant === "C" && FLOW[S.step].k === "sync") renderCLive();
+  }
+  function cCounters() {
+    const saved = Math.round((C.counts.engagement * 0.2 + C.counts.moderation * 0.3 + (C.counts.support + C.counts.lead + C.counts.partnerships) * 2));
+    return `<div class="counters">
+      <div class="card cnt big"><div><div class="n">${C.counts.read.toLocaleString("en-US")}</div><div class="l">messages read and sorted</div></div><div style="flex:1"></div><div style="text-align:right"><div class="n" style="font-size:28px">~${saved >= 60 ? Math.floor(saved / 60) + " h " + (saved % 60) + " min" : saved + " min"}</div><div class="l" style="justify-content:flex-end">of work your agents prepared</div></div></div>
+      ${[["lead", "leads waiting for a reply"], ["support", "questions with an answer drafted"], ["engagement", "happy comments to like"], ["moderation", "spam and scams caught"]].map(([k, l]) => { const a = agent(k); return `<div class="card cnt"><div class="n">${C.counts[k].toLocaleString("en-US")}</div><div class="l"><span class="d" style="width:7px;height:7px;border-radius:50%;background:${a.c};display:inline-block"></span>${l}</div></div>`; }).join("")}
+    </div>`;
+  }
+  function cFeed() {
+    return `<div class="card feed"><h3><span class="pulse"></span>Your agents, live</h3>${C.stream.map(([ag, net, text, tag]) => { const a = agent(ag), n = netOf(net); return `<div class="fi"><span class="nb" style="background:${n.c}">${n.s}</span><div><p>${esc(text)}</p><div class="tag"><span class="chip"><span class="d" style="background:${a.c}"></span>${a.n} · ${tag}</span></div></div></div>`; }).join("") || `<p style="color:var(--ink2);padding:10px 0">Reading your first messages…</p>`}</div>`;
+  }
+  function cTry() {
+    if (S.sync.pct < 0.35 || C.tried >= 2) return C.tried >= 2 ? `<div class="card try"><b style="color:var(--navy)">Nice.</b> <span style="color:var(--ink2)">That's how you'll work with your agents: they prepare, you approve.</span></div>` : "";
+    const ex = C.tried === 0 ? { who: "Lena Park", text: "need this for my mom's birthday on Friday, still in stock?", reply: "In stock! It ships in 24 h so it arrives on time. Link in your DMs 💛", a: "lead" } : { who: "Ben Carter", text: "is the wax vegan?", reply: "Yes, it's 100% plant wax, vegan and cruelty free.", a: "support" };
+    const a = agent(ex.a);
+    return `<div class="card try"><span class="chip butter">${ic("sparkles")}Your first real suggestion</span>
+      <p style="margin-top:10px;color:var(--ink2);font-size:13px"><b style="color:var(--ink)">${ex.who}</b> asked: “${esc(ex.text)}”</p>
+      <p style="margin-top:8px;font-size:12.5px;color:var(--ink2)"><span class="d" style="width:7px;height:7px;border-radius:50%;background:${a.c};display:inline-block"></span> ${a.n} suggests this reply</p>
+      <textarea class="draft" rows="2">${esc(ex.reply)}</textarea>
+      <div class="row"><button class="btn btn-sec btn-sm" data-ctry="no">${ic("close")}Refuse</button><button class="btn btn-pri btn-sm" data-ctry="yes">${ic("paper-plane")}Send</button></div></div>`;
+  }
+  function renderCLive() { const l = $("#clive"); if (l) l.innerHTML = cCounters() + `<div id="ctry">${cTry()}</div>`; const f = $("#cfeed"); if (f) f.innerHTML = cFeed(); }
+  function variantC() {
+    return `<div class="sy-h"><div><h1>Your agents are sorting your inbox</h1><p>Watch them read ${esc(S.company)}'s messages. As soon as the first ones are ready, try one.</p></div></div>
+      ${readyBar()}<div class="live3"><div id="clive">${cCounters()}<div id="ctry">${cTry()}</div></div><div id="cfeed">${cFeed()}</div></div>
+      ${note("<b>Variant C · Watch it sort.</b> No questions: the waiting time becomes a demo of the value (counters, live stream, time of work prepared). After ~35% of the sync, the user tries 2 real suggestions. Best if the sync is short (20 s); with 2 min it may feel passive.")}`;
+  }
+
+  // ---------- D · Chat with Archie
+  const DSCRIPT = [
+    { a: () => `Hi ${esc(S.first)}! I'm syncing ${esc(S.company)}'s messages, it takes ${S.syncSec === 20 ? "a few seconds" : "about 2 minutes"}. Can I ask you 3 quick things meanwhile? It helps your agents answer like you.`, qr: ["Sure", "Skip, show me the inbox"] },
+    { a: () => `First, a happy customer:<div class="ctx"><b>Maya Lin</b> · “obsessed with this smell 😍 my whole flat smells amazing”</div>What should Engagement do with comments like this?`, qr: ["Like it", "Like and thank them", "Nothing"] },
+    { a: () => `Got it. Now someone ready to buy:<div class="ctx"><b>Lena Park</b> · “need this for my mom's birthday on Friday, still in stock?”</div>Should Lead-gen reply and send the product link by DM?`, qr: ["Yes, always", "Ask me first", "Never"] },
+    { a: () => `Last one. Spam like “DM us to grow your followers fast 🚀”: hide it or delete it?`, qr: ["Hide it", "Delete it", "Leave it"] },
+    { a: () => `Perfect, your agents have their first guidelines. ${S.sync.done ? "Your inbox is synced and ready." : "I'm finishing the sync, I'll let you know."}`, qr: [] }
+  ];
+  function dPush(role, html) { Dc.msgs.push({ role, html }); }
+  function dNext() {
+    const step = DSCRIPT[Dc.idx]; if (!step) return;
+    Dc.wait = true; renderD();
+    setTimeout(() => { Dc.wait = false; dPush("archie", step.a()); Dc.idx++; renderD(); }, 900);
+  }
+  function renderD() {
+    const box = $("#dchat"); if (!box) return;
+    const last = DSCRIPT[Dc.idx - 1];
+    box.innerHTML = Dc.msgs.map((m) => m.role === "archie" ? `<div class="bub"><span class="av"><img src="assets/Mono_Archie_orange.svg" alt=""></span><div class="bx">${m.html}</div></div>` : `<div class="bub me"><div class="bx">${esc(m.html)}</div></div>`).join("")
+      + (Dc.wait ? `<div class="bub"><span class="av"><img src="assets/Mono_Archie_orange.svg" alt=""></span><div class="bx"><span class="typing"><i>.</i><i>.</i><i>.</i></span></div></div>` : "")
+      + (!Dc.wait && last && last.qr.length ? `<div class="qr">${last.qr.map((q) => `<button data-qr="${esc(q)}">${esc(q)}</button>`).join("")}</div>` : "")
+      + `<div style="padding-left:40px"><span class="stat"><span class="pulse"></span>${S.sync.done ? "Inbox synced" : "Syncing your inbox…"}</span></div>`;
+  }
+  function variantD() {
+    setTimeout(() => { if (!Dc.msgs.length) dNext(); else renderD(); }, 50);
+    return `<div class="sy-h"><div><h1>Archie</h1><p>The first experience on archi.app is a conversation. Archie asks while the inbox syncs.</p></div></div>
+      ${readyBar()}<div class="chat" id="dchat"></div>
+      <div style="max-width:720px;margin:0 auto">${note("<b>Variant D · Chat.</b> Matches the 26/11 decision: the first experience on archi.app is conversational, not a dashboard. Same training as A, in a few quick replies. Low effort for the user, easy to skip.")}</div>`;
+  }
+
+  // ---------- sync screen + day 1 inbox
+  function scrSync() {
+    startSync();
+    const body = S.variant === "A" ? variantA() : S.variant === "B" ? variantB() : S.variant === "C" ? variantC() : variantD();
+    return `<div class="sy">${syncBar()}<div class="sy-main">${body}</div></div>`;
+  }
+  function scrInbox() {
+    const trained = S.variant === "A" ? A.unlocked.length : S.variant === "B" ? B.unlocked.length : 5;
+    const L = [["moderation", "Hid 112 spam comments and flagged 30 scams to delete", "eye-off"], ["engagement", "Prepared 64 likes on positive comments", "heart"], ["lead", "Spotted 6 buying questions and drafted replies with product links", "target"], ["support", "Drafted 14 answers from your FAQ", "single-chat-bubble"], ["partnerships", "Found 4 business requests", "megaphone"], ["moderation", `Read and sorted ${total().toLocaleString("en-US")} messages`, "check"]];
+    return `<div class="app"><nav class="nav"><img src="assets/Full_Logo_principal_Archie_orange.svg" alt="Archie">
+      <button class="ni">${ic("feature-archie")}Archie</button><button class="ni">${ic("feature-publishing")}Publishing</button>
+      <button class="ni">${ic("feature-inbox")}Agentic Inbox</button><button class="ni sub on">Overview</button>
+      ${AGENTS.map((a) => `<button class="ni sub"><span class="d" style="background:${a.c}"></span>${a.n}<span class="n">${{ engagement: 64, moderation: 142, support: 14, lead: 6, partnerships: 4 }[a.id]}</span></button>`).join("")}</nav>
+      <section class="inbox"><h1>Welcome to your Agentic Inbox, ${esc(S.first)}</h1><p class="lead">Your agents went through ${total().toLocaleString("en-US")} messages. Here is what they did, and what waits for you.</p>
+        <div class="card wait"><span class="chip butter">${ic("sparkles")}230 suggestions</span><span><b>6 leads</b> are waiting for a reply. Start there.</span><span style="flex:1"></span><a class="btn btn-pri btn-sm" href="../#v92" target="_blank" rel="noopener">Review leads ${ic("arrow-right")}</a></div>
+        <div class="card log"><h2><span class="pulse"></span>Log</h2>${L.map(([ag, t, icn]) => { const a = agent(ag); return `<div class="li">${ic(icn)}<span>${esc(t)}</span><span class="ag2"><span class="d" style="width:6px;height:6px;border-radius:50%;background:${a.c};display:inline-block"></span>${a.n}</span><span class="sp"></span><span class="chip">Suggest</span><time>just now</time></div>`; }).join("")}</div>
+        ${note(`<b>Day 1, V0:</b> the overview is the Log only (no metric cards yet, decision 26/11). ${trained ? `${trained} agent${trained > 1 ? "s" : ""} trained during the sync.` : ""} “Review leads” opens the agents prototype (V9.2).`)}
+      </section></div>`;
+  }
+
+  // ---------- render
+  const SCREENS = { signup: scrSignup, verify: scrVerify, user: scrUser, company: scrCompany, connect: scrConnect, sync: scrSync, inbox: scrInbox };
+  function render() {
+    document.body.classList.toggle("nonotes", !S.notes);
+    pb();
+    const k = FLOW[S.step].k;
+    $("#root").innerHTML = SCREENS[k]();
+    if (k === "signup") startRotator();
+    const u = new URL(location.href); u.searchParams.set("step", k); u.searchParams.set("v", S.variant); u.searchParams.set("sync", S.syncSec); history.replaceState(null, "", u);
+  }
+  function go(i) { S.step = Math.max(0, Math.min(FLOW.length - 1, i)); if (FLOW[S.step].k === "sync" && !Object.keys(S.connected).length) { S.connected = { instagram: true, facebook: true, tiktok: true }; } window.scrollTo(0, 0); render(); }
+  let tt;
+  function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
+  function resetSync() { clearInterval(syncT); S.sync = { start: 0, pct: 0, done: false }; C.stream = []; Object.keys(C.counts).forEach((k) => (C.counts[k] = 0)); C.tried = 0; Dc.msgs = []; Dc.idx = 0; Dc.wait = false; }
+
+  document.addEventListener("input", (e) => { const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
+    if (e.target.dataset.bshop) B.shop = e.target.value; if (e.target.dataset.bpromo) B.promo = e.target.value; if (e.target.dataset.bemail) B.email = e.target.value; });
+  document.addEventListener("change", (e) => { const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
+    if (e.target.dataset.emoji) { B.emoji = e.target.checked; render(); } if (e.target.dataset.hide) B.hide[e.target.dataset.hide] = e.target.checked; if (e.target.dataset.bdm) B.dm = e.target.checked; });
+  document.addEventListener("click", (e) => {
+    const g = (k) => e.target.closest(`[data-${k}]`); let el;
+    if ((el = g("step"))) { go(+el.dataset.step); return; }
+    if ((el = g("variant"))) { S.variant = el.dataset.variant; resetSync(); render(); return; }
+    if ((el = g("sync"))) { S.syncSec = +el.dataset.sync; resetSync(); render(); return; }
+    if ((el = g("notes"))) { S.notes = !S.notes; render(); return; }
+    if ((el = g("restart"))) { resetSync(); S.connected = {}; A.i = 0; A.picked = null; A.trained = {}; A.unlocked = []; B.cur = 0; B.unlocked = []; go(0); return; }
+    if ((el = g("next"))) { e.preventDefault(); if (el.disabled) return; go(S.step + 1); return; }
+    if ((el = g("prev"))) { go(S.step - 1); return; }
+    if ((el = g("net"))) { const k = el.dataset.net; if (S.connected[k]) { delete S.connected[k]; render(); return; } S.connecting = k; render(); setTimeout(() => { S.connected[k] = true; S.connecting = null; render(); }, 900); return; }
+    // A
+    if ((el = g("pick"))) { A.picked = +el.dataset.pick; render(); return; }
+    if ((el = g("anext"))) { const t = TRAIN[A.i]; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
+      if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); }
+      A.i++; A.picked = null; render(); return; }
+    // B
+    if ((el = g("tone"))) { B.tone = el.dataset.tone; render(); return; }
+    if ((el = g("bag"))) { B.cur = +el.dataset.bag; render(); return; }
+    if ((el = g("bunlock"))) { const a = AGENTS[B.cur]; if (!B.unlocked.includes(a.id)) { B.unlocked.push(a.id); toast(`${a.n} unlocked`); } B.cur = Math.min(AGENTS.length - 1, B.cur + 1); if (B.unlocked.length === AGENTS.length) toast("All agents unlocked"); render(); return; }
+    if ((el = g("bskip"))) { B.cur = Math.min(AGENTS.length - 1, B.cur + 1); render(); return; }
+    // C
+    if ((el = g("ctry"))) { C.tried++; toast(el.dataset.ctry === "yes" ? "Sent. That's it." : "Refused. The agent learns from it."); renderCLive(); return; }
+    // D
+    if ((el = g("qr"))) { const q = el.dataset.qr; dPush("me", q); if (q.startsWith("Skip")) { go(S.step + 1); return; } dNext(); return; }
+  });
+  render();
+})();
+</script>
+</body>
+</html>
