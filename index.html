@@ -66,12 +66,13 @@ function draw() {
     <div class="foot"><button id="reset">Reset this version</button><a href="${cur.src}" target="_blank" rel="noopener">Open alone ↗</a><a href="versions.html" target="_blank" rel="noopener">All versions ↗</a></div>`;
   document.title = `Agentic Inbox · ${cur.label}`;
 }
-function load(v) { cur = v; history.replaceState(null, "", "#" + v.k); f.src = v.src; draw(); }
+const bust = (src) => src + (src.includes("?") ? "&" : "?") + "t=" + Date.now();
+function load(v) { cur = v; history.replaceState(null, "", "#" + v.k); f.src = bust(v.src); draw(); }
 document.getElementById("pill").onclick = () => vs.classList.toggle("open");
 document.getElementById("pop").addEventListener("click", (e) => {
   const r = e.target.closest("[data-k]");
   if (r) { const v = V.find((x) => x.k === r.dataset.k); if (v.k !== cur.k) load(v); vs.classList.remove("open"); return; }
-  if (e.target.id === "reset") { f.src = cur.src; vs.classList.remove("open"); }
+  if (e.target.id === "reset") { f.src = bust(cur.src); vs.classList.remove("open"); }
 });
 document.addEventListener("keydown", (e) => { if (e.key === "Escape") vs.classList.remove("open"); });
 load(cur);
