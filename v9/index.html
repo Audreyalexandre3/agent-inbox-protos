@@ -332,6 +332,13 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .undo9:hover { background:var(--soft); } .undo9 svg { width:12px; height:12px; }
 .log li.l9 time { flex:none; min-width:38px; text-align:right; }
 @keyframes dropin { from { opacity:0; transform:translateY(-10px); } }
+.log li.l9.clk { cursor:pointer; border-radius:8px; transition:background .15s; margin:0 -8px; padding-left:8px; padding-right:8px; }
+.log li.l9.clk:hover { background:var(--soft); }
+.go9 { display:inline-flex; align-items:center; gap:2px; font-size:12px; font-weight:500; color:var(--fg); opacity:0; transition:opacity .15s; white-space:nowrap; flex:none; }
+.go9 svg { width:12px; height:12px; }
+.log li.l9.clk:hover .go9 { opacity:1; }
+.hit { animation:hit 1.6s ease; }
+@keyframes hit { 0%, 30% { background:#fff4d6; box-shadow:0 0 0 2px #f5c451; border-radius:10px; } 100% { background:transparent; box-shadow:none; } }
 .flash { animation:flash 1.2s ease; }
 @keyframes flash { 0% { box-shadow:0 0 0 3px var(--fg), var(--shadow); } 100% { box-shadow:var(--shadow); } }
 @media (max-width:1280px) { .ov5 { grid-template-columns:190px minmax(0, 1fr); } .ov5-r { grid-column:2; position:static; max-height:none; } }
@@ -741,9 +748,9 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     return `<ul class="log ${opts.fade ? "fade" : ""}">${L.map((e) => {
       const typing = !e.typed && e.by === "agent";
       const sv = savedOf(e), canUndo = e.ids.length && !e.undone && e.count;
-      return `<li class="l9 ${typing ? "new" : ""} ${e.undone ? "undone" : ""}" ${typing ? `data-tw="${e.lid}"` : ""}>${ic(e.icon || "check")}
+      return `<li class="l9 ${typing ? "new" : ""} ${e.undone ? "undone" : ""} ${opts.agent ? "clk" : ""}" data-lid="${e.lid}" ${opts.agent ? `data-openlog="${e.lid}" title="Open in ${AGENTS[e.agent].name}"` : ""} ${typing ? `data-tw="${e.lid}"` : ""}>${ic(e.icon || "check")}
         <span class="txt">${typing ? "" : esc(e.text)}${!typing && e.q && opts.quote ? ` <span class="faint">“${esc(e.q.length > 60 ? e.q.slice(0, 60) + "…" : e.q)}”</span>` : ""}</span>
-        ${opts.agent ? `<span class="ag2"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[e.agent].dot}"></span>${AGENTS[e.agent].short}</span>` : ""}<span class="sp"></span>
+        ${opts.agent ? `<span class="ag2"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[e.agent].dot}"></span>${AGENTS[e.agent].short}</span><span class="go9">Open ${ic("right")}</span>` : ""}<span class="sp"></span>
         ${sv ? `<span class="sv">${ic("clock")}${fmtMin(sv)} saved</span>` : ""}
         <span class="chip who ${e.by === "agent" ? "autot" : ""}" style="height:20px">${e.by === "agent" ? ic("bolt") + "Auto" : "You"}</span>
         ${canUndo ? `<button class="undo9" data-undo="${e.lid}">${ic("undo")}Undo</button>` : e.undone ? `<span class="faint" style="font-size:12px">Undone</span>` : ""}
@@ -766,7 +773,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const th = TH[x.theme];
     const alt = th.bulk.find((b) => b.a !== th.act && b.a !== "reply");
     const reply = th.act === "reply";
-    return `<div class="it ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}">
+    return `<div class="it ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
       <div style="min-width:0">
         <div class="who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers</span><span>· ${rel(x.at)}</span>${opts.agent ? `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[th.agent].dot}"></span>${AGENTS[th.agent].name}</span>` : ""}${opts.theme ? `<span class="chip">${th.label}</span>` : ""}${x.needs ? `<span class="chip">${ic("alert")}${esc(x.needs.split(":")[0])}</span>` : ""}${x.fresh ? '<span class="chip ok">New</span>' : ""}</div>
         <div class="txt">${esc(x.text)}</div>
@@ -1096,6 +1103,17 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     if (inMenu && !e.target.closest("button[data-undo], button[data-go]")) return;
     if ((el = g("tundo"))) { const f = $("#toast")._u; $("#toast").classList.remove("on"); f && f(); return; }
     if ((el = g("go"))) { S.route = el.dataset.go; S.tab = el.dataset.tab || "suggestions"; const ft = el.dataset.theme; if (ft) S.open[ft] = true; render(); $("#main").scrollTop = 0; if (ft) { const sec = document.getElementById("th-" + ft); if (sec) { $("#main").scrollTop = sec.offsetTop - 64; sec.animate([{ boxShadow: "0 0 0 3px #18181b" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 1400 }); } } return; }
+    if ((el = g("openlog")) && !e.target.closest("button")) {
+      const en = S.log.find((l) => l.lid === +el.dataset.openlog); if (!en) return;
+      S.route = en.agent; S.tab = "suggestions"; S.open[en.agent] = true; render();
+      const m = $("#main"); m.scrollTop = 0;
+      setTimeout(() => {
+        const pendingItem = en.ids.map((id) => items.find((x) => x.id === id)).find((x) => x && x.status === "pending");
+        const target = pendingItem ? document.getElementById("it-" + pendingItem.id) : document.querySelector(`#main .log [data-lid="${en.lid}"]`);
+        if (target) { m.scrollTop = target.getBoundingClientRect().top - m.getBoundingClientRect().top + m.scrollTop - 120; target.classList.remove("hit"); void target.offsetWidth; target.classList.add("hit"); }
+      }, 30);
+      return;
+    }
     if ((el = g("mode"))) { const [aid, mm] = el.dataset.mode.split(":"); if (S.mode[aid] !== mm) setMode(aid, mm); return; }
     if ((el = g("nudge"))) { const ag = S.nudge; if (el.dataset.nudge === "yes") setMode(ag, "auto"); else { S.declined[ag] = true; S.nudge = null; render(); toast("OK, we won't ask again for now."); } return; }
     if ((el = g("preview"))) { S.preview = !S.preview; render(); return; }
