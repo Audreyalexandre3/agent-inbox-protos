@@ -243,7 +243,8 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .act6 .tile .log { flex:1; overflow:auto; min-height:0; }
 @media (max-width:1300px) { .m6-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } .ov6 { height:auto; } .act6 .tile .log { max-height:420px; } }
 @media (max-width:760px) { .m6-grid { grid-template-columns:1fr; } .hero6 { flex-wrap:wrap; } }
-.act7 { padding:16px 18px; }
+.act7 { padding:16px 0 0; background:transparent; box-shadow:none; border-radius:0; border-top:1px solid var(--line); }
+.act7 .a7-h h2 { font-size:15px; }
 .a7-h { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
 .a7-h h2 { font-size:17px; font-weight:600; letter-spacing:-.01em; }
 .a7-h .muted { font-size:13px; }
@@ -311,12 +312,13 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .band > div { flex:1; min-width:0; } .band b { font-weight:600; } .band span:not(.aav) { display:block; font-size:12px; color:var(--muted); margin-top:2px; }
 @media (max-width:1100px) { .dash { grid-template-columns:repeat(2, minmax(0, 1fr)); } .dash .lead9 { grid-row:auto; grid-column:1 / -1; } }
 @media (max-width:700px) { .dash { grid-template-columns:1fr; } }
-.vh { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; }
-.vt { padding:14px 16px; border-radius:16px; background:#fff; box-shadow:var(--shadow); min-width:0; }
-.vt span { display:block; font-size:12.5px; color:var(--muted); font-weight:500; }
-.vt b { display:block; font-size:30px; font-weight:600; letter-spacing:-.03em; line-height:1.15; margin:4px 0 2px; }
-.vt em { display:block; font-style:normal; font-size:12.5px; color:var(--muted); }
-.vt.hl { background:var(--fg); box-shadow:none; } .vt.hl span, .vt.hl em { color:#a1a1aa; } .vt.hl b { color:#fff; }
+.vh { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:0; padding:2px 0 4px; }
+.vt { padding:0 18px; min-width:0; border-left:1px solid var(--line); }
+.vt:first-child { padding-left:0; border-left:0; }
+.vt span { display:block; font-size:12px; color:var(--muted); font-weight:500; }
+.vt b { display:block; font-size:22px; font-weight:600; letter-spacing:-.02em; line-height:1.2; margin:2px 0 1px; }
+.vt em { display:block; font-style:normal; font-size:12px; color:var(--faint); }
+.vt.hl b { color:var(--fg); }
 @media (max-width:1100px) { .vh { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
 .log li.l9 { display:flex; align-items:center; gap:8px; grid-template-columns:none; }
 .log li.l9 > svg { flex:none; }
