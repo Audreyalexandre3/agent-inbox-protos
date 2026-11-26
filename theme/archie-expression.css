@@ -77,7 +77,6 @@
 .xt .log li { font-size:15px; }
 .xt .act7, .xt .tile { border-radius:var(--x-radius-card); }
 .xt /* auto pill: green outline like a status, .xt not a filled badge */
-.ap-status.green { background:var(--ref-color-white); box-shadow:inset 0 0 0 1px var(--ref-color-green-40, #a9dcbf); }
 .xt /* nav: roomier */
 .ni { font-size:15px; min-height:38px; }
 .xt .ring { filter:drop-shadow(0 4px 12px rgba(33,46,68,.08)); }

@@ -755,8 +755,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
 .filters button.on span { background:var(--ref-color-white) !important; }
 .log li { font-size:15px; }
 .act7, .tile { border-radius:var(--x-radius-card); }
-/* auto pill: green outline like a status, not a filled badge */
-.ap-status.green { background:var(--ref-color-white); box-shadow:inset 0 0 0 1px var(--ref-color-green-40, #a9dcbf); }
+
 /* nav: roomier */
 .ni { font-size:15px; min-height:38px; }
 .ring { filter:drop-shadow(0 4px 12px rgba(33,46,68,.08)); }
@@ -1085,7 +1084,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
       <div class="nf"><button class="create">${ic("send")}Create post</button><button class="ni">${ic("bell")}Notifications<span class="n hot">8</span></button><button class="ni">${ic("help")}Help &amp; resources</button><button class="ni"><span class="av" style="width:22px;height:22px;font-size:10px">AA</span>Audrey Alexandre</button></div>`;
   }
   function header(crumbs) {
-    return `<div class="mh">${crumbs}<span class="sp"></span><span class="pill"><span class="live"></span>3 agents on · ${S.scanned} read</span></div>`;
+    return `<div class="mh">${crumbs}<span class="sp"></span><span class="ap-status green">3 agents on · ${S.scanned} read</span></div>`;
   }
   function ring(done, total) {
     const C = 2 * Math.PI * 42, pct = total ? done / total : 0;
@@ -1103,7 +1102,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
       return `<li class="l9 ${typing ? "new" : ""} ${e.undone ? "undone" : ""} ${opts.agent ? "clk" : ""}" data-lid="${e.lid}" ${opts.agent ? `data-openlog="${e.lid}" title="Open in ${AGENTS[e.agent].name}"` : ""} ${typing ? `data-tw="${e.lid}"` : ""}>${ic(e.icon || "check")}
         <span class="txt">${typing ? "" : esc(e.text)}${!typing && e.q && opts.quote ? ` <span class="faint">“${esc(e.q.length > 60 ? e.q.slice(0, 60) + "…" : e.q)}”</span>` : ""}</span>
         ${opts.agent ? `<span class="ag2"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[e.agent].dot}"></span>${AGENTS[e.agent].short}</span><span class="go9">Open ${ic("right")}</span>` : ""}<span class="sp"></span>
-        ${sv ? `<span class="sv">${ic("clock")}${fmtMin(sv)} saved</span>` : ""}
+        ${sv ? `<span class="ap-status green no-dot">${fmtMin(sv)} saved</span>` : ""}
         <span class="ap-status ${e.by === "agent" ? "green" : "grey"} who">${e.by === "agent" ? "Auto" : "You"}</span>
         ${canUndo ? `<button class="undo9" data-undo="${e.lid}">${ic("undo")}Undo</button>` : e.undone ? `<span class="faint" style="font-size:12px">Undone</span>` : ""}
         <time>${rel(e.t) === "now" ? clock(e.t) : rel(e.t)}</time><button class="kebab" data-menu="${e.lid}" aria-label="More actions">${ic("dots")}</button></li>`;
@@ -1320,7 +1319,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     const open = `<button class="ap-button stroked" data-go="${a.id}" data-theme="${t}">Open feed ${ic("right")}</button>`;
     if (S.auto[t]) {
       const done = S.log.filter((e) => e.by === "agent" && !e.undone && e.agent === a.id && e.icon === ACT[th.act].ic).reduce((m, e) => m + (e.count || 0), 0);
-      return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="chip autot">${ic("bolt")}On auto</span><span class="muted" style="font-size:13px">${done} ${ACT[th.act].past.toLowerCase()} since Sunday</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
+      return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="ap-status green">Auto</span><span class="muted" style="font-size:13px">${done} ${ACT[th.act].past.toLowerCase()} since Sunday</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
     }
     if (!xs.length) return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="ap-status green">All clear</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
     const s = xs.filter(sure);
@@ -1349,7 +1348,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
       <div class="ac-l">Latest suggestions</div>
       ${latest.length ? latest.map((x) => { const th = TH[x.theme]; return `<div class="sg"><span class="net ${x.net}">${x.net}</span><div style="min-width:0"><div class="tx"><b>${esc(x.author)}</b> ${esc(x.text)}</div><div class="meta">${x.needs ? `<span class="chip" style="height:18px">${ic("alert")}Needs you</span>` : `<span class="chip" style="height:18px">${th.label}</span>`}${x.theme === "buy" || th.act === "reply" ? `<span class="dr">→ ${esc(draftOf(x) || "Write a reply")}</span>` : `<span class="dr">→ ${ACT[th.act].w}</span>`}<span class="faint">${rel(x.at)}</span></div></div>
         ${x.needs ? `<button class="ap-button stroked" data-go="${a.id}">Open</button>` : `<button class="ap-button stroked" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`}</div>`; }).join("") : `<div class="empty">All clear.</div>`}
-      <div class="ac-f"><button class="ap-button primary orange" data-go="${a.id}">Open feed ${ic("right")}</button><button class="ap-icon-button stroked cog" data-go="${a.id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button><span class="sp"></span>${s.todo + s.needs ? "" : '<span class="chip ok">All clear</span>'}</div></section>`;
+      <div class="ac-f"><button class="ap-button primary orange" data-go="${a.id}">Open feed ${ic("right")}</button><button class="ap-icon-button stroked cog" data-go="${a.id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button><span class="sp"></span>${s.todo + s.needs ? "" : '<span class="ap-status green">All clear</span>'}</div></section>`;
   }
 
   // ---------- agent page
@@ -1411,7 +1410,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     const all = S.log.filter((e) => e.t >= LAST && (!aid || e.agent === aid));
     const autoN = all.filter((e) => e.by === "agent" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
     const youN = all.filter((e) => e.by === "you" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
-    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything ${aid ? "this agent" : "your agents"} did since Sunday, live. ${autoN} on their own, ${youN} approved by you.</span><span class="sp"></span><span class="sv big">${ic("clock")}${fmtMin(S.log.filter(f).reduce((m, e) => m + savedOf(e), 0))} saved${(!aid && S.actAgent !== "all") || S.actWho !== "all" ? " in this view" : " since Sunday"}</span></div>
+    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything ${aid ? "this agent" : "your agents"} did since Sunday, live. ${autoN} on their own, ${youN} approved by you.</span><span class="sp"></span><span class="ap-status green no-dot">${fmtMin(S.log.filter(f).reduce((m, e) => m + savedOf(e), 0))} saved${(!aid && S.actAgent !== "all") || S.actWho !== "all" ? " in this view" : " since Sunday"}</span></div>
       <div class="filters a7-f">${aid ? "" : `<button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>`}${aid ? "" : Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.short}</button>`).join("")}
         <span class="sp"></span><button class="${S.actWho === "all" ? "on" : ""}" data-actwho="all">Everyone</button><button class="${S.actWho === "agent" ? "on" : ""}" data-actwho="agent">${ic("bolt")}Auto</button><button class="${S.actWho === "you" ? "on" : ""}" data-actwho="you">You</button></div>
       ${logHTML(f, { agent: !aid, quote: true, limit: 400 })}</section>`;
@@ -1423,7 +1422,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
     const youN = all.filter((e) => e.by === "you" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
     return `${header(`<b>Agentic Inbox</b><span class="cr">/ Activity</span>`)}<div class="wrap">
       <button class="ap-button ghost grey" data-go="overview" style="margin-left:-10px">${ic("left")}Overview</button>
-      <div class="ahd" style="margin-top:8px"><span class="aav" style="background:var(--fg)">${ic("bolt")}</span><div style="flex:1"><h1>Activity</h1><p class="muted">Everything your agents did since Sunday, live. ${autoN} actions on their own, ${youN} approved by you.</p></div><span class="pill"><span class="live"></span>Live</span></div>
+      <div class="ahd" style="margin-top:8px"><span class="aav" style="background:var(--fg)">${ic("bolt")}</span><div style="flex:1"><h1>Activity</h1><p class="muted">Everything your agents did since Sunday, live. ${autoN} actions on their own, ${youN} approved by you.</p></div><span class="ap-status green">Live</span></div>
       <div class="filters" style="margin-top:20px"><button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>${Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.name}</button>`).join("")}
         <span class="sp"></span><button class="${S.actWho === "all" ? "on" : ""}" data-actwho="all">Everyone</button><button class="${S.actWho === "agent" ? "on" : ""}" data-actwho="agent">${ic("bolt")}Auto</button><button class="${S.actWho === "you" ? "on" : ""}" data-actwho="you">You</button></div>
       <section class="card tile" style="margin-top:14px">${logHTML(f, { agent: true, quote: true, limit: 400 })}</section>
