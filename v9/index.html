@@ -444,6 +444,30 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .draft { flex:1; min-width:0; padding:6px 10px; border-radius:9px; background:var(--soft); border:1px solid transparent; resize:none; overflow:hidden; line-height:1.45; font-size:13.5px; }
 .draft:focus { outline:none; background:#fff; border-color:var(--line2); }
 .it .acts { display:flex; gap:4px; align-items:center; padding-top:2px; }
+.it.it9 { display:block; padding:16px 0; }
+.i9-who { display:flex; align-items:center; gap:8px; font-size:12.5px; color:var(--muted); flex-wrap:wrap; }
+.i9-who b { color:var(--fg); font-weight:600; font-size:13.5px; }
+.i9-msg { margin:6px 0 0; font-size:15px; line-height:1.45; }
+.i9-s { margin-top:12px; padding:12px 14px; border-radius:14px; background:var(--soft); }
+.i9-sh { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted); }
+.i9-sh b { color:var(--fg); font-weight:600; }
+.i9-av { width:20px; height:20px; border-radius:6px; display:grid; place-items:center; color:#fff; flex:none; }
+.i9-av svg { width:11px; height:11px; }
+.i9-conf { display:inline-flex; align-items:center; gap:6px; font-size:12px; }
+.i9-in { position:relative; display:flex; align-items:flex-start; gap:8px; margin-top:10px; padding:10px 12px; border-radius:10px; background:#fff; box-shadow:inset 0 0 0 1px var(--line2); cursor:text; transition:box-shadow .15s; }
+.i9-in:hover { box-shadow:inset 0 0 0 1px var(--faint); }
+.i9-in:focus-within { box-shadow:inset 0 0 0 2px var(--fg); }
+.i9-in > svg { width:14px; height:14px; color:var(--faint); margin-top:3px; flex:none; }
+.i9-in .draft { flex:1; padding:0; border:0; background:none; font-size:14px; line-height:1.5; }
+.i9-in .draft:focus { background:none; border:0; }
+.i9-hint { position:absolute; right:10px; bottom:-18px; font-size:11px; color:var(--faint); opacity:0; transition:opacity .15s; }
+.i9-in:hover .i9-hint { opacity:1; }
+.i9-in:focus-within .i9-hint { opacity:0; }
+.i9-dm { display:flex; align-items:center; gap:6px; margin-top:8px; font-size:12.5px; color:var(--muted); }
+.i9-dm svg { width:13px; height:13px; } .i9-dm b { color:var(--fg); font-weight:500; }
+.i9-why { display:flex; align-items:center; gap:6px; margin-top:10px; font-size:12.5px; color:var(--muted); }
+.i9-why svg { width:13px; height:13px; color:var(--faint); }
+.i9-a { display:flex; align-items:center; gap:6px; margin-top:12px; }
 
 /* config */
 .cfg { display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:16px; margin-top:18px; align-items:start; }
@@ -773,17 +797,22 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       ${logHTML(filter, { agent: agentChip, quote: !lim, fade: agentChip && !lim, limit: lim || (agentChip ? 9 : 40) })}</section>`;
   }
   function itemRow(x, first, opts = {}) {
-    const th = TH[x.theme];
+    const th = TH[x.theme], a = AGENTS[th.agent];
     const alt = th.bulk.find((b) => b.a !== th.act && b.a !== "reply");
     const reply = th.act === "reply";
-    return `<div class="it ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
-      <div style="min-width:0">
-        <div class="who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers</span><span>· ${rel(x.at)}</span>${opts.agent ? `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[th.agent].dot}"></span>${AGENTS[th.agent].name}</span>` : ""}${opts.theme ? `<span class="chip">${th.label}</span>` : ""}${x.needs ? `<span class="chip">${ic("alert")}${esc(x.needs.split(":")[0])}</span>` : ""}${x.fresh ? '<span class="chip ok">New</span>' : ""}</div>
-        <div class="txt">${esc(x.text)}</div>
-        <div class="why">${ic("spark")}${esc(x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why)} <span class="faint">· ${Math.round(x.conf * 100)}% sure</span></div>
-        ${reply ? `<div class="sugg"><span class="tag">${ic("reply")}Reply</span><textarea class="draft" rows="1" data-draft="${x.id}" placeholder="Write your reply">${esc(draftOf(x))}</textarea></div>${x.dm ? `<div class="sugg"><span class="tag">${ic("send")}DM</span><span class="muted" style="font-size:13px;padding-top:2px">Product link: ${esc(x.dm)}</span></div>` : ""}` : ""}
+    const why = x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why;
+    const what = reply ? "suggests this reply" : th.act === "like" ? "suggests liking this comment" : th.act === "delete" ? "suggests deleting this comment" : "suggests hiding this comment";
+    const primary = reply ? `<button class="btn sm pri" data-do="${x.id}:reply">${ic("send")}Send</button>` : `<button class="btn sm pri" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
+    return `<div class="it it9 ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
+      <div class="i9-who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span>${opts.theme ? `<span class="chip">${th.label}</span>` : ""}${x.fresh ? '<span class="chip ok">New</span>' : ""}</div>
+      <p class="i9-msg">${esc(x.text)}</p>
+      <div class="i9-s">
+        <div class="i9-sh"><span class="i9-av" style="background:${a.dot}">${ic(a.icon)}</span><b>${a.short}</b><span>${what}</span><span class="sp"></span><span class="i9-conf"><span class="conf"><span style="width:${Math.round(x.conf * 100)}%"></span></span>${Math.round(x.conf * 100)}% sure</span></div>
+        ${reply ? `<label class="i9-in">${ic("pen")}<textarea class="draft" rows="1" data-draft="${x.id}" placeholder="Write a reply…">${esc(draftOf(x))}</textarea><span class="i9-hint">Click to edit</span></label>
+          ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}` : ""}
+        <div class="i9-why">${ic("spark")}${esc(why)}</div>
       </div>
-      <div class="acts"><button class="btn sm ${opts.pri ? "pri" : ""}" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>${alt ? `<button class="btn sm" data-do="${x.id}:${alt.a}">${ACT[alt.a].w}</button>` : ""}<button class="btn sm icon ghost" data-dismiss="${x.id}" title="Not right">${ic("x")}</button></div>
+      <div class="i9-a">${alt ? `<button class="btn sm ghost" data-do="${x.id}:${alt.a}">${ACT[alt.a].w} instead</button>` : ""}<span class="sp"></span><button class="btn sm" data-dismiss="${x.id}">${ic("x")}Refuse</button>${primary}</div>
     </div>`;
   }
 
