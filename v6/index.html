@@ -219,6 +219,30 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .mr-c span { white-space:nowrap; }
 .mr-t h3 { white-space:nowrap; }
 @container (max-width:760px) { .mr { flex-wrap:wrap; row-gap:10px; } .mr-a { width:100%; justify-content:flex-start; padding-left:50px; } }
+.ov6 { height:calc(100% - 48px); display:flex; flex-direction:column; gap:14px; padding:20px 24px; min-height:520px; }
+.hero6 { display:flex; align-items:center; gap:24px; }
+.hero6 > div:first-child { flex:1; min-width:0; }
+.hero6 h1 { font-size:24px; font-weight:600; letter-spacing:-.02em; }
+.hero6 p.muted { font-size:14px; margin-top:2px; }
+.hero6 .value { margin-top:0; max-width:520px; justify-content:flex-end; }
+.hero6 .ring { width:64px; height:64px; } .hero6 .ring .c b { font-size:15px; } .hero6 .ring .c small { font-size:10.5px; }
+.m6-grid { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:12px; }
+.mc6 { padding:14px 14px 12px; display:flex; flex-direction:column; min-width:0; }
+.m6-h { display:flex; align-items:center; gap:8px; }
+.m6-h .mr-i { width:28px; height:28px; border-radius:9px; } .m6-h .mr-i svg { width:15px; height:15px; }
+.m6-h h3 { font-size:14px; font-weight:600; line-height:1.25; min-width:0; }
+.m6-h .chip { height:20px; font-size:11px; }
+.m6-h .btn.cog { width:28px; height:28px; border-radius:8px; }
+.m6-n { font-size:30px; font-weight:600; letter-spacing:-.03em; line-height:1; margin-top:12px; }
+.mc6 .mr-c { font-size:12px; gap:2px 10px; margin-top:6px; }
+.m6-a { margin-top:8px; display:flex; gap:6px; flex-wrap:wrap; } .m6-a .chip { height:20px; font-size:11px; }
+.m6-f { display:flex; gap:6px; flex-wrap:wrap; margin-top:auto; padding-top:12px; }
+.m6-f .btn.sm { height:28px; padding:0 9px; font-size:12.5px; }
+.act6 { flex:1; min-height:0; display:flex; }
+.act6 .tile { flex:1; display:flex; flex-direction:column; min-height:0; }
+.act6 .tile .log { flex:1; overflow:auto; min-height:0; }
+@media (max-width:1300px) { .m6-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } .ov6 { height:auto; } .act6 .tile .log { max-height:420px; } }
+@media (max-width:760px) { .m6-grid { grid-template-columns:1fr; } .hero6 { flex-wrap:wrap; } }
 .flash { animation:flash 1.2s ease; }
 @keyframes flash { 0% { box-shadow:0 0 0 3px var(--fg), var(--shadow); } 100% { box-shadow:var(--shadow); } }
 @media (max-width:1280px) { .ov5 { grid-template-columns:190px minmax(0, 1fr); } .ov5-r { grid-column:2; position:static; max-height:none; } }
@@ -644,10 +668,10 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       <div class="mc-st">${tiles}</div><div class="mc-f">${ctas}${openB(a, theme)}</div></section>`;
   }
   // V6: every overview card is a single compact row with its bulk actions
-  function mrow(id, icon, title, a, counts, ctas, theme, extra = "") {
-    return `<section class="card mr" id="sec-${id}"><span class="mr-i">${ic(icon)}</span>
-      <div class="mr-l"><div class="mr-t"><h3>${title}</h3>${a ? chipA(a) : ""}${extra}</div><div class="mr-c">${counts}</div></div>
-      <div class="mr-a">${ctas}${a ? openB(a, theme) + cogB(a) : ""}</div></section>`;
+  function mrow(id, icon, title, a, counts, ctas, theme, extra = "", big = "") {
+    return `<section class="card mc6" id="sec-${id}"><div class="m6-h"><span class="mr-i">${ic(icon)}</span><h3>${title}</h3><span class="sp"></span>${a ? cogB(a) : ""}</div>
+      <div class="m6-n">${big}</div><div class="mr-c">${counts}</div>${a || extra ? `<div class="m6-a">${a ? chipA(a) : ""}${extra}</div>` : ""}
+      <div class="m6-f">${ctas}${a ? openB(a, theme) : ""}</div></section>`;
   }
   const cnt = (n, l) => `<span><b>${n}</b> ${l}</span>`;
   const okChip = `<span class="chip ok">${ic("check")}All clear</span>`;
@@ -663,25 +687,26 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const rows = [
       mrow("needs", "alert", "Needs you", null,
         nd.length ? cnt(nd.length, "not sure") + byAgent.map(([a, n]) => cnt(n, "in " + a.name)).join("") : "Your agents are sure about everything else",
-        byAgent.length ? byAgent.map(([a, n], i) => `<button class="btn sm ${i === 0 ? "pri" : ""}" data-go="${a.id}">Review ${n} ${ic("right")}</button>`).join("") : okChip),
+        byAgent.length ? byAgent.map(([a, n], i) => `<button class="btn sm ${i === 0 ? "pri" : ""}" data-go="${a.id}">Review ${n} ${ic("right")}</button>`).join("") : okChip, "", "", nd.length),
       mrow("leads", "target", "Leads", AGENTS.lead,
         leads.length ? cnt(leads.length, "to answer") + cnt(feed("buy").length, "ready to buy") + cnt(feed("b2b").length, "partnerships") + cnt(ls.length, "ready to send") : "No lead waiting",
-        ls.length ? `<button class="btn sm pri" data-bulk="reply|${ls.map((x) => x.id).join(",")}">${ic("send")}Send ${ls.length} sure</button>` : leads.length ? "" : okChip, "buy"),
+        ls.length ? `<button class="btn sm pri" data-bulk="reply|${ls.map((x) => x.id).join(",")}">${ic("send")}Send ${ls.length} sure</button>` : leads.length ? "" : okChip, "buy", "", leads.length),
       mrow("question", "chat", "Questions", AGENTS.support,
         q.length ? cnt(q.length, "to answer") + cnt(qs.length, "ready to send") + cnt(q.length - qs.length, "to read first") : "No question waiting",
-        qs.length ? `<button class="btn sm pri" data-bulk="reply|${qs.map((x) => x.id).join(",")}">${ic("send")}Send ${qs.length} sure</button>` : q.length ? "" : okChip, "question"),
+        qs.length ? `<button class="btn sm pri" data-bulk="reply|${qs.map((x) => x.id).join(",")}">${ic("send")}Send ${qs.length} sure</button>` : q.length ? "" : okChip, "question", "", q.length),
       mrow("mod", "eyeoff", "Spam and moderation", AGENTS.community,
         modAll.length ? cnt(mod[0].length, "spam") + cnt(mod[1].length, "scams") + cnt(mod[2].length, "insults") : "Nothing to clean up",
-        modAll.length ? `<button class="btn sm pri" data-clean="1">${ic("eyeoff")}Clean up ${modAll.length}</button><button class="btn sm" data-bulk="hide|${modAll.map((x) => x.id).join(",")}">Hide all</button><button class="btn sm" data-bulk="delete|${modAll.map((x) => x.id).join(",")}">Delete all</button>` : okChip, "spam"),
+        modAll.length ? `<button class="btn sm pri" data-clean="1">${ic("eyeoff")}Clean up all</button><button class="btn sm" data-bulk="hide|${modAll.map((x) => x.id).join(",")}">Hide all</button><button class="btn sm" data-bulk="delete|${modAll.map((x) => x.id).join(",")}">Delete all</button>` : okChip, "spam", "", modAll.length),
       mrow("positive", "heart", "Positive comments", AGENTS.community,
-        cnt(posDone, "liked on auto") + (pos.length ? cnt(pos.length, "to review") : ""),
+        (pos.length ? cnt(pos.length, "to review") + cnt(posDone, "liked on auto") : cnt(posDone, "liked on auto")),
         pos.length ? `<button class="btn sm pri" data-bulk="like|${pos.map((x) => x.id).join(",")}">${ic("heart")}Like ${pos.length}</button>` : "", "positive",
-        S.auto.positive ? `<span class="chip dark">${ic("bolt")}On auto</span>` : "")
+        S.auto.positive ? `<span class="chip dark">${ic("bolt")}Auto</span>` : "", pos.length || posDone)
     ].join("");
-    return `${header(`<b>Agentic Inbox</b><span class="cr">/ Overview</span>`)}<div class="ov5">${shortcuts()}<div class="ov5-c">
-      <div class="hero5"><div><h1>Welcome back, Audrey.</h1><p class="muted">${nd.length} need${nd.length === 1 ? "s" : ""} you, ${leads.length} leads to answer, ${left - nd.length - leads.length} quick approvals.</p>${valueLine()}</div>${ring(total - left, total)}</div>
-      <div class="mrs">${rows}</div>
-    </div><aside class="ov5-r" id="sec-activity">${liveTile(() => true, "Live from your agents", true, saved, 40)}</aside></div>`;
+    return `${header(`<b>Agentic Inbox</b><span class="cr">/ Overview</span>`)}<div class="ov6">
+      <div class="hero6"><div><h1>Welcome back, Audrey.</h1><p class="muted">${nd.length} need${nd.length === 1 ? "s" : ""} you, ${leads.length} leads to answer, ${left - nd.length - leads.length} quick approvals.</p></div>${valueLine()}${ring(total - left, total)}</div>
+      <div class="m6-grid">${rows}</div>
+      <div class="act6" id="sec-activity">${liveTile(() => true, "Live from your agents", true, saved, 60)}</div>
+    </div>`;
   }
   const ORDER = ["buy", "b2b", "question", "mod", "positive"];
   const MOD = ["spam", "scam", "insult"];
