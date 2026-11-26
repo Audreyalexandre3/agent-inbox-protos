@@ -171,7 +171,13 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .log .caret::after { content:""; display:inline-block; width:2px; height:14px; margin-left:2px; vertical-align:-2px; background:var(--fg); animation:blink 1s steps(1) infinite; }
 .log .undo { font-size:12px; color:var(--muted); text-decoration:underline; }
 @keyframes blink { 50% { opacity:0; } }
-.ov5 { display:grid; grid-template-columns:220px minmax(0, 1fr); gap:28px; max-width:1180px; margin:0 auto; padding:28px 28px 80px; }
+.ov5 { display:grid; grid-template-columns:200px minmax(0, 1fr) 320px; gap:24px; padding:28px 24px 80px; align-items:start; }
+.ov5-r { position:sticky; top:64px; align-self:start; max-height:calc(100vh - 140px); overflow:auto; border-radius:20px; }
+.ov5-r .tile { padding:16px 18px; }
+.ov5-r .t-h { font-size:14.5px; } .ov5-r .t-h .muted { display:none; } .ov5-r .t-h .seeall { margin-left:auto; white-space:nowrap; }
+.ov5-r .saved { margin:10px 0 6px; } .ov5-r .saved b { font-size:15px; } .ov5-r .saved span { display:none; }
+.ov5-r .log li { grid-template-columns:20px 1fr 28px; grid-template-areas:"i t k" "i m k"; row-gap:2px; }
+.ov5-r .log li > svg { grid-area:i; } .ov5-r .log li .txt { grid-area:t; } .ov5-r .log li > .row { grid-area:m; } .ov5-r .log li time { display:none; } .ov5-r .log li .kebab { grid-area:k; }
 .sc { position:sticky; top:72px; align-self:start; display:flex; flex-direction:column; gap:2px; }
 .sc-h { font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; padding:0 10px 8px; }
 .sc-i { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:14px; color:var(--muted); text-align:left; }
@@ -197,11 +203,11 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .mc-st .st { min-width:110px; flex:1; }
 .mc-items { margin-top:8px; }
 .mc-f { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
-.mgrid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
-.mgrid .mc:last-child:nth-child(odd) { grid-column:1 / -1; }
+.mgrid { display:grid; grid-template-columns:repeat(auto-fit, minmax(300px, 1fr)); gap:14px; }
 .flash { animation:flash 1.2s ease; }
 @keyframes flash { 0% { box-shadow:0 0 0 3px var(--fg), var(--shadow); } 100% { box-shadow:var(--shadow); } }
-@media (max-width:1000px) { .ov5 { grid-template-columns:1fr; } .sc { display:none; } .mgrid { grid-template-columns:1fr; } }
+@media (max-width:1280px) { .ov5 { grid-template-columns:190px minmax(0, 1fr); } .ov5-r { grid-column:2; position:static; max-height:none; } }
+@media (max-width:1000px) { .ov5 { grid-template-columns:1fr; } .ov5-r { grid-column:1; } .sc { display:none; } .mgrid { grid-template-columns:1fr; } }
 .value { display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:14px; font-size:13.5px; color:var(--muted); }
 .value span { display:inline-flex; gap:5px; align-items:baseline; }
 .value b { color:var(--fg); font-weight:600; font-size:15px; }
@@ -577,10 +583,10 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       let i = 0; const go = () => { if (!span.isConnected) return; span.textContent = e.text.slice(0, ++i); if (i < e.text.length) setTimeout(go, 20); else span.classList.remove("caret"); }; go();
     });
   }
-  function liveTile(filter, title, agentChip, savedMin) {
+  function liveTile(filter, title, agentChip, savedMin, lim) {
     return `<section class="card tile"><div class="t-h"><span class="live"></span>${title}<span class="muted">Undo anything from the ⋯ menu</span>${agentChip ? `<button class="seeall" data-go="activity">See all activity ${ic("right")}</button>` : ""}</div>
       <div class="saved"><div class="orb">${ic("spark")}</div><div><b>~${savedMin} min saved since Sunday</b><span>Everything your agents did on their own, and what you approved</span></div></div>
-      ${logHTML(filter, { agent: agentChip, quote: true, fade: agentChip, limit: agentChip ? 9 : 40 })}</section>`;
+      ${logHTML(filter, { agent: agentChip, quote: !lim, fade: agentChip && !lim, limit: lim || (agentChip ? 9 : 40) })}</section>`;
   }
   function itemRow(x, first, opts = {}) {
     const th = TH[x.theme];
@@ -607,8 +613,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       { id: "leads", label: "Leads", icon: "target", n: lead.length },
       { id: "question", label: "Questions", icon: "chat", n: feed("question").length },
       { id: "mod", label: "Spam and moderation", icon: "eyeoff", n: mod.length },
-      { id: "positive", label: "Positive comments", icon: "heart", n: S.auto.positive ? -1 : feed("positive").length },
-      { id: "activity", label: "Activity", icon: "bolt", n: -2 }
+      { id: "positive", label: "Positive comments", icon: "heart", n: S.auto.positive ? -1 : feed("positive").length }
     ];
   }
   function shortcuts() {
@@ -639,7 +644,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const ls = leads.filter(sure);
     const leadsCard = `<section class="card mc lead" id="sec-leads"><div class="mc-h"><h3>Leads</h3>${chipA(AGENTS.lead)}<span class="sp"></span>${cogB(AGENTS.lead)}</div>
       <div class="mc-st">${tile(leads.length, "To answer")}${tile(feed("buy").length, "Ready to buy")}${tile(feed("b2b").length, "Partnerships")}${tile(ls.length, "Ready to send")}</div>
-      ${leads.length ? `<div class="mc-items">${leads.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</div>` : ""}
+      ${leads.length ? `<div class="mc-items">${(S.leadsAll ? leads : leads.slice(0, 3)).map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</div>${leads.length > 3 ? `<button class="more" data-leadsmore="1">${S.leadsAll ? "Show less" : `Show ${leads.length - 3} more`}</button>` : ""}` : ""}
       <div class="mc-f">${ls.length ? `<button class="btn sm pri" data-bulk="reply|${ls.map((x) => x.id).join(",")}">${ic("send")}Send ${ls.length} sure</button>` : ""}${openB(AGENTS.lead, "buy")}</div></section>`;
     const qCard = q.length ? mini("question", "Questions", AGENTS.support, tile(q.length, "To answer") + tile(qs.length, "Ready to send") + tile(q.length - qs.length, "To read first"),
       qs.length ? `<button class="btn sm pri" data-bulk="reply|${qs.map((x) => x.id).join(",")}">${ic("send")}Send ${qs.length} sure</button>` : "", "question")
@@ -655,8 +660,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       <div class="hero5"><div><h1>Welcome back, Audrey.</h1><p class="muted">${nd.length} need${nd.length === 1 ? "s" : ""} you, ${leads.length} leads to answer, ${left - nd.length - leads.length} quick approvals.</p>${valueLine()}</div>${ring(total - left, total)}</div>
       ${needsCard}${leadsCard}
       <div class="mgrid">${qCard}${modCard}${posCard}</div>
-      <div id="sec-activity" style="margin-top:16px">${liveTile(() => true, "Live from your agents", true, saved)}</div>
-    </div></div>`;
+    </div><aside class="ov5-r" id="sec-activity">${liveTile(() => true, "Live from your agents", true, saved, 40)}</aside></div>`;
   }
   const ORDER = ["buy", "b2b", "question", "mod", "positive"];
   const MOD = ["spam", "scam", "insult"];
@@ -817,6 +821,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     if (inMenu && !e.target.closest("button[data-undo], button[data-go]")) return;
     if ((el = g("tundo"))) { const f = $("#toast")._u; $("#toast").classList.remove("on"); f && f(); return; }
     if ((el = g("go"))) { S.route = el.dataset.go; S.tab = el.dataset.tab || "suggestions"; const ft = el.dataset.theme; if (ft) S.open[ft] = true; render(); $("#main").scrollTop = 0; if (ft) { const sec = document.getElementById("th-" + ft); if (sec) { $("#main").scrollTop = sec.offsetTop - 64; sec.animate([{ boxShadow: "0 0 0 3px #18181b" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 1400 }); } } return; }
+    if ((el = g("leadsmore"))) { S.leadsAll = !S.leadsAll; render(); return; }
     if ((el = g("sc"))) { const id = el.dataset.sc; S.scOn = id; const sec = document.getElementById("sec-" + id); if (sec) { $("#main").scrollTo({ top: sec.offsetTop - 64, behavior: "smooth" }); sec.classList.remove("flash"); void sec.offsetWidth; sec.classList.add("flash"); } document.querySelectorAll(".sc-i").forEach((b) => b.classList.toggle("on", b.dataset.sc === id)); return; }
     if ((el = g("tab"))) { S.tab = el.dataset.tab; render(); return; }
     if ((el = g("do"))) {
