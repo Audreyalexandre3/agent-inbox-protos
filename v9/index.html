@@ -268,8 +268,8 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .pp:nth-child(4) { margin-right:0; } .lg-who .muted { margin-left:10px; }
 .pv-b { display:flex; align-items:center; gap:10px; padding:10px 14px; border-radius:12px; background:var(--fg); color:#fff; font-size:13.5px; }
 .pv-b span { flex:1; } .pv-b .btn { background:#fff; color:var(--fg); box-shadow:none; }
-#nudge { position:fixed; left:280px; bottom:20px; z-index:70; }
-.nudge7 { display:flex; gap:12px; width:400px; padding:14px 16px; border-radius:16px; background:#fff; box-shadow:var(--pop); animation:slidein .3s ease; }
+#nudge { position:fixed; left:50%; top:16px; transform:translateX(-50%); z-index:70; }
+.nudge7 { display:flex; gap:12px; width:460px; animation:dropin .3s ease !important; padding:14px 16px; border-radius:16px; background:#fff; box-shadow:var(--pop); animation:slidein .3s ease; }
 .nudge7 .aav { width:34px; height:34px; border-radius:10px; flex:none; } .nudge7 .aav svg { width:16px; height:16px; }
 .nudge7 b { font-size:14px; } .nudge7 p { margin:4px 0 0; font-size:13px; color:var(--muted); }
 .lvl { display:flex; align-items:flex-start; gap:12px; width:100%; text-align:left; padding:12px; border-radius:12px; margin-top:6px; box-shadow:inset 0 0 0 1px var(--line); }
@@ -308,6 +308,25 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .band > div { flex:1; min-width:0; } .band b { font-weight:600; } .band span:not(.aav) { display:block; font-size:12px; color:var(--muted); margin-top:2px; }
 @media (max-width:1100px) { .dash { grid-template-columns:repeat(2, minmax(0, 1fr)); } .dash .lead9 { grid-row:auto; grid-column:1 / -1; } }
 @media (max-width:700px) { .dash { grid-template-columns:1fr; } }
+.vh { display:grid; grid-template-columns:repeat(4, minmax(0, 1fr)); gap:10px; }
+.vt { padding:14px 16px; border-radius:16px; background:#fff; box-shadow:var(--shadow); min-width:0; }
+.vt span { display:block; font-size:12.5px; color:var(--muted); font-weight:500; }
+.vt b { display:block; font-size:30px; font-weight:600; letter-spacing:-.03em; line-height:1.15; margin:4px 0 2px; }
+.vt em { display:block; font-style:normal; font-size:12.5px; color:var(--muted); }
+.vt.hl { background:var(--fg); box-shadow:none; } .vt.hl span, .vt.hl em { color:#a1a1aa; } .vt.hl b { color:#fff; }
+@media (max-width:1100px) { .vh { grid-template-columns:repeat(2, minmax(0, 1fr)); } }
+.log li.l9 { display:flex; align-items:center; gap:8px; grid-template-columns:none; }
+.log li.l9 > svg { flex:none; }
+.log li.l9 .ag { flex:none; }
+.log li.l9 .txt { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.log li.l9 .who { flex:none; }
+.sv { display:inline-flex; align-items:center; gap:4px; font-size:12px; color:var(--green); white-space:nowrap; flex:none; }
+.sv svg { width:13px; height:13px; color:var(--green); }
+.sv.big { font-size:13.5px; font-weight:600; padding:4px 10px; border-radius:999px; background:var(--gsoft); }
+.undo9 { display:inline-flex; align-items:center; gap:4px; height:24px; padding:0 8px; border-radius:7px; font-size:12px; font-weight:500; box-shadow:inset 0 0 0 1px var(--line2); flex:none; }
+.undo9:hover { background:var(--soft); } .undo9 svg { width:12px; height:12px; }
+.log li.l9 time { flex:none; min-width:38px; text-align:right; }
+@keyframes dropin { from { opacity:0; transform:translateY(-10px); } }
 .flash { animation:flash 1.2s ease; }
 @keyframes flash { 0% { box-shadow:0 0 0 3px var(--fg), var(--shadow); } 100% { box-shadow:var(--shadow); } }
 @media (max-width:1280px) { .ov5 { grid-template-columns:190px minmax(0, 1fr); } .ov5-r { grid-column:2; position:static; max-height:none; } }
@@ -477,6 +496,8 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
     tag: '<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/>',
     msg: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+    undo: '<path d="M9 14 4 9l5-5"/><path d="M4 9h10.5a5.5 5.5 0 0 1 0 11H11"/>',
     dots: '<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'
   };
   const ic = (n) => `<svg class="i" viewBox="0 0 24 24">${P[n] || ""}</svg>`;
@@ -620,7 +641,9 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
   function undo(lid) {
     const e = S.log.find((l) => l.lid === lid); if (!e || e.undone) return;
     e.undone = true; e.ids.forEach((id) => { const x = items.find((y) => y.id === id); if (x) x.status = "pending"; });
-    render(); toast("Put back in the feed");
+    if (S.learned[e.agent]) S.learned[e.agent].unshift({ r: "Undone", q: e.q || e.text, t: Date.now() });
+    if (S.streak) S.streak[e.agent] = 0;
+    render(); toast(`Undone and put back in the feed. ${AGENTS[e.agent].name} learns from it.`);
   }
   const REASONS = { tone: "Wrong tone", info: "Wrong information", noact: "Shouldn't act on this", theme: "Wrong theme or agent", other: "Something else" };
   function dismiss(id, why) {
@@ -704,14 +727,21 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const C = 2 * Math.PI * 42, pct = total ? done / total : 0;
     return `<div class="ring"><svg viewBox="0 0 96 96"><circle class="tr" cx="48" cy="48" r="42"/><circle class="vl" cx="48" cy="48" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}"/></svg><div class="c"><div><b>${Math.round(pct * 100)}%</b><small>cleared</small></div></div></div>`;
   }
+  const SAVEI = { heart: 0.2, eyeoff: 0.3, trash: 0.3, send: 2 };
+  const fmtMin = (m) => m < 1 ? "<1 min" : m < 60 ? Math.round(m) + " min" : Math.floor(m / 60) + " h" + (Math.round(m % 60) ? " " + Math.round(m % 60) + " min" : "");
+  const savedOf = (e) => (e.undone || !e.count) ? 0 : e.count * (SAVEI[e.icon] || 0.5);
   function logHTML(filter, opts = {}) {
     const L = S.log.filter(filter).slice(0, opts.limit || 40);
     if (!L.length) return `<div class="empty">Nothing yet.</div>`;
     return `<ul class="log ${opts.fade ? "fade" : ""}">${L.map((e) => {
       const typing = !e.typed && e.by === "agent";
-      return `<li class="${typing ? "new" : ""} ${e.undone ? "undone" : ""}" ${typing ? `data-tw="${e.lid}"` : ""}>${ic(e.icon || "check")}
+      const sv = savedOf(e), canUndo = e.ids.length && !e.undone && e.count;
+      return `<li class="l9 ${typing ? "new" : ""} ${e.undone ? "undone" : ""}" ${typing ? `data-tw="${e.lid}"` : ""}>${ic(e.icon || "check")}
+        ${opts.agent ? `<span class="chip ag" style="height:20px"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[e.agent].dot}"></span>${AGENTS[e.agent].short}</span>` : ""}
         <span class="txt">${typing ? "" : esc(e.text)}${!typing && e.q && opts.quote ? ` <span class="faint">“${esc(e.q.length > 60 ? e.q.slice(0, 60) + "…" : e.q)}”</span>` : ""}</span>
-        <span class="row" style="gap:6px">${opts.agent ? `<span class="chip" style="height:20px"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[e.agent].dot}"></span>${AGENTS[e.agent].short}</span>` : ""}<span class="chip who ${e.by === "agent" ? "dark" : ""}" style="height:20px">${e.by === "agent" ? ic("bolt") + "Auto" : "You"}</span></span>
+        ${sv ? `<span class="sv">${ic("clock")}${fmtMin(sv)} saved</span>` : ""}
+        <span class="chip who ${e.by === "agent" ? "dark" : ""}" style="height:20px">${e.by === "agent" ? ic("bolt") + "Auto" : "You"}</span>
+        ${canUndo ? `<button class="undo9" data-undo="${e.lid}">${ic("undo")}Undo</button>` : e.undone ? `<span class="faint" style="font-size:12px">Undone</span>` : ""}
         <time>${rel(e.t) === "now" ? clock(e.t) : rel(e.t)}</time><button class="kebab" data-menu="${e.lid}" aria-label="More actions">${ic("dots")}</button></li>`;
     }).join("")}</ul>`;
   }
@@ -723,7 +753,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     });
   }
   function liveTile(filter, title, agentChip, savedMin, lim) {
-    return `<section class="card tile"><div class="t-h"><span class="live"></span>${title}<span class="muted">Undo anything from the ⋯ menu</span></div>
+    return `<section class="card tile"><div class="t-h"><span class="live"></span>${title}<span class="muted">Undo right from each line</span></div>
       <div class="saved"><div class="orb">${ic("spark")}</div><div><b>~${savedMin} min saved since Sunday</b><span>Everything your agents did on their own, and what you approved</span></div></div>
       ${logHTML(filter, { agent: agentChip, quote: !lim, fade: agentChip && !lim, limit: lim || (agentChip ? 9 : 40) })}</section>`;
   }
@@ -861,7 +891,8 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       ...["partnerships", "support", "moderation", "engagement"].map((id) => agentMini(AGENTS[id]))
     ].join("");
     return `${header(`<b>Agentic Inbox</b><span class="cr">/ Overview</span>`)}<div class="ov6">
-      <div class="hero6"><div><h1>Welcome back, Audrey.</h1><p class="muted">${leads.length} leads to answer and ${left - leads.length} quick approvals.</p></div>${valueLine()}<button class="btn sm ${S.preview ? "pri" : ""}" data-preview="1" title="See the overview when every agent is on Auto">${ic("bolt")}${S.preview ? "Previewing Auto" : "Preview all on Auto"}</button>${ring(total - left, total)}</div>
+      <div class="hero6"><div><h1>Welcome back, Audrey.</h1><p class="muted">${leads.length} leads to answer and ${left - leads.length} quick approvals.</p></div><button class="btn sm ${S.preview ? "pri" : ""}" data-preview="1" title="See the overview when every agent is on Auto">${ic("bolt")}${S.preview ? "Previewing Auto" : "Preview all on Auto"}</button>${ring(total - left, total)}</div>
+      ${valueHero()}
       ${S.preview ? `<div class="pv-b">${ic("bolt")}<span><b>Preview: every agent on Auto.</b> Nothing waits for you, each card shows the value its agent brings. Projections from the last 30 days.</span><button class="btn sm" data-preview="1">Back to today</button></div>` : ""}
       <div class="dash">${rows}</div>
       <div class="act6" id="sec-activity">${activitySection()}</div>
@@ -875,6 +906,23 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const st = Object.keys(AGENTS).map(stats);
     const auto = st.reduce((m, x) => m + x.auto, 0), you = st.reduce((m, x) => m + x.you, 0), saved = st.reduce((m, x) => m + x.saved, 0);
     return `<div class="value"><span><b>${spotted}</b> leads spotted</span><span><b>${answered}</b> answered</span><span><b>${auto}</b> actions on their own</span><span><b>${you}</b> approved by you</span><span><b>~${saved} min</b> saved</span><span class="faint">since Sunday</span></div>`;
+  }
+  function valueHero() {
+    const buy = pend((x) => x.theme === "buy"), waiting = buy.reduce((m, x) => m + PRICE(x), 0);
+    const b2b = pend((x) => x.theme === "b2b").length;
+    const L = S.log.filter((e) => e.t >= LAST && !e.undone);
+    const saved = L.reduce((m, e) => m + savedOf(e), 0);
+    const auto = L.filter((e) => e.by === "agent").reduce((m, e) => m + (e.count || 0), 0), you = L.filter((e) => e.by === "you").reduce((m, e) => m + (e.count || 0), 0);
+    const answered = L.filter((e) => e.agent === "lead" && e.icon === "send").reduce((m, e) => m + (e.count || 0), 0);
+    const won = answered * 0.18 * 42;
+    const perMonth = saved / 3 * 30;
+    if (S.preview) return `<div class="vh"><div class="vt hl"><span>Sales from leads answered</span><b>$3,420</b><em>a month, every lead answered in 2 min</em></div><div class="vt"><span>Time saved</span><b>34 h</b><em>a month, nothing left to review</em></div><div class="vt"><span>Handled on their own</span><b>4,881</b><em>actions a month</em></div><div class="vt"><span>Business pipeline</span><b>$9,800</b><em>in requests qualified</em></div></div>`;
+    return `<div class="vh">
+      <div class="vt hl"><span>Waiting to be won</span><b>${money(waiting)}</b><em>${buy.length} lead${buy.length === 1 ? "" : "s"} waiting for a reply${b2b ? ` · ${b2b} business requests` : ""}</em></div>
+      <div class="vt"><span>Potential if automated</span><b>~$3,420</b><em>a month with every lead answered on time</em></div>
+      <div class="vt"><span>Time saved by your agents</span><b>${fmtMin(saved)}</b><em>since Sunday · ~${fmtMin(perMonth)} a month at this pace</em></div>
+      <div class="vt"><span>Actions handled</span><b>${auto + you}</b><em>${auto} on their own · ${you} approved by you${won ? ` · ~${money(won)} in sales` : ""}</em></div>
+    </div>`;
   }
   function needsOverview() {
     const nd = needs();
@@ -972,7 +1020,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const all = S.log.filter((e) => e.t >= LAST);
     const autoN = all.filter((e) => e.by === "agent" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
     const youN = all.filter((e) => e.by === "you" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
-    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything your agents did since Sunday, live. ${autoN} on their own, ${youN} approved by you. Undo from the ⋯ menu.</span></div>
+    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything your agents did since Sunday, live. ${autoN} on their own, ${youN} approved by you.</span><span class="sp"></span><span class="sv big">${ic("clock")}${fmtMin(S.log.filter(f).reduce((m, e) => m + savedOf(e), 0))} saved${S.actAgent !== "all" || S.actWho !== "all" ? " in this view" : " since Sunday"}</span></div>
       <div class="filters a7-f"><button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>${Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.short}</button>`).join("")}
         <span class="sp"></span><button class="${S.actWho === "all" ? "on" : ""}" data-actwho="all">Everyone</button><button class="${S.actWho === "agent" ? "on" : ""}" data-actwho="agent">${ic("bolt")}Auto</button><button class="${S.actWho === "you" ? "on" : ""}" data-actwho="you">You</button></div>
       ${logHTML(f, { agent: true, quote: true, limit: 400 })}</section>`;
