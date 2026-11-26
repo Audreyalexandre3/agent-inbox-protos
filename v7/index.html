@@ -226,7 +226,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .hero6 p.muted { font-size:14px; margin-top:2px; }
 .hero6 .value { margin-top:0; max-width:520px; justify-content:flex-end; }
 .hero6 .ring { width:64px; height:64px; } .hero6 .ring .c b { font-size:15px; } .hero6 .ring .c small { font-size:10.5px; }
-.m6-grid { display:grid; grid-template-columns:repeat(6, minmax(0, 1fr)); gap:10px; }
+.m6-grid { display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:10px; }
 .mc6 { padding:14px 14px 12px; display:flex; flex-direction:column; min-width:0; }
 .m6-h { display:flex; align-items:center; gap:8px; }
 .m6-h .mr-i { width:28px; height:28px; border-radius:9px; } .m6-h .mr-i svg { width:15px; height:15px; }
@@ -249,7 +249,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 .a7-h .muted { font-size:13px; }
 .a7-f { margin:12px 0 6px; }
 .act6 .tile .log { flex:1; overflow:auto; min-height:120px; }
-@media (max-width:1500px) { .m6-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
+@media (max-width:1200px) { .m6-grid { grid-template-columns:repeat(3, minmax(0, 1fr)); } }
 .flash { animation:flash 1.2s ease; }
 @keyframes flash { 0% { box-shadow:0 0 0 3px var(--fg), var(--shadow); } 100% { box-shadow:var(--shadow); } }
 @media (max-width:1280px) { .ov5 { grid-template-columns:190px minmax(0, 1fr); } .ov5-r { grid-column:2; position:static; max-height:none; } }
@@ -498,7 +498,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
 
   // Needs you = suggestions the agent is not sure about (confidence under 75%). Spam stays out.
   const UNSURE = { "Claire Dumas": "Health question about a child. Your website doesn't cover it.", "Mark Ellison": "Payment problem. It can't check the order or the refund.", "jules": "Your FAQ doesn't say if it's safe for pets." };
-  items.forEach((x) => { x.needs = x.conf < 0.75 && !["spam", "scam", "insult"].includes(x.theme) ? "Not sure: " + (UNSURE[x.author] || x.why) : null; });
+  items.forEach((x) => { x.needs = null; }); // V7: no "Needs you" at launch, everything stays in its agent feed
   const LIVE = [
     { theme: "positive", author: "Mia", text: "spraying this every morning now 🤍", conf: 0.97 },
     { theme: "spam", author: "followers.now", text: "Get 10K followers for $9, link in bio", conf: 0.98, why: "Unrelated offer with a link in bio." },
@@ -702,9 +702,6 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const b2b = feed("b2b"), bs = b2b.filter(sure), buy = feed("buy"), buys = buy.filter(sure);
     const send = (xs) => xs.length ? `<button class="btn sm pri" data-bulk="reply|${xs.map((x) => x.id).join(",")}">${ic("send")}Send ${xs.length} sure</button>` : "";
     const rows = [
-      mrow("needs", "alert", "Needs you", null,
-        nd.length ? cnt(nd.length, "not sure") + byAgent.map(([a, n]) => cnt(n, "in " + a.short)).join("") : "Your agents are sure about everything else",
-        byAgent.length ? byAgent.map(([a, n], i) => `<button class="btn sm ${i === 0 ? "pri" : ""}" data-go="${a.id}">Review ${n} ${ic("right")}</button>`).join("") : okChip, "", "", nd.length),
       mrow("leads", "target", "Lead-gen", AGENTS.lead,
         buy.length ? cnt(buy.length, "ready to buy") + cnt(buys.length, "ready to send") : "No lead waiting",
         buy.length ? send(buys) : okChip, "buy", "", buy.length),
@@ -723,7 +720,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
         S.auto.positive ? `<span class="chip dark">${ic("bolt")}Auto</span>` : "", pos.length || posDone)
     ].join("");
     return `${header(`<b>Agentic Inbox</b><span class="cr">/ Overview</span>`)}<div class="ov6">
-      <div class="hero6"><div><h1>Welcome back, Audrey.</h1><p class="muted">${nd.length} need${nd.length === 1 ? "s" : ""} you, ${leads.length} leads to answer, ${left - nd.length - leads.length} quick approvals.</p></div>${valueLine()}${ring(total - left, total)}</div>
+      <div class="hero6"><div><h1>Welcome back, Audrey.</h1><p class="muted">${leads.length} leads to answer and ${left - leads.length} quick approvals.</p></div>${valueLine()}${ring(total - left, total)}</div>
       <div class="m6-grid">${rows}</div>
       <div class="act6" id="sec-activity">${activitySection()}</div>
     </div>`;
@@ -791,7 +788,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       <div class="ahd"><span class="aav" style="background:${a.dot}">${ic(a.icon)}</span><div style="flex:1;min-width:0"><h1>${a.name}</h1><p class="muted">${a.role}</p></div>
         ${autoThemes.length ? `<span class="chip dark">${ic("bolt")}Auto: ${autoThemes.map((t) => TH[t].label.toLowerCase()).join(", ")}</span>` : `<span class="chip">Suggestions only</span>`}<button class="btn cog" data-tab="config" title="Agent configuration" aria-label="Agent configuration">${ic("gear")}</button></div>
       <section class="recap"><div class="row"><b>Since Sunday</b><span class="muted" style="font-size:13px">${s.auto + s.you} handled · about ${s.saved} min saved</span></div>
-        <div class="rg"><div class="st"><b>${s.auto}</b><span>Done on its own</span></div><div class="st"><b>${s.you}</b><span>Approved by you</span></div><div class="st ${s.needs ? "hot" : ""}"><b>${s.needs}</b><span>${s.needs ? ic("alert") : ""}Need${s.needs === 1 ? "s" : ""} you</span></div><div class="st"><b>${s.todo}</b><span>Suggestions to review</span></div></div></section>
+        <div class="rg"><div class="st"><b>${s.auto}</b><span>Done on its own</span></div><div class="st"><b>${s.you}</b><span>Approved by you</span></div><div class="st"><b>${s.todo}</b><span>Suggestions to review</span></div></div></section>
       <div class="tabs"><button class="${S.tab === "suggestions" ? "on" : ""}" data-tab="suggestions">Suggestions<span class="k">${s.todo + s.needs}</span></button><button class="${S.tab === "config" ? "on" : ""}" data-tab="config">Agent configuration</button></div>
       ${S.tab === "config" ? config(a) : suggestions(a, s)}
     </div>`;
