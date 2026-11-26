@@ -22,7 +22,7 @@ iframe { position:fixed; inset:0; width:100%; height:100%; border:0; background:
 .pop { width:340px; max-height:calc(100vh - 90px); overflow:auto; background:#fff; border-radius:16px; box-shadow:0 24px 60px -20px rgba(24,24,27,.35), 0 0 0 1px var(--line); padding:8px; display:none; }
 .vs.open .pop { display:block; animation:up .18s ease; }
 @keyframes up { from { opacity:0; transform:translateY(6px); } }
-.pop h4 { margin:6px 10px 8px; font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
+.pop h4 { margin:10px 10px 6px; font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
 .row { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:10px; border-radius:10px; }
 .row:hover { background:var(--soft); }
 .row .t { flex:1; min-width:0; }
@@ -44,6 +44,10 @@ iframe { position:fixed; inset:0; width:100%; height:100%; border:0; background:
 </div>
 <script>
 const V = [
+  { k: "oa", g: "Onboarding", label: "Onboarding · A · Train your agents", d: "Archie onboarding, then a quiz during the sync: agents unlock one by one", src: "onboarding/?step=signup&v=A" },
+  { k: "ob", g: "Onboarding", label: "Onboarding · B · Unlock your agents", d: "Archie onboarding, then a prefilled micro-config per agent during the sync", src: "onboarding/?step=signup&v=B" },
+  { k: "oc", g: "Onboarding", label: "Onboarding · C · Watch it sort", d: "Archie onboarding, then live counters and stream, try 2 real suggestions", src: "onboarding/?step=signup&v=C" },
+  { k: "od", g: "Onboarding", label: "Onboarding · D · Chat with Archie", d: "Archie onboarding, then Archie asks 3 questions in the chat during the sync", src: "onboarding/?step=signup&v=D" },
   { k: "v92", label: "V9.2 · Archie DS tokens", d: "V9.1 rebuilt on DS tokens and CSS-UI components, Archie-oriented (archie.app code)", src: "v92/" },
   { k: "v91", label: "V9.1 · Archie DS", d: "V9 with the Archie design system: logo, Averta, orange CTAs, butter pills", src: "v91/" },
   { k: "v9", label: "V9", d: "Dashboard: value summary, featured Lead-gen, Log with time saved and Undo", src: "v9/" },
@@ -60,14 +64,14 @@ const V = [
   { k: "eb", label: "Exploration · B", d: "First take: navigation by agent", src: "exploration/b.html" }
 ];
 const f = document.getElementById("f"), vs = document.getElementById("vs");
-let cur = (location.hash.slice(1) && V.find((v) => v.k === location.hash.slice(1))) || V[0];
-const HIDE = `.protobar{display:none!important}.shell,.app{height:100vh!important}.drawer,.panel{top:0!important}.scrim,.pscrim{top:0!important}`;
+let cur = (location.hash.slice(1) && V.find((v) => v.k === location.hash.slice(1))) || V.find((v) => !v.g);
+const HIDE = `.pb .grp:has([data-variant]){display:none!important}.protobar{display:none!important}.shell,.app{height:100vh!important}.drawer,.panel{top:0!important}.scrim,.pscrim{top:0!important}`;
 f.addEventListener("load", () => {
   try { const st = f.contentDocument.createElement("style"); st.textContent = HIDE; f.contentDocument.head.appendChild(st); } catch (e) {}
 });
 function draw() {
-  document.getElementById("pill").innerHTML = `<span class="d">Version</span><b>${cur.label}</b><span class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg></span>`;
-  document.getElementById("pop").innerHTML = `<h4>Prototype version</h4>${V.map((v) => `<button class="row ${v.k === cur.k ? "on" : ""}" data-k="${v.k}"><span class="t"><b>${v.label}</b><span>${v.d}</span></span><span class="tg" role="switch" aria-checked="${v.k === cur.k}"></span></button>`).join("")}
+  document.getElementById("pill").innerHTML = `<span class="d">${cur.g || "Agents"}</span><b>${cur.g ? cur.label.replace("Onboarding · ", "") : cur.label}</b><span class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg></span>`;
+  document.getElementById("pop").innerHTML = `${[["Onboarding", V.filter((v) => v.g === "Onboarding")], ["Agents", V.filter((v) => !v.g)]].map(([g, list]) => `<h4>${g}</h4>${list.map((v) => `<button class="row ${v.k === cur.k ? "on" : ""}" data-k="${v.k}"><span class="t"><b>${v.label}</b><span>${v.d}</span></span><span class="tg" role="switch" aria-checked="${v.k === cur.k}"></span></button>`).join("")}`).join("")}
     <div class="foot"><button id="reset">Reset this version</button><a href="${cur.src}" target="_blank" rel="noopener">Open alone ↗</a><a href="versions.html" target="_blank" rel="noopener">All versions ↗</a></div>`;
   document.title = `Agentic Inbox · ${cur.label}`;
 }
