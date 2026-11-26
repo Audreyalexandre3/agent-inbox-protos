@@ -726,6 +726,11 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .sc9-why b { color:var(--ref-color-grey-100); font-weight:700; }
 .sc9-act { display:flex; align-items:center; gap:var(--ref-spacing-xxs, 6px); margin-top:12px; padding:10px 12px; border-top:1px solid var(--ref-color-grey-20); }
 .sc9-act .ap-button[disabled] { opacity:.45; pointer-events:none; }
+
+/* suggestions feed: no card behind the item cards */
+.theme.flat { background:none; border:0; box-shadow:none; padding:0; }
+.theme.flat .th-h { padding:0 0 12px; }
+.theme.flat .more { border-top:0; }
 </style>
 <link rel="stylesheet" href="../theme/archie-expression.css">
 <style>
@@ -1343,7 +1348,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     else {
       const xs = pend((x) => agentOf(x) === a.id).sort((p, q) => q.at - p.at);
       const shown = S.open[a.id] ? xs : xs.slice(0, 10);
-      feedHTML = xs.length ? `<section class="card theme"><div class="th-h"><h3>Suggestions</h3><span class="n">${xs.length}</span>${xs.some((x) => x.fresh) ? '<span class="ap-status blue">New</span>' : ""}<div class="acts">${agentBulk(a, xs)}</div></div>
+      feedHTML = xs.length ? `<section class="theme flat"><div class="th-h"><h3>Suggestions</h3><span class="n">${xs.length}</span>${xs.some((x) => x.fresh) ? '<span class="ap-status blue">New</span>' : ""}<div class="acts">${agentBulk(a, xs)}</div></div>
         <div class="sc9-list">${shown.map((x, i) => itemRow(x, i === 0, { theme: a.themes.length > 1 })).join("")}</div>
         ${xs.length > 10 ? `<button class="more" data-more="${a.id}">${S.open[a.id] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`
         : `<section class="card theme"><div class="th-h"><h3>Suggestions</h3><span class="ap-status green">All clear</span></div></section>`;
