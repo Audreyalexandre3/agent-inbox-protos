@@ -1,0 +1,88 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Inbox · Your agents are ready</title>
+<!-- mode: html-prototype · design-guidelines + design-archie · DS: @agorapulse/ui-theme (npm @latest via jsDelivr) · light -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/desktop_variables.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/font-face.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/index.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-symbol@latest/icons/ap-icons.css">
+<style>
+* { box-sizing:border-box; }
+html, body { margin:0; }
+body { font-family:var(--ref-font-family), system-ui, sans-serif; font-size:var(--sys-text-style-body-size); line-height:var(--sys-text-style-body-line-height); color:var(--ref-color-grey-100); background:var(--ref-color-grey-bg); -webkit-font-smoothing:antialiased; }
+h1, h2, h3, p { margin:0; }
+.top { display:flex; align-items:center; padding:var(--ref-spacing-md); }
+.top img { width:178px; height:34px; display:block; }
+main { max-width:880px; margin:0 auto; padding:var(--ref-spacing-xs) var(--ref-spacing-md) var(--ref-spacing-xxxl); display:flex; flex-direction:column; gap:var(--ref-spacing-md); }
+.head h1 { font-size:var(--sys-text-style-h1-size); line-height:var(--sys-text-style-h1-line-height); font-weight:700; color:var(--ref-color-grey-100); }
+.head p { margin-top:var(--ref-spacing-xxxs); color:var(--ref-color-grey-80); font-size:var(--sys-text-style-subtitle-size); line-height:var(--sys-text-style-subtitle-line-height); }
+.metrics { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:12px; }
+.metric { padding:var(--ref-spacing-sm) var(--ref-spacing-md); border-left:1px solid var(--ref-color-grey-20); }
+.metric:first-child { border-left:0; }
+.metric b { display:block; font-size:var(--sys-text-style-h1-size); line-height:var(--sys-text-style-h1-line-height); font-weight:700; color:var(--ref-color-grey-100); }
+.metric span { color:var(--ref-color-grey-80); }
+.agents { background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:12px; }
+.agents h2 { font-size:var(--sys-text-style-h3-size); line-height:var(--sys-text-style-h3-line-height); font-weight:700; padding:var(--ref-spacing-sm) var(--ref-spacing-md) 0; }
+.ag { display:grid; grid-template-columns:40px minmax(0, 1fr) 180px; gap:var(--ref-spacing-sm); padding:var(--ref-spacing-sm) var(--ref-spacing-md); border-top:1px solid var(--ref-color-grey-20); align-items:start; }
+.ag:first-of-type { border-top:0; }
+.av { width:40px; height:40px; border-radius:10px; display:grid; place-items:center; color:var(--ref-color-white); }
+.av i { font-size:var(--sys-icon-css-mini-sm); }
+.ag .name { display:flex; align-items:center; gap:var(--ref-spacing-xxs); flex-wrap:wrap; }
+.ag .name b { font-size:var(--sys-text-style-h4-size); font-weight:700; color:var(--ref-color-grey-100); }
+.ag .role { color:var(--ref-color-grey-80); margin-top:2px; }
+.learned { margin-top:var(--ref-spacing-xxs); display:flex; flex-direction:column; gap:var(--ref-spacing-xxxs); }
+.learned div { display:flex; gap:var(--ref-spacing-xxs); align-items:flex-start; }
+.learned i { color:var(--ref-color-grey-80); margin-top:1px; font-size:var(--sys-icon-css-sm); }
+.learned q { color:var(--ref-color-grey-80); }
+.wait { text-align:right; }
+.wait b { display:block; font-size:var(--sys-text-style-h3-size); line-height:var(--sys-text-style-h3-line-height); font-weight:700; color:var(--ref-color-grey-100); }
+.wait span { color:var(--ref-color-grey-80); font-size:var(--sys-text-style-caption-size); }
+.foot { display:flex; justify-content:flex-end; align-items:center; gap:var(--ref-spacing-sm); }
+.note { padding:10px 12px 10px 34px; position:relative; border-radius:10px; background:#FFF8D6; color:#5c4a00; font-size:12.5px; line-height:1.45; box-shadow:inset 0 0 0 1px #F2DE8A; }
+.note::before { content:"✎"; position:absolute; left:12px; top:9px; }
+@media (max-width:760px) { .metrics { grid-template-columns:1fr; } .metric { border-left:0; border-top:1px solid var(--ref-color-grey-20); } .ag { grid-template-columns:40px minmax(0, 1fr); } .wait { text-align:left; grid-column:2; } }
+</style>
+</head>
+<body>
+<div class="top"><img src="archie_full_logo.svg" alt="archie logo"></div>
+<main id="m"></main>
+<script>
+(function () {
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  let T = {};
+  try { T = JSON.parse(sessionStorage.getItem("fx_training") || "{}"); } catch (e) {}
+  const first = T.first || "Jane", company = T.company || "Halden & Co";
+  const nets = (T.nets && T.nets.length ? T.nets : ["instagram", "facebook"]).map((n) => ({ instagram: "Instagram", facebook: "Facebook", tiktok: "TikTok", linkedin: "LinkedIn", x: "X", threads: "Threads", youtube: "YouTube" }[n] || n));
+  const total = T.total || 2980;
+  const answers = T.answers || [];
+  const AG = [
+    { id: "lead", n: "Lead-gen", c: "#e8590c", i: "target", role: "Answers people ready to buy, with the product link by DM", wait: [3, "leads waiting · $121 in carts"] },
+    { id: "partnerships", n: "Partnerships", c: "#0c8599", i: "megaphone", role: "Handles wholesale, creator and business requests", wait: [5, "business requests"] },
+    { id: "support", n: "Support", c: "#1c7ed6", i: "single-chat-bubble", role: "Answers questions from your website", wait: [14, "questions with an answer drafted"] },
+    { id: "moderation", n: "Moderation", c: "#7950f2", i: "eye-off", role: "Hides spam, scams and abuse", wait: [150, "comments to clean up"] },
+    { id: "engagement", n: "Engagement", c: "#2f9e44", i: "heart", role: "Likes and thanks happy customers", wait: [32, "positive comments to like"] }
+  ];
+  const learned = (id) => answers.filter((x) => x.a === id);
+  const rows = AG.map((a) => {
+    const L = learned(a.id);
+    return `<div class="ag"><span class="av" style="background:${a.c}"><i class="ap-icon-${a.i}"></i></span>
+      <div><div class="name"><b>${a.n}</b>${L.length ? `<span class="ap-status green">Trained by you</span>` : `<span class="ap-status grey">Default guidelines</span>`}<span class="ap-status blue">Suggest</span></div>
+        <p class="role">${a.role}</p>
+        <div class="learned">${L.length ? L.map((x) => `<div><i class="ap-icon-sparkles"></i><span>${esc(x.choice)}${x.text ? ` <q>${esc(x.text)}</q>` : ""}</span></div>`).join("") : `<div><i class="ap-icon-sparkles"></i><span class="role" style="margin:0">Learns from your first approvals and refusals.</span></div>`}</div></div>
+      <div class="wait"><b>${a.wait[0]}</b><span>${a.wait[1]}</span></div></div>`;
+  }).join("");
+  const suggestions = AG.reduce((m, a) => m + a.wait[0], 0);
+  document.getElementById("m").innerHTML = `
+    <div class="head"><h1>Your agents are ready, ${esc(first)}</h1><p>They went through ${company ? esc(company) + "'s" : "your"} messages on ${nets.join(", ")}. Here is what they learned from you, and what is waiting.</p></div>
+    <div class="metrics"><div class="metric"><b>${total.toLocaleString("en-US")}</b><span>messages sorted</span></div><div class="metric"><b>${suggestions}</b><span>suggestions ready for you</span></div><div class="metric"><b>$121</b><span>waiting in carts from 3 leads</span></div></div>
+    <div class="ap-infobox info has-title"><i class="ap-icon-information-circle"></i><div class="ap-infobox-content"><div class="ap-infobox-texts"><span class="ap-infobox-title">Nothing is sent without you</span><span class="ap-infobox-message">Every agent starts in Suggest: it prepares each action, you approve, edit or refuse. After a few approvals in a row, we offer to switch an agent to Auto.</span></div></div></div>
+    <section class="agents"><h2>Your 5 agents</h2>${rows}</section>
+    <div class="foot"><a class="ap-button stroked" href="inbox.html?firstrun=1&tab=config">Adjust my agents first</a><a class="ap-button primary orange" href="inbox.html?firstrun=1"><span>Open my Agentic Inbox</span><i class="ap-icon-arrow-right"></i></a></div>
+    <div class="note"><b>After the training.</b> A handoff screen closes the onboarding: it shows that the answers were taken into account (“Trained by you”), what each agent found during the sync, and reassures that everything starts in Suggest. One primary action, to the inbox.</div>`;
+})();
+</script>
+</body>
+</html>

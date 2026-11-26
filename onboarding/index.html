@@ -342,7 +342,7 @@ body.nonotes .note { display:none; }
   const total = () => Math.round(2980 * Math.max(1, Object.keys(S.connected).length) / 3);
 
   // ---------- variant state
-  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [] };
+  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [], answers: [] };
   const B = { cur: 0, unlocked: [], tone: "Warm", emoji: true, hide: { spam: true, scam: true, insult: true, competitor: false }, shop: "halden.co/shop", promo: "", dm: true, email: "hello@halden.co" };
   const C = { stream: [], counts: { read: 0, lead: 0, support: 0, engagement: 0, moderation: 0, partnerships: 0 }, tried: 0 };
   const Dc = { msgs: [], wait: false, idx: 0 };
@@ -602,7 +602,13 @@ body.nonotes .note { display:none; }
     if (k === "signup" || k === "verify") startRotator();
     const u = new URL(location.href); u.searchParams.set("step", k); u.searchParams.set("v", S.variant); u.searchParams.set("sync", S.syncSec); history.replaceState(null, "", u);
   }
-  function go(i) { S.step = Math.max(0, Math.min(FLOW.length - 1, i)); if (FLOW[S.step].k === "sync" && !Object.keys(S.connected).length) { S.connected = { instagram: true, facebook: true, tiktok: true }; } window.scrollTo(0, 0); render(); }
+  const FX = params.get("flow") === "fx";
+  if (FX) S.variant = "A";
+  function go(i) {
+    if (FX && FLOW[Math.max(0, Math.min(FLOW.length - 1, i))].k === "inbox") {
+      try { sessionStorage.setItem("fx_training", JSON.stringify({ first: S.first, company: S.company, nets: Object.keys(S.connected), answers: A.answers, custom: A.custom, unlocked: A.unlocked, total: total() })); } catch (err) {}
+      location.href = "../first-experience/ready.html"; return;
+    } S.step = Math.max(0, Math.min(FLOW.length - 1, i)); if (FLOW[S.step].k === "sync" && !Object.keys(S.connected).length) { S.connected = { instagram: true, facebook: true, tiktok: true }; } window.scrollTo(0, 0); render(); }
   let tt;
   function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
   function resetSync() { clearInterval(syncT); S.sync = { start: 0, pct: 0, done: false }; C.stream = []; Object.keys(C.counts).forEach((k) => (C.counts[k] = 0)); C.tried = 0; Dc.msgs = []; Dc.idx = 0; Dc.wait = false; }
@@ -626,7 +632,7 @@ body.nonotes .note { display:none; }
     if ((el = g("pick"))) { if (e.target.closest("textarea")) return; const v = el.dataset.pick === "other" ? "other" : +el.dataset.pick; if (A.picked === v) return;
       A.picked = v; const t = TRAIN[A.i]; const d = v === "other" ? "" : t.opts[v][2]; A.text = /^“/.test(d) ? d.replace(/^“|”$/g, "") : "";
       render(); const ta = document.querySelector(".aedit"); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } return; }
-    if ((el = g("anext"))) { if (el.disabled) return; const t = TRAIN[A.i]; if (A.picked === "other") A.custom.push({ a: t.a, rule: A.text.trim() }); A.text = ""; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
+    if ((el = g("anext"))) { if (el.disabled) return; const t = TRAIN[A.i]; if (A.picked === "other") A.custom.push({ a: t.a, rule: A.text.trim() }); A.answers.push({ a: t.a, msg: t.text, choice: A.picked === "other" ? "Custom rule" : t.opts[A.picked][1], text: A.text.trim() }); A.text = ""; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
       if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); }
       A.i++; A.picked = null; render(); return; }
     // B
