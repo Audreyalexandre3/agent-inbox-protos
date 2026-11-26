@@ -727,9 +727,24 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .sc9-act { display:flex; align-items:center; gap:var(--ref-spacing-xxs, 6px); margin-top:12px; padding:10px 12px; border-top:1px solid var(--ref-color-grey-20); }
 .sc9-act .ap-button[disabled] { opacity:.45; pointer-events:none; }
 </style>
+<link rel="stylesheet" href="../theme/archie-expression.css">
+<style>
+/* Day 1 on the Archie expression layer */
+.xt .hero6 h1, .xt .fxh1 { letter-spacing:-.02em; }
+.xt .d1 { gap:16px; }
+.xt .d1c { border-radius:var(--x-radius-card); border:1px solid var(--x-hairline); box-shadow:var(--x-elevation-soft); padding:20px; }
+.xt .d1h b { font-size:17px; color:var(--x-ink); letter-spacing:-.01em; }
+.xt .d1av { width:36px; height:36px; border-radius:var(--x-radius-control); }
+.xt .d1av i { font-size:18px; }
+.xt .d1n b { font-size:var(--x-display-lg); line-height:1.05; font-weight:var(--x-display-weight); letter-spacing:var(--x-display-tracking); color:var(--x-ink); font-variant-numeric:tabular-nums; }
+.xt .d1n span { font-size:15px; margin-top:4px; }
+.xt .d1n em { color:var(--x-ink); font-size:15px; }
+.xt .ap-infobox { border-radius:var(--x-radius-inner); }
+.xt .fxcl { border-radius:var(--x-radius-card); box-shadow:var(--x-elevation-soft); }
+</style>
 </head>
-<body>
-<div class="protobar"><a href="../">← All versions</a><b>First experience · Day 1 inbox (V9.2)</b><span>archie.app · overview by group · fake data · back after 3 days</span><span class="sp"></span><button onclick="location.reload()">Reset</button></div>
+<body class="xt">
+<div class="protobar"><a href="../">← All versions</a><b>First experience · Day 1 inbox (V10 theme)</b><span>archie.app · overview by group · fake data · back after 3 days</span><span class="sp"></span><button onclick="location.reload()">Reset</button></div>
 <div class="shell">
   <nav class="nav" id="nav"></nav>
   <main class="main" id="main"></main>
@@ -1059,8 +1074,8 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     const draft = reply ? draftOf(x) : "";
     const empty = reply && !String(draft).trim();
     const primary = reply
-      ? `<button class="ap-button secondary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Send reply</button>`
-      : `<button class="ap-button secondary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
+      ? `<button class="ap-button primary ink" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Send reply</button>`
+      : `<button class="ap-button primary ink" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
     return `<article class="sc9 ${x.fresh ? "fresh" : ""}" id="it-${x.id}">
       <div class="sc9-msg">
         <div class="sc9-who"><span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
@@ -1152,7 +1167,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     return mm(v.big, v.l) + kv(v.rows.map(([n, l]) => [capF(l), n])) + foot(S.preview ? `<span class="faint" style="font-size:var(--sys-text-style-caption-size)">Nothing to do, the agent handles it</span>` : `<button class="ap-button stroked" data-go="${a.id}">See the Log ${ic("right")}</button>`);
   }
   function offBlock(a) {
-    return mm("Off", "not reading new messages") + kv([["New messages", "Stay untouched in your inbox"]]) + foot(`<button class="ap-button secondary orange" data-mode="${a.id}:suggest">Turn on</button>`);
+    return mm("Off", "not reading new messages") + kv([["New messages", "Stay untouched in your inbox"]]) + foot(`<button class="ap-button primary ink" data-mode="${a.id}:suggest">Turn on</button>`);
   }
   function agentMini(a) {
     const m = S.preview ? "auto" : S.mode[a.id];
@@ -1164,10 +1179,10 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
       const openF = `<button class="ap-button stroked" data-go="${a.id}">Open feed ${ic("right")}</button>`;
       if (!xs.length) body = mm(0, "to review") + kv([["Status", `<span class="ap-status green">All clear</span>`]]) + foot(openF);
       else if (a.id === "moderation") { const c = (t) => xs.filter((x) => x.theme === t).length;
-        body = mm(xs.length, "comments to clean up") + kv([["Spam", c("spam")], ["Scams with links", c("scam")], ["Abusive", c("insult")]]) + foot(`<button class="ap-button secondary orange" data-clean="1">${ic("eyeoff")}Clean up all</button>${openF}`); }
-      else if (a.id === "engagement") body = mm(xs.length, "positive comments to like") + kv([["Oldest", oldest(xs)]]) + foot(`<button class="ap-button secondary orange" data-bulk="like|${xs.map((x) => x.id).join(",")}">${ic("heart")}Like all</button>${openF}`);
+        body = mm(xs.length, "comments to clean up") + kv([["Spam", c("spam")], ["Scams with links", c("scam")], ["Abusive", c("insult")]]) + foot(`<button class="ap-button primary ink" data-clean="1">${ic("eyeoff")}Clean up all</button>${openF}`); }
+      else if (a.id === "engagement") body = mm(xs.length, "positive comments to like") + kv([["Oldest", oldest(xs)]]) + foot(`<button class="ap-button primary ink" data-bulk="like|${xs.map((x) => x.id).join(",")}">${ic("heart")}Like all</button>${openF}`);
       else body = mm(xs.length, a.id === "support" ? "questions to answer" : "requests to answer") + kv([["Ready to send", rs.length], ["To read first", xs.length - rs.length], ["Oldest waiting", oldest(xs)]])
-        + foot(`${rs.length ? `<button class="ap-button secondary orange" data-bulk="reply|${rs.map((x) => x.id).join(",")}">${ic("send")}Send ${rs.length} sure</button>` : ""}${openF}`);
+        + foot(`${rs.length ? `<button class="ap-button primary ink" data-bulk="reply|${rs.map((x) => x.id).join(",")}">${ic("send")}Send ${rs.length} sure</button>` : ""}${openF}`);
     }
     return `<section class="card dc ${m}" id="sec-${a.id}">${cardHead(a, TITLE[a.id])}${body}</section>`;
   }
@@ -1287,7 +1302,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     if (!all.length) return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>Spam and moderation</h3>${chip}<span class="ap-status green">All clear</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
     const rows = MOD.map((t) => { const xs = feed(t), th = TH[t]; if (!xs.length) return `<div class="mrow"><span class="mn">${ic("check")}</span><span class="ml">${th.label}</span><span class="muted">All clear</span></div>`;
       return `<div class="mrow"><span class="mn">${xs.length}</span><span class="ml">${th.label}</span><span class="muted mx">${esc(xs[0].text)}</span><span class="bk-a">${th.bulk.map((b) => `<button class="ap-button stroked" data-bulk="${b.a}|${xs.map((x) => x.id).join(",")}">${ic(ACT[b.a].ic)}${b.l}</button>`).join("")}</span></div>`; }).join("");
-    return `<section class="card bk"><div class="bk-h"><div class="bk-t"><span class="bk-c">${all.length}</span><h3>Spam and moderation</h3>${chip}<span class="muted" style="font-size:var(--sys-text-style-body-size)">Bots, scams and insults, sorted by your agent</span></div><div class="bk-a"><button class="ap-button secondary orange" data-clean="1">${ic("eyeoff")}Clean up all ${all.length}</button>${open}${cog}</div></div>${rows}</section>`;
+    return `<section class="card bk"><div class="bk-h"><div class="bk-t"><span class="bk-c">${all.length}</span><h3>Spam and moderation</h3>${chip}<span class="muted" style="font-size:var(--sys-text-style-body-size)">Bots, scams and insults, sorted by your agent</span></div><div class="bk-a"><button class="ap-button primary ink" data-clean="1">${ic("eyeoff")}Clean up all ${all.length}</button>${open}${cog}</div></div>${rows}</section>`;
   }
   function agentCard(a) {
     const s = stats(a.id);
@@ -1316,14 +1331,14 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   function modeChip(aid) { const m = S.mode[aid]; return m === "auto" ? `<span class="ap-status green">Auto</span>` : m === "off" ? `<span class="ap-status grey">Off</span>` : `<span class="ap-status blue">Suggest</span>`; }
   function agentBulk(a, xs) {
     const sureIds = xs.filter((x) => TH[x.theme].act === "reply" && sure(x)).map((x) => x.id);
-    if (a.id === "moderation") { const all = xs.map((x) => x.id); return all.length ? `<button class="ap-button primary orange" data-clean="1">${ic("eyeoff")}Clean up all ${all.length}</button><button class="ap-button stroked" data-bulk="hide|${all.join(",")}">Hide all</button><button class="ap-button stroked" data-bulk="delete|${all.join(",")}">Delete all</button>` : ""; }
-    if (a.id === "engagement") { const all = xs.map((x) => x.id); return all.length ? `<button class="ap-button primary orange" data-bulk="like|${all.join(",")}">${ic("heart")}Like all ${all.length}</button>` : ""; }
+    if (a.id === "moderation") { const all = xs.map((x) => x.id); return all.length ? `<button class="ap-button primary ink" data-clean="1">${ic("eyeoff")}Clean up all ${all.length}</button><button class="ap-button stroked" data-bulk="hide|${all.join(",")}">Hide all</button><button class="ap-button stroked" data-bulk="delete|${all.join(",")}">Delete all</button>` : ""; }
+    if (a.id === "engagement") { const all = xs.map((x) => x.id); return all.length ? `<button class="ap-button primary ink" data-bulk="like|${all.join(",")}">${ic("heart")}Like all ${all.length}</button>` : ""; }
     return sureIds.length ? `<button class="ap-button primary orange" data-bulk="reply|${sureIds.join(",")}">${ic("send")}Send ${sureIds.length} sure</button>` : "";
   }
   function suggestions(a, s) {
     const m = S.mode[a.id];
     let feedHTML;
-    if (m === "off") feedHTML = `<section class="card theme"><div class="th-h"><h3>This agent is off</h3><span class="muted" style="font-size:var(--sys-text-style-body-size)">It doesn't read new messages. They stay untouched in your inbox.</span><div class="acts"><button class="ap-button secondary orange" data-mode="${a.id}:suggest">Turn on in Suggest</button></div></div></section>`;
+    if (m === "off") feedHTML = `<section class="card theme"><div class="th-h"><h3>This agent is off</h3><span class="muted" style="font-size:var(--sys-text-style-body-size)">It doesn't read new messages. They stay untouched in your inbox.</span><div class="acts"><button class="ap-button primary ink" data-mode="${a.id}:suggest">Turn on in Suggest</button></div></div></section>`;
     else if (m === "auto") feedHTML = `<section class="card theme"><div class="th-h"><h3>On auto</h3><span class="ap-status green">Auto</span><span class="muted" style="font-size:var(--sys-text-style-body-size)">${s.auto} handled on its own since Sunday. Nothing waits for you, check the Log below.</span><div class="acts"><button class="ap-button stroked" data-mode="${a.id}:suggest">Back to Suggest</button></div></div></section>`;
     else {
       const xs = pend((x) => agentOf(x) === a.id).sort((p, q) => q.at - p.at);

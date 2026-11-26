@@ -306,8 +306,28 @@ body.nonotes .note { display:none; }
 .sc9-act { display:flex; align-items:center; gap:var(--ref-spacing-xxs, 6px); margin-top:12px; padding:10px 12px 10px 20px; border-top:1px solid var(--ref-color-grey-20); }
 .sc9-act .ap-button[disabled] { opacity:.45; pointer-events:none; }
 </style>
+<link rel="stylesheet" href="../theme/archie-expression.css">
+<style>
+/* onboarding on the Archie expression layer: same tokens as V10 and the Day 1 inbox */
+.xt .sy-h h1 { font-size:var(--x-display-md); line-height:1.15; font-weight:var(--x-display-weight); letter-spacing:-.02em; color:var(--x-ink); }
+.xt .sy-h p { font-size:16px; color:var(--x-text-muted); }
+.xt .readybar { border-radius:var(--x-radius-card); box-shadow:var(--x-elevation-soft), inset 0 0 0 1px var(--ref-color-green-40, #a9dcbf); }
+.xt .readybar b { color:var(--x-ink); }
+.xt .agents { border-radius:var(--x-radius-card); }
+.xt .ag { border-radius:var(--x-radius-inner); }
+.xt .ag .av { border-radius:var(--x-radius-control); width:36px; height:36px; }
+.xt .ag .t b { font-size:15px; font-weight:700; color:var(--x-ink); }
+.xt .ag.cur { background:var(--x-surface-inset); }
+.xt .ap-radio-card { border-radius:var(--x-radius-inner); }
+.xt .ap-radio-card-title { color:var(--x-ink); }
+.xt .q9-top .cap { font-size:13px; }
+.xt .sc9-agav { border-radius:var(--x-radius-control); }
+.xt .wait b { color:var(--x-ink); }
+.xt .ap-text-field, .xt .ap-input, .xt input[type="text"], .xt input[type="email"] { border-radius:var(--x-radius-control); }
+.xt h1 { letter-spacing:-.02em; }
+</style>
 </head>
-<body>
+<body class="xt">
 <div class="pb" id="pb"></div>
 <main id="root"></main>
 <div class="toast" id="toast"></div>
@@ -420,7 +440,7 @@ body.nonotes .note { display:none; }
     return editorial(`<button type="button" class="gbtn" data-next="1">${gIcon}Sign up with Google</button><div class="or">or</div>
       <div class="fld"><label for="em">Enter business email</label><input id="em" class="inp" placeholder="business@email.com" value="${esc(S.email)}" data-bind="email"></div>
       <p class="legal">By clicking “Continue”, I agree to Agorapulse's <a href="#">terms of use</a> and acknowledge I have read its <a href="#">privacy policy</a>.</p>`, cont())
-      + `<div style="position:absolute;left:24px;bottom:24px;width:360px">${note("<b>Archie onboarding as in production.</b> Layout, copy and assets taken from hello.archie.app and the platform code (archie-layout, archie-card, archie-signup-*). Nothing changed.")}</div>`;
+      + `<div style="position:absolute;left:24px;bottom:24px;width:360px">${note("<b>Archie onboarding as in production.</b> Layout, copy and assets taken from hello.archie.app and the platform code (archie-layout, archie-card, archie-signup-*). Same layout and copy, with the V10 Archie theme (buttons, fields, radii).")}</div>`;
   }
   function scrVerify() {
     return editorial(`<button type="button" class="gbtn" data-next="1">${gIcon}Sign up with Google</button><div class="or">or</div>

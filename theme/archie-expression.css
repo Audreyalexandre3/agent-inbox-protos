@@ -1,0 +1,94 @@
+/* Archie expression layer · v1 (2026-11-26)
+   Sits on top of @agorapulse/ui-theme (desktop_variables + CSS-UI). Add class "xt" on a container
+   (or body) to opt in. Adds --x-* tokens the DS lacks (display type, 16/12/8 radii, soft elevation,
+   ink), re-tunes --comp-button-*, adds .ap-button.primary.ink. Orange stays for the one money action. */
+/* ===================== V10 · Archie expression layer =====================
+   Same DS foundation (ref colors, CSS-UI components, ap-icons, Averta). This layer only adds
+   what the DS lacks for an expressive product surface, as tokens, then applies a few
+   composition rules. Candidate for an official "expressive" DS theme. */
+.xt {
+  /* 1. display type scale (DS stops at 24px) */
+  --x-display-xl: 48px; --x-display-lg: 40px; --x-display-md: 32px; --x-display-sm: 26px;
+  --x-display-tracking: -0.03em; --x-display-weight: 700;
+  /* 2. shape */
+  --x-radius-card: 16px; --x-radius-inner: 12px; --x-radius-control: 8px; --x-radius-pill: 999px;
+  /* 3. surfaces + soft elevation (DS only has floating) */
+  --x-surface-canvas: var(--ref-color-grey-bg); --x-surface-card: var(--ref-color-white); --x-surface-inset: var(--ref-color-grey-05);
+  --x-hairline: var(--ref-color-grey-20);
+  --x-elevation-soft: 0 1px 2px rgba(33, 46, 68, .04), 0 8px 24px -12px rgba(33, 46, 68, .10);
+  /* 4. ink: high-contrast neutral for headings, numbers and dense-screen actions */
+  --x-ink: var(--ref-color-grey-150); --x-ink-hover: #111a29; --x-text: var(--ref-color-grey-100); --x-text-muted: var(--ref-color-grey-80);
+  /* DS component tokens, re-tuned */
+  --comp-button-border-radius: var(--x-radius-control);
+  --comp-button-text-weight: 400;
+  --comp-button-height: 34px;
+}
+.xt { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; }
+.xt /* cards: one surface, .xt soft lift, .xt no nested borders */
+.card, .xt .dc { border-radius:var(--x-radius-card); border:1px solid var(--x-hairline); box-shadow:var(--x-elevation-soft); }
+.xt .dc { padding:20px 22px 18px; }
+.xt .dash { gap:16px; }
+.xt /* type: big contrast between numbers and labels */
+.hero6 h1 { font-size:var(--x-display-md); line-height:1.15; font-weight:var(--x-display-weight); letter-spacing:-.02em; color:var(--x-ink); }
+.xt .hero6 p.muted { font-size:16px; margin-top:4px; }
+.xt .vt span { font-size:13px; color:var(--x-text-muted); font-weight:400; }
+.xt .vt b { font-size:var(--x-display-sm); font-weight:var(--x-display-weight); letter-spacing:-.02em; color:var(--x-ink) !important; margin:4px 0 2px; font-variant-numeric:tabular-nums; }
+.xt .vt em { font-size:13px; color:var(--x-text-muted); }
+.xt .vt { padding:0 24px; }
+.xt .mm { margin-top:18px; gap:12px; }
+.xt .mm b { font-size:var(--x-display-lg); font-weight:var(--x-display-weight); letter-spacing:var(--x-display-tracking); color:var(--x-ink) !important; font-variant-numeric:tabular-nums; }
+.xt .lead9 .mm b { font-size:var(--x-display-xl); }
+.xt .mm span { font-size:16px; color:var(--x-text-muted); }
+.xt .dc .m6-h h3 { font-size:17px; font-weight:700; color:var(--x-ink); letter-spacing:-.01em; }
+.xt /* agent identity: tinted icon tile, .xt the only color in the card */
+.dc .m6-h .mr-i { width:36px; height:36px; border-radius:var(--x-radius-control); }
+.xt .dc .m6-h .mr-i i, .xt .dc .m6-h .mr-i svg { font-size:18px; width:18px; height:18px; }
+.xt .m6-h .ap-icon-button.cog { border-radius:var(--x-radius-control); }
+.xt /* data rows: quiet labels, .xt strong values */
+.kv { margin-top:16px; }
+.xt .kv div { padding:10px 0; font-size:15px; }
+.xt .kv dt { color:var(--x-text-muted); }
+.xt .kv dd { font-weight:700; color:var(--x-ink) !important; font-variant-numeric:tabular-nums; }
+.xt .ld { font-size:15px; padding:12px 0; }
+.xt .ld.hd { font-size:12px; letter-spacing:.06em !important; text-transform:uppercase !important; color:var(--x-text-muted); }
+.xt .ld-t b, .xt .ld-p { color:var(--x-ink) !important; font-weight:700; }
+.xt .ld-t span, .xt .ld-w { font-size:14px; }
+.xt /* inset surfaces instead of colored boxes */
+.win { background:var(--x-surface-inset); border-radius:var(--x-radius-inner); padding:14px 16px; }
+.xt .win span { font-size:13px; }
+.xt .win b { font-size:var(--x-display-md); font-weight:var(--x-display-weight); letter-spacing:var(--x-display-tracking); color:var(--x-ink) !important; }
+.xt .band { border-radius:var(--x-radius-inner); border:1px solid var(--x-hairline); padding:16px; font-size:15px; }
+.xt .band b { color:var(--x-ink); font-weight:700; }
+.xt .band span:not(.aav) { font-size:13px; }
+.xt .band .aav { border-radius:var(--x-radius-control); width:36px; height:36px; }
+.xt .dc .m6-f { padding-top:20px; }
+.xt /* buttons: DS ap-button, .xt new "ink" variant for dense screens; orange stays for the one money action */
+.ap-button { font-size:15px; }
+.xt .ap-button.primary.ink { background:var(--x-ink); color:var(--ref-color-white); }
+.xt .ap-button.primary.ink i, .xt .ap-button.primary.ink svg { color:var(--ref-color-white); }
+.xt .ap-button.primary.ink:hover:not(:disabled) { background:var(--x-ink-hover); }
+.xt .ap-button.stroked { box-shadow:inset 0 0 0 1px var(--x-hairline); border:0; color:var(--x-ink); }
+.xt .ap-button.stroked:hover:not(:disabled) { background:var(--x-surface-inset); }
+.xt .ap-button.primary.orange { font-weight:700; }
+.xt /* log: ink selected filters, .xt pill shapes */
+.filters button { border-radius:var(--x-radius-pill); height:34px; font-size:15px; }
+.xt .filters button.on { background:var(--x-ink); color:var(--ref-color-white); box-shadow:none; }
+.xt .filters button.on span { background:var(--ref-color-white) !important; }
+.xt .log li { font-size:15px; }
+.xt .act7, .xt .tile { border-radius:var(--x-radius-card); }
+.xt /* auto pill: green outline like a status, .xt not a filled badge */
+.ap-status.green { background:var(--ref-color-white); box-shadow:inset 0 0 0 1px var(--ref-color-green-40, #a9dcbf); }
+.xt /* nav: roomier */
+.ni { font-size:15px; min-height:38px; }
+.xt .ring { filter:drop-shadow(0 4px 12px rgba(33,46,68,.08)); }
+.xt /* suggestion cards follow the same shape rules */
+.sc9 { border-radius:var(--x-radius-card); box-shadow:var(--x-elevation-soft); }
+.xt .sc9-ai { border-radius:var(--x-radius-inner); }
+.xt .sc9-bubble { font-size:15px; }
+.xt .toast, .xt .menu, .xt .nudge7 { border-radius:var(--x-radius-inner); }
+.xt /* agent page: same scale */
+.ahd h1 { font-size:var(--x-display-md); line-height:1.15; font-weight:var(--x-display-weight); letter-spacing:-.02em; color:var(--x-ink); }
+.xt .ahd .aav { border-radius:var(--x-radius-inner); }
+.xt .rg .st b, .xt .ac-stats .st b { font-size:var(--x-display-sm); font-weight:var(--x-display-weight); letter-spacing:-.02em; color:var(--x-ink); font-variant-numeric:tabular-nums; }
+.xt .rg .st span, .xt .ac-stats .st span { font-size:13px; color:var(--x-text-muted); }
+.xt .theme .th-h h3 { font-size:17px; font-weight:700; color:var(--x-ink); }
