@@ -789,7 +789,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
         ${autoThemes.length ? `<span class="chip dark">${ic("bolt")}Auto: ${autoThemes.map((t) => TH[t].label.toLowerCase()).join(", ")}</span>` : `<span class="chip">Suggestions only</span>`}<button class="btn cog" data-tab="config" title="Agent configuration" aria-label="Agent configuration">${ic("gear")}</button></div>
       <section class="recap"><div class="row"><b>Since Sunday</b><span class="muted" style="font-size:13px">${s.auto + s.you} handled · about ${s.saved} min saved</span></div>
         <div class="rg"><div class="st"><b>${s.auto}</b><span>Done on its own</span></div><div class="st"><b>${s.you}</b><span>Approved by you</span></div><div class="st"><b>${s.todo}</b><span>Suggestions to review</span></div></div></section>
-      <div class="tabs"><button class="${S.tab === "suggestions" ? "on" : ""}" data-tab="suggestions">Suggestions<span class="k">${s.todo + s.needs}</span></button><button class="${S.tab === "config" ? "on" : ""}" data-tab="config">Agent configuration</button></div>
+      <div class="tabs"><button class="${S.tab === "suggestions" ? "on" : ""}" data-tab="suggestions">Activity<span class="k">${s.todo + s.needs}</span></button><button class="${S.tab === "config" ? "on" : ""}" data-tab="config">Agent configuration</button></div>
       ${S.tab === "config" ? config(a) : suggestions(a, s)}
     </div>`;
   }
