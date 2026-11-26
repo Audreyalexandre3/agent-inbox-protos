@@ -305,6 +305,15 @@ body.nonotes .note { display:none; }
 .sc9-why i { margin-top:2px; color:var(--ref-color-electric-blue-100); }
 .sc9-act { display:flex; align-items:center; gap:var(--ref-spacing-xxs, 6px); margin-top:12px; padding:10px 12px 10px 20px; border-top:1px solid var(--ref-color-grey-20); }
 .sc9-act .ap-button[disabled] { opacity:.45; pointer-events:none; }
+
+/* keep training on real messages */
+.kt { display:flex; align-items:center; gap:16px; margin-top:16px; padding:20px; border-radius:var(--x-radius-card, 16px); box-shadow:var(--x-elevation-soft); }
+.kt-ic { width:40px; height:40px; border-radius:var(--x-radius-control, 8px); background:var(--ref-color-orange-10, #ffe9e1); color:var(--ref-color-orange-100); display:grid; place-items:center; flex:none; font-size:20px; }
+.kt-t { flex:1; min-width:0; } .kt-t b { display:block; font-size:17px; color:var(--x-ink, var(--ref-color-grey-150)); }
+.kt-t span { display:block; margin-top:4px; color:var(--ref-color-grey-80); font-size:15px; line-height:1.45; }
+.rw { display:flex; flex-wrap:wrap; gap:8px; margin-top:12px; }
+.rt { margin-top:10px; width:100%; }
+.ag .xp { display:block; margin-top:4px; font-size:var(--sys-text-style-caption-size); color:var(--ref-color-green-150); font-weight:700; }
 </style>
 <link rel="stylesheet" href="../theme/archie-expression.css">
 <style>
@@ -392,12 +401,28 @@ body.nonotes .note { display:none; }
     ["lead", "FB", "is the 20% valid on the minis too?", "Buying question · reply drafted"],
     ["engagement", "IG", "Linen Mist on my pillow every night", "Positive · like ready"]
   ];
+  // real messages pulled during the sync, with the agent's first suggestion (Keep training)
+  const REAL = [
+    { a: "support", net: "IG", who: "Ben Carter", f: "1K", text: "is the wax vegan?", act: "reply", draft: "Yes, it's 100% plant wax, vegan and cruelty free.", conf: 97, why: "Answer found on your website." },
+    { a: "lead", net: "IG", who: "Priya Shah", f: "860", text: "where can I buy the amber one?? need 2", act: "reply", draft: "Right here! Amber Night is in stock, I sent you the link in DM 🕯️", conf: 91, why: "Buying question, product found in your shop." },
+    { a: "moderation", net: "FB", who: "win.iphone.now", f: "12", text: "Congrats! You won a free iPhone, claim it at the link in bio", act: "delete", conf: 96, why: "Scam with a link." },
+    { a: "engagement", net: "TT", who: "Chloé R.", f: "3.4K", text: "cozy season = this candle", act: "like", conf: 94, why: "Positive comment." },
+    { a: "support", net: "IG", who: "Claire Dumas", f: "412", text: "My daughter got a rash after using the Linen Mist. What is in it??", act: "reply", draft: "", conf: 40, why: "Health issue involving a child. The agent won't draft this one alone." },
+    { a: "partnerships", net: "IG", who: "Oak & Vow Weddings", f: "8.2K", text: "wedding planner here, could you do 60 minis for June?", act: "reply", draft: "Hi! Yes, we do wedding favours. Could you send the date and colours to hello@halden.co? We'll quote within 24 h.", conf: 78, why: "Business request, wholesale page found." },
+    { a: "support", net: "FB", who: "Marc Olsen", f: "230", text: "can I return an opened candle?", act: "reply", draft: "Opened candles can't be returned, but if something's wrong with it, DM us and we'll make it right.", conf: 82, why: "Returns page found on your website." },
+    { a: "moderation", net: "IG", who: "growfast_agency", f: "41", text: "DM us to grow your followers fast 🚀🚀", act: "hide", conf: 93, why: "Spam." },
+    { a: "lead", net: "FB", who: "Tom Becker", f: "1.2K", text: "is the 20% valid on the minis too?", act: "reply", draft: "It is! The code works on the whole minis range until Sunday.", conf: 74, why: "Buying question. Promo terms not found, please check." },
+    { a: "engagement", net: "IG", who: "Maya Lin", f: "642", text: "Linen Mist on my pillow every night, obsessed", act: "like", conf: 95, why: "Positive comment." }
+  ];
+  const REAL_ACT = { reply: ["paper-plane", "Send reply"], like: ["heart", "Like"], hide: ["eye-off", "Hide"], delete: ["trash", "Delete"] };
+  const REAL_WHAT = { reply: "Suggested reply", like: "Suggests liking this comment", hide: "Suggests hiding this comment", delete: "Suggests deleting this comment" };
+  const REAL_WHY = ["Wrong information", "Wrong tone", "Shouldn't reply to this", "I'll handle these myself"];
   const agent = (id) => AGENTS.find((a) => a.id === id);
   const netOf = (s) => NETS.find((n) => n.s === s) || NETS[0];
   const total = () => Math.round(2980 * Math.max(1, Object.keys(S.connected).length) / 3);
 
   // ---------- variant state
-  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [], answers: [] };
+  const A = { i: 0, picked: null, text: "", trained: {}, unlocked: [], custom: [], answers: [], real: false, ri: 0, rtext: null, refusing: false, rdone: 0, rby: {} };
   const B = { cur: 0, unlocked: [], tone: "Warm", emoji: true, hide: { spam: true, scam: true, insult: true, competitor: false }, shop: "halden.co/shop", promo: "", dm: true, email: "hello@halden.co" };
   const C = { stream: [], counts: { read: 0, lead: 0, support: 0, engagement: 0, moderation: 0, partnerships: 0 }, tried: 0 };
   const Dc = { msgs: [], wait: false, idx: 0 };
@@ -482,6 +507,7 @@ body.nonotes .note { display:none; }
       S.sync.pct = p;
       if (p >= 1 && !S.sync.done) { S.sync.done = true; clearInterval(syncT); render(); toast("Your inbox is synced"); return; }
       if (S.variant === "C") liveTick(p);
+      if (S.variant === "A" && !TRAIN[A.i]) { const av = realAvail(); if (av !== S.lastAvail) { const caught = A.ri >= (S.lastAvail ?? 0); S.lastAvail = av; if (!A.real || caught) render(); } }
       updateBar();
     }, 400);
   }
@@ -505,9 +531,9 @@ body.nonotes .note { display:none; }
   function agentsRail(mode) {
     return `<div class="card agents">${AGENTS.map((a, i) => {
       const unlocked = mode === "A" ? A.unlocked.includes(a.id) : B.unlocked.includes(a.id);
-      const cur = mode === "A" ? (TRAIN[A.i] && TRAIN[A.i].a === a.id) : B.cur === i;
+      const cur = mode === "A" ? (TRAIN[A.i] ? TRAIN[A.i].a === a.id : A.real && REAL[A.ri] && A.ri < realAvail() && REAL[A.ri].a === a.id) : B.cur === i;
       const need = TRAIN.filter((t) => t.a === a.id).length, got = A.trained[a.id] || 0;
-      return `<button class="ag ${unlocked ? "" : "locked"} ${cur ? "cur" : ""}" ${mode === "B" ? `data-bag="${i}"` : ""}><span class="av ${unlocked ? "unl" : ""}" style="background:${a.c}">${ic(a.i)}</span><span class="t"><b>${a.n}</b><span>${unlocked ? "Unlocked · " + a.role.toLowerCase() : a.role}</span>${mode === "A" ? `<span class="pips">${Array.from({ length: need }, (_, k) => `<i class="${k < got ? "f" : ""}">.</i>`).join("")}</span>` : ""}</span>${unlocked ? `<span class="ap-status green no-dot">Unlocked</span>` : `<span class="lock"><i class="ap-icon-lock-on"></i></span>`}</button>`; }).join("")}</div>`;
+      return `<button class="ag ${unlocked ? "" : "locked"} ${cur ? "cur" : ""}" ${mode === "B" ? `data-bag="${i}"` : ""}><span class="av ${unlocked ? "unl" : ""}" style="background:${a.c}">${ic(a.i)}</span><span class="t"><b>${a.n}</b><span>${a.role}</span>${mode === "A" && A.rby[a.id] ? `<span class="xp">+${A.rby[a.id]} from real messages</span>` : ""}${mode === "A" ? `<span class="pips">${Array.from({ length: need }, (_, k) => `<i class="${k < got ? "f" : ""}">.</i>`).join("")}</span>` : ""}</span>${unlocked ? `<span class="ap-status green no-dot">Unlocked</span>` : `<span class="lock"><i class="ap-icon-lock-on"></i></span>`}</button>`; }).join("")}</div>`;
   }
   function afb(a) {
     const t = TRAIN[A.i]; if (!t) return "";
@@ -516,11 +542,51 @@ body.nonotes .note { display:none; }
     if (/^“/.test(d)) { const orig = d.replace(/^“|”$/g, ""); return A.text.trim() === orig ? `Got it. ${a.n} will answer like this.` : A.text.trim() ? `Got it. ${a.n} learns from your edit and will answer like this.` : `Write the reply to continue.`; }
     return `Got it. ${a.n} will do the same with messages like this one.`;
   }
+  const realAvail = () => Math.min(REAL.length, 3 + Math.floor(S.sync.pct * (REAL.length - 3)));
+  function realCard() {
+    const x = REAL[A.ri];
+    const head = (right) => `<div class="q9-top"><span class="ap-status blue">Keep training</span><span class="ap-status grey no-dot">${A.rdone} reviewed</span><span style="flex:1"></span>${right}</div>`;
+    if (!x || A.ri >= realAvail()) {
+      const more = A.ri < REAL.length && !S.sync.done;
+      return head(`<button class="ap-button ghost grey" data-realstop="1">Stop training</button>`) + `<div class="card q"><h2 class="qh">${more ? "You're caught up" : "Nice training session"}</h2>
+        <p style="color:var(--ink2);margin-top:6px">${more ? "New messages arrive as the sync goes on. The next one shows up here in a few seconds." : `You reviewed ${A.rdone} real messages. Your agents will apply what they learned to the rest of the inbox.`}</p>
+        ${more ? `<p style="margin-top:14px" class="ap-status green">Syncing…</p>` : ""}</div>`;
+    }
+    const a = agent(x.a), net = netOf(x.net);
+    const ini = x.who.replace(/[^A-Za-zÀ-ÿ ._&]/g, "").split(/[ ._&]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
+    const reply = x.act === "reply", text = A.rtext ?? x.draft ?? "", empty = reply && !text.trim(), ok = x.conf >= 85;
+    const ai = A.refusing
+      ? `<div class="sc9-aih"><span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b><span>What was wrong? It helps the agent learn.</span></div>
+         <div class="rw">${REAL_WHY.map((r) => `<button class="ap-button stroked" data-rwhy="${esc(r)}">${r}</button>`).join("")}</div>`
+      : `<div class="sc9-aih"><span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b><span>${REAL_WHAT[x.act]}</span><span style="flex:1"></span><span class="sc9-conf ${ok ? "hi" : "lo"}"><span class="conf"><span style="width:${x.conf}%"></span></span>${x.conf}% sure</span></div>
+         ${reply ? `<textarea class="ap-textarea-field aedit rt" rows="2" data-rtext="1" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(text)}</textarea>` : ""}
+         <div class="sc9-why">${ic("sparkles")}<span><b>Why:</b> ${esc(x.why)}</span></div>`;
+    const acts = A.refusing
+      ? `<span class="cap">Pick a reason, or</span><button class="ap-button ghost grey" data-rwhy="">Skip</button><span style="flex:1"></span><button class="ap-button ghost grey" data-rback="1">Back</button>`
+      : `<span class="cap">Real message · just synced</span><span style="flex:1"></span><button class="ap-button ghost grey" data-rrefuse="1">${ic("close")}Refuse</button><button class="ap-button primary ink" data-rdo="1" ${empty ? "disabled" : ""}>${ic(REAL_ACT[x.act][0])}${REAL_ACT[x.act][1]}</button>`;
+    return head(`<span class="cap">${realAvail() - A.ri - 1} more waiting</span><button class="ap-button ghost grey" data-realstop="1">Stop training</button>`) + `<article class="sc9">
+      <div class="sc9-msg"><div class="sc9-who"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span>
+        <div class="sc9-id"><b>${esc(x.who)}</b><span>${x.f} followers · ${net.n || net.s} · just now</span></div></div>
+        <p class="sc9-bubble">${esc(x.text)}</p></div>
+      <div class="sc9-ai" style="--ag:${a.c}">${ai}</div>
+      <div class="sc9-act">${acts}</div></article>`;
+  }
+  function realLearn(choice, text) {
+    const x = REAL[A.ri]; if (!x) return;
+    A.answers.push({ a: x.a, msg: x.text, choice, text: text || "" });
+    A.rby[x.a] = (A.rby[x.a] || 0) + 1; A.rdone++; A.ri++; A.rtext = null; A.refusing = false;
+    toast(`${agent(x.a).n} learned from this`);
+    render();
+  }
   function variantA() {
     const t = TRAIN[A.i];
     let body;
-    if (!t) body = `<div class="card q"><h2 class="qh">All 5 agents are trained 🎉</h2><p style="color:var(--ink2);margin-top:6px">They will use your answers as their first guidelines. You can change them anytime in each agent's configuration.</p>
-      ${S.sync.done ? "" : `<p style="margin-top:14px" class="ap-status green">Finishing the sync…</p>`}</div>`;
+    if (!t && A.real) body = realCard();
+    else if (!t) {
+      body = `<div class="card q"><h2 class="qh">All 5 agents are trained 🎉</h2><p style="color:var(--ink2);margin-top:6px">They will use your answers as their first guidelines. You can change them anytime in each agent's configuration.</p>
+      ${S.sync.done ? "" : `<p style="margin-top:14px" class="ap-status green">Finishing the sync…</p>`}</div>
+      <div class="card kt"><div class="kt-ic">${ic("sparkles")}</div><div class="kt-t"><b>Keep training on your real messages</b><span>Your agents are already preparing answers to messages from ${esc(S.company)}'s inbox. Send, edit or refuse a few while the sync runs: each choice makes them sharper.</span></div>
+        <button class="ap-button primary orange" data-real="1"><span>Train on real messages</span>${ic("arrow-right")}</button></div>`; }
     else {
       const a = agent(t.a), net = netOf(t.net);
       const ini = t.who.replace(/[^A-Za-zÀ-ÿ ._]/g, "").split(/[ ._]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
@@ -544,7 +610,7 @@ body.nonotes .note { display:none; }
     }
     return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>Answer a few typical messages. Each answer teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
       ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}
-      ${note("<b>Variant A · Train (quiz, inspired by Blabla).</b> Fake messages shaped by the business category. Each answer is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime.")}</div></div>`;
+      ${note("<b>Variant A · Train (quiz, inspired by Blabla).</b> Fake messages shaped by the business category. Each answer is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime. Once the quiz is done, Keep training serves real synced messages with the same card as the inbox: send, edit or refuse with a reason, each choice is a training signal.")}</div></div>`;
   }
 
   // ---------- B · Unlock your agents (micro-config, prefilled)
@@ -678,7 +744,8 @@ body.nonotes .note { display:none; }
   function toast(m) { const t = $("#toast"); t.textContent = m; t.classList.add("on"); clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 2600); }
   function resetSync() { clearInterval(syncT); S.sync = { start: 0, pct: 0, done: false }; C.stream = []; Object.keys(C.counts).forEach((k) => (C.counts[k] = 0)); C.tried = 0; Dc.msgs = []; Dc.idx = 0; Dc.wait = false; }
 
-  document.addEventListener("input", (e) => { if (e.target.dataset.atext) { A.text = e.target.value; const t = TRAIN[A.i]; const f = document.getElementById("afb"); if (f) f.textContent = afb(agent(t.a)); const nb = document.querySelector("[data-anext]"); if (nb) nb.disabled = !A.text.trim(); return; }
+  document.addEventListener("input", (e) => { if (e.target.dataset.rtext) { A.rtext = e.target.value; const b = document.querySelector("[data-rdo]"); if (b) b.disabled = !A.rtext.trim(); return; }
+    if (e.target.dataset.atext) { A.text = e.target.value; const t = TRAIN[A.i]; const f = document.getElementById("afb"); if (f) f.textContent = afb(agent(t.a)); const nb = document.querySelector("[data-anext]"); if (nb) nb.disabled = !A.text.trim(); return; }
     const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
     if (e.target.dataset.bshop) B.shop = e.target.value; if (e.target.dataset.bpromo) B.promo = e.target.value; if (e.target.dataset.bemail) B.email = e.target.value; });
   document.addEventListener("change", (e) => { const b = e.target.dataset.bind; if (b) S[b] = e.target.value;
@@ -697,6 +764,13 @@ body.nonotes .note { display:none; }
     if ((el = g("pick"))) { if (e.target.closest("textarea")) return; const v = el.dataset.pick === "other" ? "other" : +el.dataset.pick; if (A.picked === v) return;
       A.picked = v; const t = TRAIN[A.i]; const d = v === "other" ? "" : t.opts[v][2]; A.text = /^“/.test(d) ? d.replace(/^“|”$/g, "") : "";
       render(); const ta = document.querySelector(".aedit"); if (ta) { ta.focus(); ta.setSelectionRange(ta.value.length, ta.value.length); } return; }
+    if ((el = g("real"))) { A.real = true; render(); return; }
+    if ((el = g("realstop"))) { A.real = false; render(); return; }
+    if ((el = g("rrefuse"))) { A.refusing = true; render(); return; }
+    if ((el = g("rback"))) { A.refusing = false; render(); return; }
+    if ((el = g("rwhy"))) { const r = el.dataset.rwhy; realLearn(r ? "Refused: " + r.toLowerCase() : "Refused the suggestion"); return; }
+    if ((el = g("rdo"))) { if (el.disabled) return; const x = REAL[A.ri]; if (x.act !== "reply") { realLearn(`${REAL_ACT[x.act][1]}d it`.replace("Liked it", "Liked it").replace("Hided", "Hid")); return; }
+      const t = (A.rtext ?? x.draft ?? "").trim(); realLearn(!x.draft ? "Wrote the reply" : t === x.draft ? "Sent the reply" : "Edited the reply", t !== x.draft ? t : ""); return; }
     if ((el = g("anext"))) { if (el.disabled) return; const t = TRAIN[A.i]; if (A.picked === "other") A.custom.push({ a: t.a, rule: A.text.trim() }); A.answers.push({ a: t.a, msg: t.text, choice: A.picked === "other" ? "Custom rule" : t.opts[A.picked][1], text: A.text.trim() }); A.text = ""; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
       if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); }
       A.i++; A.picked = null; render(); return; }
