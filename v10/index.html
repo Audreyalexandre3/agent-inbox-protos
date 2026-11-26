@@ -1103,7 +1103,7 @@ body { background:var(--x-surface-canvas); color:var(--x-text); font-size:15px; 
       </div>
       <div class="sc9-ai" style="--ag:${a.dot}">
         <div class="sc9-aih"><span class="i9-av" style="background:${a.dot}">${ic(a.icon)}</span><b>${a.short} agent</b><span class="sc9-what">${what}</span><span class="sp"></span>
-          <span class="sc9-conf ${ok ? "hi" : "lo"}" title="How sure the agent is"><span class="conf"><span style="width:${pct}%"></span></span>${pct}% sure</span></div>
+          </div>
         ${reply ? `<div class="ap-textarea-field autoresize i9-in"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : "Write a reply…"}">${esc(draft)}</textarea></div>
           ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}` : ""}
         <div class="sc9-why">${ic("spark")}<span><b>Why:</b> ${esc(why)}</span></div>

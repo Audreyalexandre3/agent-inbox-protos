@@ -569,7 +569,7 @@ body.nonotes .note { display:none; }
       : A.refusing
       ? `<div class="sc9-aih">${av}<span>What was wrong? It helps the agent learn.</span></div>
          <div class="rw">${REAL_WHY.map((r) => `<button class="ap-button stroked" data-rwhy="${esc(r)}">${r}</button>`).join("")}<button class="ap-button stroked" data-rotherb="1">${ic("pen")}Tell it what to do</button></div>`
-      : `<div class="sc9-aih">${av}<span>${x.what || REAL_WHAT[x.act]}</span><span style="flex:1"></span><span class="sc9-conf ${ok ? "hi" : "lo"}"><span class="conf"><span style="width:${x.conf}%"></span></span>${x.conf}% sure</span></div>
+      : `<div class="sc9-aih">${av}<span>${x.what || REAL_WHAT[x.act]}</span><span style="flex:1"></span></div>
          ${reply ? `<textarea class="ap-textarea-field aedit rt" rows="2" data-rtext="1" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(text)}</textarea>` : ""}
          <div class="sc9-why">${ic("sparkles")}<span><b>Why:</b> ${esc(x.why)}</span></div>`;
     const acts = A.rother != null
