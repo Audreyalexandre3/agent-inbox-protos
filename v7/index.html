@@ -579,7 +579,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
       const ids = feed(th).map((x) => x.id);
       if (ids.length) { const e = act(ids, TH[th].act, "agent"); e.typed = false; }
     }
-    render(); toast(on ? `${TH[th].label}: the agent now acts on its own. Everything shows in Activity.` : `${TH[th].label}: back to suggestions.`);
+    render(); toast(on ? `${TH[th].label}: the agent now acts on its own. Everything shows in the Log.` : `${TH[th].label}: back to suggestions.`);
   }
 
   // live: the agent keeps reading. Themes on auto are handled straight away.
@@ -809,14 +809,14 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     }).join("");
     const nd = needs(a.id);
     const needsSec = nd.length ? `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · the agent isn't sure about these. Your call.</span></div>${nd.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</section>` : "";
-    return `${needsSec}${groups}<div style="margin-top:16px">${liveTile((e) => e.agent === a.id, "Activity", false, s.saved)}</div>`;
+    return `${needsSec}${groups}<div style="margin-top:16px">${liveTile((e) => e.agent === a.id, "Log", false, s.saved)}</div>`;
   }
   function config(a) {
     return `<div class="cfg"><section class="card"><div class="lbl">Guidelines</div><textarea class="field" data-guide="${a.id}">${esc(S.guides[a.id])}</textarea><p class="faint" style="font-size:12.5px;margin-top:6px">Plain words. The agent reads this before every suggestion.</p>
         <div class="lbl" style="margin-top:22px">Knows from</div>${a.sources.map((s) => `<div class="row" style="padding:5px 0;font-size:14px">${ic("book")}${esc(s)}</div>`).join("")}
         <div class="lbl" style="margin-top:22px">Learned from your feedback</div>${S.learned[a.id].length ? S.learned[a.id].slice(0, 8).map((l) => `<div class="row" style="align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px"><span class="chip">${esc(l.r)}</span><span class="muted">“${esc(l.q)}”</span></div>`).join("") : `<p class="muted" style="font-size:13.5px">Nothing yet. Each refusal and its reason shows up here and shapes the next suggestions.</p>`}</section>
       <section class="card"><div class="lbl">Autonomy by theme</div>${a.themes.map((t) => { const th = TH[t]; return `<div class="mode"><p>${th.label}<span>${th.replies ? "Replies stay in suggestions for now" : S.auto[t] ? `The agent will ${ACT[th.act].w.toLowerCase()} on its own` : "You approve each one"}</span></p><div class="seg"><button class="${S.auto[t] ? "" : "on"}" data-auto="${t}:off">Suggest</button><button class="${S.auto[t] ? "on" : ""}" ${th.replies ? "disabled" : ""} data-auto="${t}:on">Auto</button></div></div>`; }).join("")}
-        <p class="faint" style="font-size:12.5px;margin-top:10px">What it does on auto shows up live in Activity, with Undo.</p></section></div>`;
+        <p class="faint" style="font-size:12.5px;margin-top:10px">What it does on auto shows up live in the Log, with Undo.</p></section></div>`;
   }
 
   // ---------- activity (all agents)
@@ -825,7 +825,7 @@ svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.
     const all = S.log.filter((e) => e.t >= LAST);
     const autoN = all.filter((e) => e.by === "agent" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
     const youN = all.filter((e) => e.by === "you" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
-    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Activity</h2><span class="muted">Everything your agents did since Sunday, live. ${autoN} on their own, ${youN} approved by you. Undo from the ⋯ menu.</span></div>
+    return `<section class="card tile act7"><div class="a7-h"><span class="live"></span><h2>Log</h2><span class="muted">Everything your agents did since Sunday, live. ${autoN} on their own, ${youN} approved by you. Undo from the ⋯ menu.</span></div>
       <div class="filters a7-f"><button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>${Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.short}</button>`).join("")}
         <span class="sp"></span><button class="${S.actWho === "all" ? "on" : ""}" data-actwho="all">Everyone</button><button class="${S.actWho === "agent" ? "on" : ""}" data-actwho="agent">${ic("bolt")}Auto</button><button class="${S.actWho === "you" ? "on" : ""}" data-actwho="you">You</button></div>
       ${logHTML(f, { agent: true, quote: true, limit: 400 })}</section>`;
