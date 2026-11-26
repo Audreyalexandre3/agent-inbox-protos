@@ -1,58 +1,79 @@
 <!doctype html>
-<html lang="fr">
+<html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Agent Inbox · prototypes</title>
+<title>Agentic Inbox · prototype</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="shared.css">
 <style>
-.w { max-width:880px; margin:0 auto; padding:56px 20px 80px; }
-h1 { font-size:30px; font-weight:600; letter-spacing:-.025em; }
-.lead { color:var(--muted); font-size:16px; margin-top:10px; max-width:640px; }
-.two { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:32px; }
-.opt { padding:22px; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s; }
-.opt:hover { box-shadow:0 0 0 1px var(--line2), 0 14px 34px -20px rgba(0,0,0,.3); }
-.opt h2 { font-size:19px; font-weight:600; }
-.opt ul { margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:flex; flex-direction:column; gap:4px; }
-.opt .go { margin-top:auto; padding-top:8px; font-weight:600; }
-.common { margin-top:32px; padding:20px 22px; }
-.common h3 { font-size:15px; font-weight:600; margin-bottom:8px; }
-.common ul { margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; }
-@media (max-width:700px) { .two, .common ul { grid-template-columns:1fr; } }
+:root { --fg:#18181b; --muted:#71717a; --faint:#a1a1aa; --line:#ebebe6; --soft:#f4f4f0; --bg:#fafaf7; }
+* { box-sizing:border-box; }
+html, body { margin:0; height:100%; background:var(--bg); font:14px/1.45 "Inter", system-ui, sans-serif; color:var(--fg); -webkit-font-smoothing:antialiased; }
+button { font:inherit; color:inherit; border:0; background:none; cursor:pointer; padding:0; }
+iframe { position:fixed; inset:0; width:100%; height:100%; border:0; background:var(--bg); }
+.vs { position:fixed; right:16px; bottom:16px; z-index:10; display:flex; flex-direction:column; align-items:flex-end; gap:8px; }
+.pill { display:flex; align-items:center; gap:10px; height:40px; padding:0 8px 0 14px; border-radius:999px; background:var(--fg); color:#fff; box-shadow:0 12px 32px -12px rgba(0,0,0,.45); font-size:13px; }
+.pill b { font-weight:600; }
+.pill .d { color:#a1a1aa; }
+.pill .ch { width:26px; height:26px; border-radius:50%; display:grid; place-items:center; background:#27272a; transition:transform .2s; }
+.vs.open .pill .ch { transform:rotate(180deg); }
+.pop { width:340px; max-height:calc(100vh - 90px); overflow:auto; background:#fff; border-radius:16px; box-shadow:0 24px 60px -20px rgba(24,24,27,.35), 0 0 0 1px var(--line); padding:8px; display:none; }
+.vs.open .pop { display:block; animation:up .18s ease; }
+@keyframes up { from { opacity:0; transform:translateY(6px); } }
+.pop h4 { margin:6px 10px 8px; font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
+.row { display:flex; align-items:center; gap:12px; width:100%; text-align:left; padding:10px; border-radius:10px; }
+.row:hover { background:var(--soft); }
+.row .t { flex:1; min-width:0; }
+.row .t b { display:block; font-weight:600; font-size:14px; }
+.row .t span { display:block; color:var(--muted); font-size:12.5px; }
+.tg { width:34px; height:20px; border-radius:999px; background:#dcdcd5; position:relative; flex:none; transition:background .2s; }
+.tg::after { content:""; position:absolute; top:2px; left:2px; width:16px; height:16px; border-radius:50%; background:#fff; box-shadow:0 1px 2px rgba(0,0,0,.2); transition:transform .2s; }
+.row.on .tg { background:var(--fg); } .row.on .tg::after { transform:translateX(14px); }
+.foot { display:flex; gap:8px; padding:8px 10px 4px; border-top:1px solid var(--line); margin-top:6px; }
+.foot button, .foot a { font-size:12.5px; color:var(--muted); text-decoration:none; padding:6px 8px; border-radius:8px; }
+.foot button:hover, .foot a:hover { background:var(--soft); color:var(--fg); }
 </style>
 </head>
 <body>
-<div class="w">
-  <span class="chip">V1 janvier · données fictives · Halden & Co</span>
-  <h1 style="margin-top:14px">Agent Inbox V1 : les deux propositions du 27/11</h1>
-  <p class="lead">Même scénario pour les deux : l'utilisateur revient après 3 jours, 200 suggestions l'attendent, dont 3 leads et 150 spams. Le bandeau noir mesure le temps et les clics pour traiter le premier lead et pour vider le spam.</p>
-  <div class="two">
-    <a class="card opt" href="a.html"><span class="chip dark" style="align-self:flex-start">A</span><h2>Hub léger Inbox</h2>
-      <ul><li>Page d'accueil avec un résumé au retour</li><li>Les leads en tête, à traiter sur place</li><li>Le reste groupé par intent, validable par lots depuis l'accueil</li><li>Valeur produite, historique et instructions des agents à droite</li></ul>
-      <span class="go">Ouvrir A →</span></a>
-    <a class="card opt" href="b.html"><span class="chip dark" style="align-self:flex-start">B</span><h2>Un onglet par agent</h2>
-      <ul><li>Entrée « Engagement » dans la nav d'archie.app</li><li>Un onglet par agent : Lead gen et Généraliste</li><li>Dans chaque onglet : suggestions (filtrables par intent), historique, instructions</li><li>Pas de vue globale ni de résumé au retour</li></ul>
-      <span class="go">Ouvrir B →</span></a>
-  </div>
-  <div class="card common"><h3>Périmètre V1 commun</h3><ul>
-    <li>2 agents : Lead gen et Généraliste</li><li>Suggestions groupées par intent</li>
-    <li>Suggestions seules : approuver, modifier, refuser avec raison</li><li>Actions natives : reply (+ DM produit), like, hide, delete</li>
-    <li>Validation par lots dès le départ</li><li>Historique de ce qui a été validé</li>
-    <li>L'agent tourne en continu : nouveaux messages toutes les ~10 s</li><li>Hors V1 : automatisation, escalade, Shopify, CRM</li>
-  </ul></div>
-  <a class="card opt" href="v4/" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">V4 · 25/11 · dernière version</span><h2>archie.app : overview par paquet</h2>
-    <ul><li>Même base que la V3 (nav archie.app, 3 agents, pages agent, activité avec menu ⋯)</li><li>Overview : Needs you en priorité, puis chaque sous-catégorie (Ready to buy, Questions, Spam, Scams…) avec son action adaptée</li><li>Chaque paquet : Open feed (ouvre l'agent sur ce thème) et l'engrenage de configuration</li><li>Activité de tous les agents en dessous</li></ul>
-    <span class="go">Ouvrir la V4 →</span></a>
-  <a class="card opt" href="v3/" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">V3 · 25/11 · overview par agent</span><h2>archie.app : Overview + 3 agents</h2>
-    <ul><li>Nav archie.app : Archie, Publishing, Agentic Inbox (Overview, Lead generation, Support, Community management)</li><li>Overview façon Today : chaque agent avec ses 3 dernières suggestions, Open feed et Configure</li><li>Page agent : récap, onglets Suggestions (Needs you en tête, feed par thème avec Hide all / Delete all, activité live) et Configuration</li><li>Activité de tous les agents, avec un menu ⋯ (Undo, configuration de l'agent)</li></ul>
-    <span class="go">Ouvrir la V3 →</span></a>
-  <a class="card opt" href="v2/" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">V2 · 25/11</span><h2>Hub + agents en dossier (style Today)</h2>
-    <ul><li>Direction retenue avec Jean-Loup : le hub en entrée, pleine largeur</li><li>« Needs you » en tête (suggestions dont l'agent n'est pas sûr), puis les leads, puis le Généraliste par intent</li><li>Activité en direct sous le hub</li><li>Agents en dossier dans la nav : à faire, activité, réglages et guidelines</li></ul>
-    <span class="go">Ouvrir la V2 →</span></a>
-  <p class="muted" style="margin-top:22px;font-size:13.5px">Première exploration (4 agents, Needs you, passage en auto) : <a href="exploration/" style="color:inherit">exploration/</a></p>
+<iframe id="f" title="Agentic Inbox prototype"></iframe>
+<div class="vs" id="vs">
+  <div class="pop" id="pop"></div>
+  <button class="pill" id="pill"></button>
 </div>
+<script>
+const V = [
+  { k: "v5", label: "V5", d: "Simple overview, shortcuts on the left, Leads in detail", src: "v5/" },
+  { k: "v4", label: "V4", d: "Overview by group with actionable items", src: "v4/" },
+  { k: "v3", label: "V3", d: "Overview by agent, archie.app navigation", src: "v3/" },
+  { k: "v2", label: "V2", d: "Hub + agents in a folder, Today base", src: "v2/" },
+  { k: "a", label: "V1 · A", d: "Light hub (January scope, 2 agents)", src: "a.html" },
+  { k: "b", label: "V1 · B", d: "One tab per agent (January scope)", src: "b.html" },
+  { k: "ea", label: "Exploration · A", d: "First take: dashboard, 4 agents", src: "exploration/a.html" },
+  { k: "eb", label: "Exploration · B", d: "First take: navigation by agent", src: "exploration/b.html" }
+];
+const f = document.getElementById("f"), vs = document.getElementById("vs");
+let cur = (location.hash.slice(1) && V.find((v) => v.k === location.hash.slice(1))) || V[0];
+const HIDE = `.protobar{display:none!important}.shell,.app{height:100vh!important}.drawer,.panel{top:0!important}.scrim,.pscrim{top:0!important}`;
+f.addEventListener("load", () => {
+  try { const st = f.contentDocument.createElement("style"); st.textContent = HIDE; f.contentDocument.head.appendChild(st); } catch (e) {}
+});
+function draw() {
+  document.getElementById("pill").innerHTML = `<span class="d">Version</span><b>${cur.label}</b><span class="ch"><svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.4" stroke-linecap="round"><path d="m18 15-6-6-6 6"/></svg></span>`;
+  document.getElementById("pop").innerHTML = `<h4>Prototype version</h4>${V.map((v) => `<button class="row ${v.k === cur.k ? "on" : ""}" data-k="${v.k}"><span class="t"><b>${v.label}</b><span>${v.d}</span></span><span class="tg" role="switch" aria-checked="${v.k === cur.k}"></span></button>`).join("")}
+    <div class="foot"><button id="reset">Reset this version</button><a href="${cur.src}" target="_blank" rel="noopener">Open alone ↗</a><a href="versions.html" target="_blank" rel="noopener">All versions ↗</a></div>`;
+  document.title = `Agentic Inbox · ${cur.label}`;
+}
+function load(v) { cur = v; history.replaceState(null, "", "#" + v.k); f.src = v.src; draw(); }
+document.getElementById("pill").onclick = () => vs.classList.toggle("open");
+document.getElementById("pop").addEventListener("click", (e) => {
+  const r = e.target.closest("[data-k]");
+  if (r) { const v = V.find((x) => x.k === r.dataset.k); if (v.k !== cur.k) load(v); vs.classList.remove("open"); return; }
+  if (e.target.id === "reset") { f.src = cur.src; vs.classList.remove("open"); }
+});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") vs.classList.remove("open"); });
+load(cur);
+</script>
 </body>
 </html>

@@ -1,0 +1,844 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agentic Inbox · V5</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#fafaf7; --fg:#18181b; --muted:#71717a; --faint:#a1a1aa; --line:#ebebe6; --line2:#dcdcd5; --soft:#f4f4f0; --card:#fff;
+  --accent:#ff6a3d; --archie:#ff3c00; --green:#16a34a; --gsoft:#edf8f0; --amber:#b45309; --asoft:#fff6e6; --red:#c2410c; --rsoft:#fff1ea;
+  --shadow:0 1px 2px rgba(24,24,27,.04), 0 12px 32px -16px rgba(24,24,27,.10), 0 0 0 1px var(--line);
+  --pop:0 24px 60px -20px rgba(24,24,27,.28), 0 0 0 1px var(--line);
+  --sans:"Inter", system-ui, -apple-system, sans-serif;
+}
+* { box-sizing:border-box; }
+[hidden] { display:none !important; }
+html, body { margin:0; height:100%; }
+body { background:var(--bg); color:var(--fg); font:15px/1.5 var(--sans); -webkit-font-smoothing:antialiased; letter-spacing:-.005em; }
+button { font:inherit; color:inherit; cursor:pointer; border:0; background:none; padding:0; }
+textarea { font:inherit; color:inherit; }
+h1, h2, h3, p { margin:0; }
+svg.i { width:18px; height:18px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; flex:none; }
+.muted { color:var(--muted); } .faint { color:var(--faint); } .sp { flex:1; }
+.row { display:flex; align-items:center; gap:8px; }
+
+/* prototype bar */
+.protobar { height:36px; display:flex; align-items:center; gap:14px; padding:0 14px; background:#18181b; color:#a1a1aa; font-size:12.5px; }
+.protobar b { color:#fff; font-weight:600; }
+.protobar a, .protobar button { color:#a1a1aa; text-decoration:none; }
+.protobar a:hover, .protobar button:hover { color:#fff; }
+
+/* Archie shell: icon rail + Archie panel + main */
+.shell { display:grid; grid-template-columns:262px minmax(0, 1fr); height:calc(100vh - 36px); }
+.nav { border-right:1px solid var(--line); background:#fff; display:flex; flex-direction:column; min-height:0; }
+.nav .brand { display:flex; align-items:center; gap:8px; padding:18px 18px 14px; font-weight:700; font-size:20px; letter-spacing:-.03em; color:var(--archie); }
+.nav .brand svg { width:22px; height:22px; stroke:none; fill:var(--archie); }
+.nav .org { display:flex; align-items:center; gap:8px; margin:0 12px 12px; padding:7px 10px; border-radius:9px; box-shadow:inset 0 0 0 1px var(--line); font-size:13.5px; }
+.nav .org i { width:22px; height:22px; border-radius:6px; background:#d9cbbd; display:grid; place-items:center; font-style:normal; font-size:11px; font-weight:700; color:#5a3d2b; }
+.nav .org svg { width:14px; height:14px; margin-left:auto; color:var(--faint); }
+.nav .nb { flex:1; overflow:auto; padding:0 10px; display:flex; flex-direction:column; gap:1px; }
+.nav .nf { padding:12px 10px; border-top:1px solid var(--line); display:flex; flex-direction:column; gap:2px; }
+.create { display:flex; align-items:center; justify-content:center; gap:8px; height:36px; margin:0 2px 8px; border-radius:9px; box-shadow:inset 0 0 0 1px #1d6fb8; color:#1d6fb8; font-weight:600; font-size:14px; }
+.create svg { width:15px; height:15px; }
+.rail { border-right:1px solid var(--line); background:#fff; display:flex; flex-direction:column; align-items:center; padding:10px 0; gap:4px; }
+.rail .lg { width:26px; height:26px; border-radius:7px; background:var(--archie); color:#fff; display:grid; place-items:center; font-weight:700; font-size:14px; margin-bottom:6px; }
+.rail .org { width:30px; height:30px; border-radius:7px; background:#1d6fb8; color:#fff; display:grid; place-items:center; font-weight:700; font-size:14px; margin-bottom:10px; }
+.rk { position:relative; width:40px; height:38px; border-radius:9px; display:grid; place-items:center; color:#5b6472; }
+.rk:hover { background:var(--soft); }
+.rk.on { background:#e8f1fb; color:#1d6fb8; }
+.rk svg { width:17px; height:17px; }
+.rk .dot { position:absolute; top:8px; right:9px; width:7px; height:7px; border-radius:50%; background:var(--archie); }
+.rk .bdg { position:absolute; top:3px; right:4px; min-width:15px; height:15px; padding:0 3px; border-radius:8px; background:var(--archie); color:#fff; font-size:9.5px; font-weight:700; display:grid; place-items:center; }
+.rail .gap { flex:1; }
+.av { width:30px; height:30px; border-radius:50%; background:#d6c2b0; display:grid; place-items:center; font-size:11px; font-weight:600; color:#5a3d2b; }
+
+.apanel { border-right:1px solid var(--line); background:#fff; display:flex; flex-direction:column; min-height:0; }
+.ap-h { display:flex; align-items:center; gap:8px; padding:14px 14px 10px; font-weight:600; font-size:15px; }
+.beta { font-size:10px; font-weight:700; color:#1d6fb8; background:#e8f1fb; padding:2px 5px; border-radius:4px; letter-spacing:.03em; }
+.ap-h .col { margin-left:auto; color:var(--faint); }
+.ap-body { flex:1; overflow:auto; padding:0 8px; }
+.ni { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:7px 10px; border-radius:8px; font-size:14px; color:#3f3f46; }
+.ni:hover { background:var(--soft); }
+.ni svg { width:16px; height:16px; color:#5b6472; }
+.ni.on { background:#e8f1fb; color:#1d6fb8; font-weight:600; }
+.ni.on svg { color:#1d6fb8; }
+.ni .n { margin-left:auto; font-size:12px; color:var(--faint); font-weight:500; }
+.ni .n.hot { color:#fff; background:var(--archie); border-radius:999px; padding:0 6px; font-weight:700; font-size:11px; }
+.ni.sub { padding-left:36px; font-size:13.5px; }
+.ni.sub .d { width:7px; height:7px; border-radius:50%; flex:none; margin-left:-17px; margin-right:2px; }
+.ni .chev { margin-left:auto; transition:transform .2s; }
+.ni.open .chev { transform:rotate(90deg); }
+.ap-sec { display:flex; align-items:center; padding:16px 10px 4px; font-size:12.5px; color:var(--muted); }
+.ap-lbl { padding:8px 20px 4px; font-size:11px; font-weight:600; color:var(--faint); letter-spacing:.05em; }
+.chat { display:block; padding:6px 20px; font-size:13.5px; color:#3f3f46; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; border-radius:8px; }
+.ap-f { padding:12px 18px; border-top:1px solid var(--line); font-size:13.5px; color:#1d6fb8; display:flex; gap:8px; align-items:center; }
+
+.main { overflow:auto; min-width:0; }
+.mh { position:sticky; top:0; z-index:5; height:48px; display:flex; align-items:center; gap:10px; padding:0 24px; background:rgba(250,250,247,.92); backdrop-filter:blur(8px); border-bottom:1px solid var(--line); font-size:15px; }
+.mh .cr { color:var(--muted); }
+.mh b { font-weight:600; }
+.pill { display:inline-flex; align-items:center; gap:8px; height:32px; padding:0 12px; border-radius:999px; background:#fff; box-shadow:0 0 0 1px var(--line); font-size:13px; font-weight:500; }
+.live { width:8px; height:8px; border-radius:50%; background:#22c55e; box-shadow:0 0 0 0 rgba(34,197,94,.5); animation:ping 2s infinite; flex:none; display:inline-block; }
+@keyframes ping { 70% { box-shadow:0 0 0 7px rgba(34,197,94,0); } 100% { box-shadow:0 0 0 0 rgba(34,197,94,0); } }
+.wrap { max-width:1120px; margin:0 auto; padding:28px 28px 80px; }
+
+/* generic */
+.card { background:var(--card); border-radius:20px; box-shadow:var(--shadow); }
+.btn { display:inline-flex; align-items:center; justify-content:center; gap:7px; height:34px; padding:0 13px; border-radius:10px; font-weight:500; font-size:13.5px; background:#fff; box-shadow:inset 0 0 0 1px var(--line2); white-space:nowrap; transition:background .15s, transform .1s; }
+.btn:hover { background:var(--soft); }
+.btn:active { transform:scale(.97); }
+.btn.pri { background:var(--fg); color:#fff; box-shadow:none; }
+.btn.pri:hover { background:#3f3f46; }
+.btn.sm { height:30px; padding:0 11px; font-size:13px; border-radius:9px; }
+.btn.ghost { box-shadow:none; background:none; color:var(--muted); }
+.btn.ghost:hover { background:var(--soft); color:var(--fg); }
+.btn.icon { width:30px; padding:0; }
+.btn svg { width:15px; height:15px; }
+.chip { display:inline-flex; align-items:center; gap:6px; height:22px; padding:0 8px; border-radius:7px; background:var(--soft); color:var(--muted); font-size:12px; white-space:nowrap; font-weight:500; }
+.chip svg { width:13px; height:13px; }
+.chip.dark { background:var(--fg); color:#fff; }
+.chip.ok { background:var(--gsoft); color:var(--green); }
+.chip.warn { background:var(--asoft); color:var(--amber); }
+.chip.red { background:var(--rsoft); color:var(--red); }
+.net { display:inline-grid; place-items:center; width:20px; height:20px; border-radius:6px; font-size:9.5px; font-weight:700; color:#fff; flex:none; }
+.net.IG { background:linear-gradient(135deg, #f9ce34, #ee2a7b, #6228d7); } .net.FB { background:#1877f2; } .net.TT { background:#111; }
+
+/* hero (Today) */
+.hero { display:flex; align-items:flex-end; gap:32px; margin-bottom:28px; }
+.hero .t { flex:1; min-width:0; }
+.eyebrow { display:inline-flex; align-items:center; gap:8px; font-size:13px; color:var(--muted); margin-bottom:10px; }
+.eyebrow svg { width:15px; height:15px; }
+.hero h1 { font-size:clamp(28px, 3vw, 38px); line-height:1.15; font-weight:600; letter-spacing:-.025em; }
+.hero h1 .m { display:block; color:var(--muted); font-weight:500; }
+.hero p.s { margin-top:10px; color:var(--muted); }
+.ring { position:relative; width:96px; height:96px; flex:none; }
+.ring svg { width:100%; height:100%; transform:rotate(-90deg); }
+.ring circle { fill:none; stroke-width:6; }
+.ring .tr { stroke:var(--line); } .ring .vl { stroke:var(--fg); stroke-linecap:round; transition:stroke-dashoffset .8s cubic-bezier(.2,.9,.2,1); }
+.ring .c { position:absolute; inset:0; display:grid; place-items:center; text-align:center; }
+.ring .c b { display:block; font-size:20px; line-height:1; font-weight:600; letter-spacing:-.03em; }
+.ring .c small { color:var(--muted); font-size:12px; }
+
+/* overview agent cards */
+.agents { display:grid; grid-template-columns:repeat(3, 1fr); gap:14px; }
+.ac { padding:20px 20px 16px; display:flex; flex-direction:column; }
+.ac-h { display:flex; align-items:center; gap:12px; }
+.aav { width:40px; height:40px; border-radius:12px; display:grid; place-items:center; color:#fff; flex:none; }
+.aav svg { width:19px; height:19px; }
+.ac-h h3 { font-size:17px; font-weight:600; letter-spacing:-.01em; }
+.ac-h p { font-size:13px; color:var(--muted); }
+.ac-stats { display:grid; grid-template-columns:repeat(3, 1fr); gap:8px; margin:16px 0 6px; }
+.st { padding:10px 12px; border-radius:12px; background:var(--soft); }
+.st b { display:block; font-size:22px; font-weight:600; letter-spacing:-.03em; line-height:1.1; }
+.st span { font-size:12px; color:var(--muted); }
+.st.hot { }
+.st.hot span { display:flex; align-items:center; gap:4px; white-space:nowrap; }
+.st.hot span svg { width:13px; height:13px; }
+.st.hot b { position:relative; display:inline-block; }
+.st.hot b::after { content:none; }
+@keyframes pingr { 70% { box-shadow:0 0 0 6px rgba(194,65,12,0); } 100% { box-shadow:0 0 0 0 rgba(194,65,12,0); } }
+.ac-l { margin-top:12px; font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; }
+.sg { display:grid; grid-template-columns:20px 1fr auto; gap:10px; align-items:center; padding:10px 0; border-top:1px solid var(--line); }
+.sg:first-of-type { border-top:0; }
+.sg .tx { font-size:13.5px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.sg .tx b { font-weight:600; }
+.sg .meta { font-size:12px; color:var(--muted); display:flex; gap:6px; align-items:center; margin-top:1px; white-space:nowrap; min-width:0; }
+.sg .meta .dr { flex:1; min-width:0; overflow:hidden; text-overflow:ellipsis; }
+.ac-f { display:flex; gap:8px; margin-top:auto; padding-top:14px; }
+
+/* live log (Today, clean) */
+.tile { padding:18px 20px; }
+.t-h { display:flex; align-items:center; gap:10px; font-weight:600; font-size:15px; }
+.t-h .muted { font-weight:400; font-size:13px; margin-left:auto; }
+.saved { display:flex; align-items:center; gap:12px; margin:14px 0 8px; }
+.orb { width:38px; height:38px; border-radius:50%; background:radial-gradient(circle at 30% 30%, #fff, #e9e9e2 60%, #d9d9d0); box-shadow:inset 0 0 0 1px var(--line2); display:grid; place-items:center; color:var(--muted); }
+.orb svg { width:17px; height:17px; }
+.saved b { display:block; font-size:18px; font-weight:600; letter-spacing:-.02em; }
+.saved span { font-size:12.5px; color:var(--muted); }
+.log { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; }
+.log.fade { max-height:340px; overflow:hidden; -webkit-mask-image:linear-gradient(to bottom, #000 78%, transparent); mask-image:linear-gradient(to bottom, #000 78%, transparent); }
+.log li { display:grid; grid-template-columns:22px 1fr auto auto 28px; gap:10px; align-items:center; padding:8px 0; font-size:13.5px; border-top:1px solid var(--line); }
+.log li:first-child { border-top:0; }
+.log li.new { animation:slidein .5s cubic-bezier(.2,.9,.2,1) both; }
+.log li svg { width:16px; height:16px; color:var(--muted); }
+.log li time { color:var(--faint); font-size:12px; font-variant-numeric:tabular-nums; white-space:nowrap; }
+.log li .who { font-size:11.5px; }
+.log li.undone .txt { text-decoration:line-through; color:var(--faint); }
+.log .caret::after { content:""; display:inline-block; width:2px; height:14px; margin-left:2px; vertical-align:-2px; background:var(--fg); animation:blink 1s steps(1) infinite; }
+.log .undo { font-size:12px; color:var(--muted); text-decoration:underline; }
+@keyframes blink { 50% { opacity:0; } }
+.ov5 { display:grid; grid-template-columns:220px minmax(0, 1fr); gap:28px; max-width:1180px; margin:0 auto; padding:28px 28px 80px; }
+.sc { position:sticky; top:72px; align-self:start; display:flex; flex-direction:column; gap:2px; }
+.sc-h { font-size:12px; font-weight:600; color:var(--faint); text-transform:uppercase; letter-spacing:.05em; padding:0 10px 8px; }
+.sc-i { display:flex; align-items:center; gap:10px; padding:9px 10px; border-radius:10px; font-size:14px; color:var(--muted); text-align:left; }
+.sc-i svg { width:16px; height:16px; }
+.sc-i:hover { background:#fff; color:var(--fg); box-shadow:0 0 0 1px var(--line); }
+.sc-i.on { background:#fff; color:var(--fg); font-weight:600; box-shadow:0 0 0 1px var(--line); }
+.sc-i span:first-of-type { flex:1; }
+.sc-n { font-size:12px; font-weight:600; color:var(--fg); min-width:22px; height:20px; padding:0 6px; border-radius:999px; background:var(--soft); display:inline-grid; place-items:center; }
+.sc-n.ok { background:none; } .sc-n.ok svg { width:14px; height:14px; color:var(--green); }
+.sc-n.auto { background:var(--fg); color:#fff; font-size:10.5px; }
+.sc-n.live { background:none; }
+.sc-f { font-size:12px; color:var(--faint); padding:12px 10px 0; margin:0; }
+.ov5-c { min-width:0; display:flex; flex-direction:column; gap:14px; }
+.hero5 { display:flex; align-items:center; gap:24px; margin-bottom:6px; }
+.hero5 > div:first-child { flex:1; min-width:0; }
+.hero5 h1 { font-size:30px; font-weight:600; letter-spacing:-.025em; }
+.hero5 p.muted { margin-top:4px; font-size:15px; }
+.mc { padding:16px 20px; scroll-margin-top:70px; }
+.mc-h { display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
+.mc-h h3 { font-size:16px; font-weight:600; letter-spacing:-.01em; }
+.mc-h .btn.cog { width:30px; height:30px; border-radius:9px; }
+.mc-st { display:flex; gap:8px; margin-top:12px; flex-wrap:wrap; }
+.mc-st .st { min-width:110px; flex:1; }
+.mc-items { margin-top:8px; }
+.mc-f { display:flex; gap:6px; flex-wrap:wrap; margin-top:14px; }
+.mgrid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:14px; }
+.mgrid .mc:last-child:nth-child(odd) { grid-column:1 / -1; }
+.flash { animation:flash 1.2s ease; }
+@keyframes flash { 0% { box-shadow:0 0 0 3px var(--fg), var(--shadow); } 100% { box-shadow:var(--shadow); } }
+@media (max-width:1000px) { .ov5 { grid-template-columns:1fr; } .sc { display:none; } .mgrid { grid-template-columns:1fr; } }
+.value { display:flex; flex-wrap:wrap; gap:6px 18px; margin-top:14px; font-size:13.5px; color:var(--muted); }
+.value span { display:inline-flex; gap:5px; align-items:baseline; }
+.value b { color:var(--fg); font-weight:600; font-size:15px; }
+.value span + span:not(.faint)::before { content:"·"; margin-right:13px; color:var(--line2); }
+.bh2 { display:flex; align-items:baseline; gap:10px; margin:26px 0 12px; }
+.bh2 h2 { font-size:18px; font-weight:600; letter-spacing:-.01em; }
+.bh2 .muted { font-size:13px; }
+.buckets { display:flex; flex-direction:column; gap:12px; }
+.bk { padding:6px 20px 8px; min-width:0; }
+.bk-h { display:flex; align-items:center; gap:12px; padding:12px 0 8px; flex-wrap:wrap; }
+.bk-t { display:flex; align-items:center; gap:10px; flex-wrap:wrap; flex:1; min-width:0; }
+.bk-t h3 { font-size:16px; font-weight:600; letter-spacing:-.01em; }
+.bk-c { font-size:22px; font-weight:600; letter-spacing:-.03em; line-height:1; }
+.bk-a { display:flex; align-items:center; gap:6px; flex-wrap:wrap; }
+.bk-a .btn.cog { width:30px; height:30px; border-radius:9px; }
+.bk.lead { }
+.bk.slim { background:var(--soft); box-shadow:none; padding:2px 20px; }
+.bk.slim .bk-h { padding:10px 0; }
+.mrow { display:flex; align-items:center; gap:12px; padding:10px 0; border-top:1px solid var(--line); font-size:14px; }
+.mrow .mn { font-weight:600; min-width:34px; display:inline-flex; }
+.mrow .mn svg { width:16px; height:16px; color:var(--green); }
+.mrow .ml { font-weight:500; white-space:nowrap; }
+.mrow .mx { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; font-size:13px; }
+.mrow .bk-a { margin-left:auto; }
+.bk .more { display:flex; align-items:center; justify-content:center; gap:4px; }
+.bk .more svg { width:14px; height:14px; }
+.needs .it .who .chip { height:20px; }
+.btn.cog { width:34px; padding:0; color:var(--muted); position:relative; }
+.btn.cog svg { width:17px; height:17px; transition:transform .4s cubic-bezier(.2,.9,.2,1); }
+.btn.cog:hover { color:var(--fg); }
+.btn.cog:hover svg { transform:rotate(60deg); }
+.btn.cog::after { content:attr(title); position:absolute; bottom:calc(100% + 6px); left:50%; transform:translateX(-50%); white-space:nowrap; padding:4px 8px; border-radius:7px; background:var(--fg); color:#fff; font-size:12px; opacity:0; pointer-events:none; transition:opacity .15s; }
+.btn.cog:hover::after { opacity:1; }
+.kebab { width:28px; height:28px; border-radius:8px; display:grid; place-items:center; color:var(--faint); }
+.kebab:hover, .kebab.on { background:var(--soft); color:var(--fg); }
+.kebab svg { width:16px; height:16px; }
+.menu { position:fixed; z-index:80; min-width:230px; background:#fff; border-radius:12px; box-shadow:var(--pop); padding:6px; animation:slidein .15s ease; }
+.menu button { display:flex; align-items:center; gap:10px; width:100%; text-align:left; padding:8px 10px; border-radius:8px; font-size:13.5px; }
+.menu button:hover { background:var(--soft); }
+.menu button svg { width:15px; height:15px; color:var(--muted); }
+.menu button[disabled] { color:var(--faint); cursor:default; background:none; }
+.menu hr { border:0; border-top:1px solid var(--line); margin:4px 0; }
+.menu p { padding:6px 10px 2px; font-size:12px; color:var(--faint); margin:0; }
+.filters { display:flex; gap:6px; flex-wrap:wrap; align-items:center; }
+.filters button { height:30px; padding:0 12px; border-radius:999px; background:#fff; box-shadow:inset 0 0 0 1px var(--line); font-size:13px; color:var(--muted); display:inline-flex; align-items:center; gap:6px; }
+.filters button.on { background:var(--fg); color:#fff; box-shadow:none; }
+.filters .d { width:7px; height:7px; border-radius:50%; }
+.seeall { margin-left:12px; font-size:13px; font-weight:500; color:var(--fg); display:inline-flex; align-items:center; gap:4px; }
+.seeall svg { width:14px; height:14px; }
+@keyframes slidein { from { opacity:0; transform:translateY(-6px); } }
+
+/* agent page */
+.ahd { display:flex; align-items:center; gap:14px; }
+.ahd .aav { width:48px; height:48px; border-radius:14px; }
+.ahd h1 { font-size:28px; font-weight:600; letter-spacing:-.02em; }
+.recap { margin-top:18px; }
+.recap > .row { font-size:13px; color:var(--muted); }
+.recap > .row b { color:var(--fg); font-weight:600; }
+.recap .rg { display:flex; flex-wrap:wrap; gap:0; margin-top:6px; }
+.recap .rg .st { background:none; box-shadow:none; border-radius:0; padding:0 28px 0 0; margin-right:28px; border-right:1px solid var(--line); }
+.recap .rg .st:last-child { border-right:0; margin-right:0; }
+.recap .rg .st b { font-size:26px; }
+.recap .rg .st.hot { background:none; box-shadow:none; }
+.needs { margin-top:16px; border-radius:20px; background:#fff; box-shadow:var(--shadow); padding:6px 20px 8px; }
+.needs-h { color:var(--fg); font-size:16px; }
+.needs-h .muted { color:var(--muted); }
+.needs-h svg { color:var(--muted); }
+.needs-h { display:flex; align-items:center; gap:8px; padding:12px 0 4px; font-weight:600; }
+.tabs { display:flex; gap:4px; margin-top:26px; border-bottom:1px solid var(--line); }
+.tabs button { padding:10px 14px; color:var(--muted); border-bottom:2px solid transparent; margin-bottom:-1px; font-weight:500; }
+.tabs button.on { color:var(--fg); border-color:var(--fg); }
+.tabs .k { font-size:12px; color:var(--faint); margin-left:4px; }
+
+/* theme groups */
+.theme { margin-top:16px; padding:6px 18px 10px; }
+.th-h { display:flex; align-items:center; gap:10px; padding:12px 0 8px; flex-wrap:wrap; }
+.th-h h3 { font-size:16px; font-weight:600; }
+.th-h .n { color:var(--muted); }
+.th-h .acts { margin-left:auto; display:flex; gap:6px; flex-wrap:wrap; }
+.theme.auto { background:var(--soft); box-shadow:none; }
+.more { width:100%; padding:10px 0 4px; font-size:13px; color:var(--muted); border-top:1px solid var(--line); text-align:center; }
+.more:hover { color:var(--fg); }
+
+/* item rows */
+.it { display:grid; grid-template-columns:1fr auto; gap:14px; padding:12px 0; border-top:1px solid var(--line); align-items:start; transition:opacity .3s, background .6s; }
+.it.first { border-top:0; }
+.it.fresh { background:linear-gradient(90deg, #fffbea, transparent); }
+.it .who { display:flex; align-items:center; gap:7px; font-size:12.5px; color:var(--muted); flex-wrap:wrap; }
+.it .who b { color:var(--fg); font-weight:600; }
+.it .txt { margin-top:3px; font-size:14.5px; }
+.it .why { margin-top:3px; font-size:12.5px; color:var(--muted); display:flex; gap:6px; align-items:center; }
+.it .why svg { width:13px; height:13px; color:var(--faint); }
+.sugg { margin-top:8px; display:flex; gap:8px; align-items:flex-start; }
+.tag { flex:none; display:inline-flex; align-items:center; gap:5px; height:24px; padding:0 8px; border-radius:7px; background:var(--soft); color:var(--muted); font-size:12px; font-weight:500; }
+.tag svg { width:13px; height:13px; }
+.draft { flex:1; min-width:0; padding:6px 10px; border-radius:9px; background:var(--soft); border:1px solid transparent; resize:none; overflow:hidden; line-height:1.45; font-size:13.5px; }
+.draft:focus { outline:none; background:#fff; border-color:var(--line2); }
+.it .acts { display:flex; gap:4px; align-items:center; padding-top:2px; }
+
+/* config */
+.cfg { display:grid; grid-template-columns:minmax(0, 1fr) 340px; gap:16px; margin-top:18px; align-items:start; }
+.cfg .card { padding:20px; }
+.lbl { font-size:11.5px; font-weight:600; color:var(--muted); text-transform:uppercase; letter-spacing:.05em; margin-bottom:8px; }
+.field { width:100%; min-height:130px; padding:12px 14px; border-radius:12px; border:1px solid var(--line2); background:#fff; resize:vertical; line-height:1.5; font-size:14px; }
+.field:focus { outline:2px solid var(--fg); outline-offset:-1px; }
+.mode { display:flex; align-items:center; gap:12px; padding:12px 0; border-top:1px solid var(--line); }
+.mode:first-of-type { border-top:0; }
+.mode p { flex:1; font-size:14px; }
+.mode p span { display:block; font-size:12.5px; color:var(--muted); }
+.seg { display:flex; background:var(--soft); border-radius:9px; padding:3px; }
+.seg button { padding:4px 10px; border-radius:7px; font-size:12.5px; color:var(--muted); }
+.seg button.on { background:#fff; color:var(--fg); font-weight:600; box-shadow:0 1px 2px rgba(0,0,0,.08); }
+.seg button[disabled] { opacity:.45; cursor:not-allowed; }
+
+/* toast */
+.toast { position:fixed; left:50%; bottom:24px; transform:translate(-50%, 20px); opacity:0; background:var(--fg); color:#fff; padding:10px 16px; border-radius:12px; font-size:13.5px; z-index:90; transition:all .25s; display:flex; gap:14px; align-items:center; pointer-events:none; }
+.toast.on { transform:translate(-50%, 0); opacity:1; pointer-events:auto; }
+.toast button { color:#fff; text-decoration:underline; }
+.empty { padding:22px; text-align:center; color:var(--muted); font-size:14px; }
+
+@media (max-width:1100px) { .agents { grid-template-columns:1fr; } .cfg { grid-template-columns:1fr; } .recap .rg { grid-template-columns:repeat(2, 1fr); } }
+@media (max-width:860px) { .shell { grid-template-columns:1fr; } .nav { display:none; } }
+@media (max-width:600px) { .wrap { padding:20px 16px 60px; } .hero .ring { display:none; } }
+</style>
+</head>
+<body>
+<div class="protobar"><a href="../">← All versions</a><b>Agentic Inbox · V5</b><span>archie.app · overview by group · fake data · back after 3 days</span><span class="sp"></span><button onclick="location.reload()">Reset</button></div>
+<div class="shell">
+  <nav class="nav" id="nav"></nav>
+  <main class="main" id="main"></main>
+</div>
+<div class="toast" id="toast"></div>
+<script>
+(function () {
+  const $ = (s, r = document) => r.querySelector(s);
+  const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+  const P = {
+    target: '<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1"/>',
+    chat: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>',
+    inbox: '<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.45 5.11 2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11Z"/>',
+    cal: '<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+    chart: '<path d="M3 3v18h18"/><path d="m7 16 4-6 4 3 5-7"/>',
+    radio: '<path d="M4.9 19.1C1 15.2 1 8.8 4.9 4.9M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M19.1 4.9C23 8.8 23 15.1 19.1 19"/><circle cx="12" cy="12" r="2"/>',
+    mega: '<path d="m3 11 18-5v12L3 14v-3z"/><path d="M11.6 16.8a3 3 0 1 1-5.8-1.6"/>',
+    archie: '<path d="M4 14h3v3H4zM9 9h3v3H9zM14 14h3v3h-3zM14 4h3v3h-3zM19 9h3v3h-3z"/>',
+    book: '<path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20V2H6.5A2.5 2.5 0 0 0 4 4.5v15Z"/>',
+    plus: '<path d="M12 5v14M5 12h14"/>', search: '<circle cx="11" cy="11" r="7"/><path d="m21 21-4.3-4.3"/>',
+    feed: '<path d="M4 11a9 9 0 0 1 9 9M4 4a16 16 0 0 1 16 16"/><circle cx="5" cy="19" r="1"/>',
+    bell: '<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"/><path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"/>',
+    help: '<circle cx="12" cy="12" r="10"/><path d="M9.1 9a3 3 0 0 1 5.8 1c0 2-3 3-3 3M12 17h.01"/>',
+    send: '<path d="m22 2-7 20-4-9-9-4Z"/><path d="M22 2 11 13"/>',
+    heart: '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/>',
+    eyeoff: '<path d="M9.88 9.88a3 3 0 1 0 4.24 4.24"/><path d="M10.73 5.08A10.43 10.43 0 0 1 12 5c7 0 10 7 10 7a13.16 13.16 0 0 1-1.67 2.68"/><path d="M6.61 6.61A13.53 13.53 0 0 0 2 12s3 7 10 7a9.74 9.74 0 0 0 5.39-1.61"/><path d="m2 2 20 20"/>',
+    trash: '<path d="M3 6h18"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/><path d="M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>',
+    check: '<path d="M20 6 9 17l-5-5"/>', x: '<path d="M18 6 6 18M6 6l12 12"/>',
+    reply: '<path d="m9 17-5-5 5-5"/><path d="M20 18v-2a4 4 0 0 0-4-4H4"/>',
+    pen: '<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4Z"/>',
+    spark: '<path d="M12 3l1.9 5.8L20 11l-6.1 2.2L12 19l-1.9-5.8L4 11l6.1-2.2Z"/>',
+    bolt: '<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8Z"/>',
+    right: '<path d="m9 18 6-6-6-6"/>', left: '<path d="m15 18-6-6 6-6"/>',
+    alert: '<path d="M12 9v4M12 17h.01"/><path d="M10.29 3.86 1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0Z"/>',
+    gear: '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"/><circle cx="12" cy="12" r="3"/>',
+    tag: '<path d="M12 2H2v10l9.3 9.3a1 1 0 0 0 1.4 0l8.6-8.6a1 1 0 0 0 0-1.4Z"/><circle cx="7" cy="7" r="1.5"/>',
+    msg: '<path d="M7.9 20A9 9 0 1 0 4 16.1L2 22Z"/>',
+    dots: '<circle cx="12" cy="5" r="1"/><circle cx="12" cy="12" r="1"/><circle cx="12" cy="19" r="1"/>'
+  };
+  const ic = (n) => `<svg class="i" viewBox="0 0 24 24">${P[n] || ""}</svg>`;
+
+  // ---------- agents and themes
+  const AGENTS = {
+    lead: { id: "lead", name: "Lead generation", short: "Lead generation", dot: "#e8590c", icon: "target",
+      role: "Spots people ready to buy and answers with the right product.",
+      themes: ["buy", "b2b"], sources: ["Product catalog · halden.co/shop", "Black Friday offer"],
+      guide: "Answer buying questions in one or two short lines. Send the product link by DM, never in public. Mention the Black Friday code only for Discovery sets. Wholesale and partnership requests always come to me." },
+    support: { id: "support", name: "Support", short: "Support", dot: "#1c7ed6", icon: "chat",
+      role: "Answers customer questions from your website.",
+      themes: ["question"], sources: ["halden.co/faq, /shipping, /returns"],
+      guide: "Answer from the FAQ, shipping and returns pages only. Never hide criticism of the product, answer it. Health, refunds and angry customers always come to me." },
+    community: { id: "community", name: "Community management", short: "Community", dot: "#7950f2", icon: "heart",
+      role: "Thanks happy customers and keeps your comments clean.",
+      themes: ["positive", "spam", "scam", "insult"], sources: ["Brand voice from your Playbook", "Moderation rules"],
+      guide: "Like positive comments. Hide spam and insults, delete scams with links. Never touch criticism of the product, leave it to Support." }
+  };
+  const ACT = { reply: { w: "Send", ic: "send", past: "Replied to" }, like: { w: "Like", ic: "heart", past: "Liked" }, hide: { w: "Hide", ic: "eyeoff", past: "Hid" }, delete: { w: "Delete", ic: "trash", past: "Deleted" } };
+  const TH = {
+    buy: { agent: "lead", label: "Ready to buy", act: "reply", bulk: [{ a: "reply", l: "Send the sure ones", sure: true }], replies: true },
+    b2b: { agent: "lead", label: "Wholesale and partnerships", act: "reply", bulk: [{ a: "reply", l: "Send the sure ones", sure: true }], replies: true },
+    question: { agent: "support", label: "Questions", act: "reply", bulk: [{ a: "reply", l: "Send the sure ones", sure: true }], replies: true },
+    positive: { agent: "community", label: "Positive comments", act: "like", bulk: [{ a: "like", l: "Like all" }] },
+    spam: { agent: "community", label: "Spam", act: "hide", bulk: [{ a: "hide", l: "Hide all" }, { a: "delete", l: "Delete all" }] },
+    scam: { agent: "community", label: "Scams with links", act: "delete", bulk: [{ a: "delete", l: "Delete all" }, { a: "hide", l: "Hide all" }] },
+    insult: { agent: "community", label: "Insults", act: "hide", bulk: [{ a: "hide", l: "Hide all" }, { a: "delete", l: "Delete all" }] }
+  };
+
+  // ---------- data
+  const NOW = Date.now(), MIN = 60000, LAST = NOW - 3 * 1440 * MIN;
+  let seed = 11; const rnd = () => ((seed = (seed * 16807) % 2147483647) / 2147483647);
+  const age = () => Math.round(8 + rnd() * (3 * 1440 - 60));
+  const NETS = ["IG", "IG", "FB", "TT"];
+  const items = []; let n = 0;
+  const add = (o) => { o.id = "i" + (++n); o.status = "pending"; o.at = NOW - (o.ago ?? age()) * MIN; o.net = o.net || NETS[n % 4]; items.push(o); return o; };
+
+  add({ theme: "buy", author: "Maya Lin", followers: 2300, ago: 40, text: "where can I buy the amber one?? 😍", draft: "It's on our site! I just sent you the link in DM 🕯️", dm: "Amber Night candle · $38", conf: 0.94, why: "Asks where to buy a product shown in the post." });
+  add({ theme: "buy", author: "Lena Park", followers: 5400, ago: 600, text: "need this for my mom's birthday on Friday, still in stock?", draft: "In stock! Sent you the link, it ships in 24 h so it arrives on time 💛", dm: "Cedar & Fig candle · $38", conf: 0.92, why: "Gift intent with a deadline." });
+  add({ theme: "buy", author: "Tom Becker", followers: 310, ago: 1500, text: "does the discovery set ship to Canada?", draft: "Yes, we ship to Canada in 5 to 7 days. Link to the set is in your DMs.", dm: "Discovery set · $45", conf: 0.78, why: "Shipping question on a product ad." });
+  add({ theme: "b2b", author: "Petal & Co Shop", followers: 3400, ago: 2900, text: "do you do wholesale for small shops? we have 3 stores", draft: "We do! What's the best email to send our wholesale sheet to?", conf: 0.81, why: "Wholesale request from a shop with 3 stores.", needs: "Wholesale: your rules say these come to you." });
+
+  add({ theme: "b2b", author: "Maison Lior Hotel", followers: 8200, ago: 180, text: "Hi! We'd love your Amber Night candles in our 24 rooms. Do you offer hotel pricing?", draft: "Hello! We'd love that. We have a hospitality offer from 20 candles. What's the best email to send it to?", conf: 0.88, why: "Hotel asking for volume pricing. Likely a repeat order." });
+  add({ theme: "b2b", author: "Studio Wed & Co", followers: 4100, ago: 760, text: "wedding planner here, we need 60 minis as guest gifts for June. possible with custom labels?", draft: "Congrats to the couple! 60 minis works. Custom labels are possible from 50 units. Can we continue by email?", conf: 0.84, why: "Event order of 60 units with customisation." });
+  add({ theme: "b2b", author: "Camille Roux", followers: 12400, ago: 1900, text: "love your brand! open to a collab for my December gift guide? 12k followers, mostly home decor", draft: "Thank you Camille! Happy to talk about your gift guide. I sent you a DM with the next steps.", conf: 0.79, why: "Creator collab request, audience matches home decor." });
+  add({ theme: "b2b", author: "Atelier Nord Concept Store", followers: 2600, ago: 3400, text: "Do you work with concept stores in Belgium? We'd like to stock the Linen Mist.", draft: "Yes, we do! I sent you our wholesale sheet by DM, with the minimum order and delivery to Belgium.", conf: 0.9, why: "Retailer asking to stock a product." });
+  [["Olivia Grant", "how long does shipping take to the UK?", "UK orders arrive in 3 to 5 working days. Tracking is sent by email.", 0.93],
+   ["Ben Carter", "is the wax vegan?", "Yes, it's 100% plant wax, vegan and cruelty free.", 0.97],
+   ["Daniel K.", "how long does one candle burn?", "About 50 hours if you trim the wick before each use.", 0.95],
+   ["Grace Liu", "can I return an opened candle?", "Opened candles can't be returned, but if something is wrong just DM us and we'll fix it.", 0.89],
+   ["Alex Moreau", "Smell faded after a week, a bit disappointed", "Sorry to hear that! Trimming the wick to 5 mm helps a lot. DM us if it's still weak, we'll sort it out.", 0.76],
+   ["Ivy Chen", "are the wicks lead free?", "Yes, all our wicks are cotton and lead free.", 0.96],
+   ["jules", "is the linen mist safe around cats?", "It's water based, but keep pets out of the room while you spray and until it's dry.", 0.62],
+   ["Noor A.", "does the BF code work in store too?", "The 20% is online only, on every Discovery set until Monday.", 0.9],
+   ["Pia M.", "what size is the big candle?", "It's 300 g, about 9 cm tall.", 0.92],
+   ["Clara V.", "do you ship to Switzerland?", "We do, in 5 to 8 working days. Duties are included.", 0.88],
+   ["Max T.", "is the packaging recyclable?", "Yes, the box and the glass jar are both recyclable.", 0.94],
+   ["Elsa R.", "when is cedar & fig back in stock?", "It's in stock right now, we restocked on Monday!", 0.83]
+  ].forEach(([a, t, d, c]) => add({ theme: "question", author: a, followers: 100 + Math.round(rnd() * 3000), text: t, draft: d, conf: c, why: c < 0.8 ? "Partial answer found on your website. Worth a check." : "Answer found on your website." }));
+  add({ theme: "question", author: "Claire Dumas", followers: 412, ago: 90, text: "My daughter got a rash after using the Linen Mist. What is in it??", draft: "", conf: 0.4, why: "Health issue involving a child.", needs: "Health and safety: never answered without you." });
+  add({ theme: "question", author: "Mark Ellison", followers: 230, ago: 300, text: "Charged twice for order #4810 and nobody answers my emails. Calling my bank.", draft: "I'm really sorry Mark. I sent you a DM to fix the double charge today.", conf: 0.7, why: "Payment dispute with a chargeback threat.", needs: "Refund risk: a person should answer." });
+
+  const bots = ["DM us to grow your followers fast 🚀🚀", "Promote this on our page, 2M followers! DM now", "nice pic 🔥 check my page", "Collab? Send DM to our main account", "Want more views? Link in bio", "💯💯💯 follow back"];
+  const scams = ["I made $4,800 this week with BTC, check my bio", "Congrats! You've been selected for a free iPhone, link in bio", "Your account will be suspended, verify here: meta-support-check.co", "Forex signals with 98% win rate, DM 'START'"];
+  const insults = ["overpriced garbage lol", "this brand is a scam, wake up people", "who even buys this crap", "worst brand ever"];
+  for (let k = 0; k < 110; k++) add({ theme: "spam", author: ["promo_boost", "shopdeals", "nice_pics", "growth.hub", "views4u", "f4f.club"][k % 6] + "_" + (k + 12), followers: 3 + (k * 53) % 400, text: bots[k % bots.length], conf: 0.97, why: "Unrelated offer with a link in bio." });
+  for (let k = 0; k < 30; k++) add({ theme: "scam", author: ["crypto.jenna", "win.iphone", "meta.help.desk", "fx.signals"][k % 4] + "_" + (k + 40), followers: 10 + (k * 37) % 300, text: scams[k % scams.length], conf: 0.98, why: "Scam with a link. Deleting removes it for everyone." });
+  for (let k = 0; k < 10; k++) add({ theme: "insult", author: ["dan_r", "tr0ll_master", "k.vance", "no_name"][k % 4] + "_" + (k + 7), followers: 20 + k * 30, text: insults[k % insults.length], conf: 0.86, why: "Insult with no question or feedback to answer." });
+
+  // Needs you = suggestions the agent is not sure about (confidence under 75%). Spam stays out.
+  const UNSURE = { "Claire Dumas": "Health question about a child. Your website doesn't cover it.", "Mark Ellison": "Payment problem. It can't check the order or the refund.", "jules": "Your FAQ doesn't say if it's safe for pets." };
+  items.forEach((x) => { x.needs = x.conf < 0.75 && !["spam", "scam", "insult"].includes(x.theme) ? "Not sure: " + (UNSURE[x.author] || x.why) : null; });
+  const LIVE = [
+    { theme: "positive", author: "Mia", text: "spraying this every morning now 🤍", conf: 0.97 },
+    { theme: "spam", author: "followers.now", text: "Get 10K followers for $9, link in bio", conf: 0.98, why: "Unrelated offer with a link in bio." },
+    { theme: "buy", author: "Jade Moreau", followers: 1800, text: "can I still get the set before Christmas if I order today?", draft: "Yes! Order before Dec 18 and it arrives in time. Link in your DMs 🎁", dm: "Discovery set · $45", conf: 0.91, why: "Purchase question with a deadline." },
+    { theme: "positive", author: "Paul G.", text: "Cedar & Fig is the one", conf: 0.96 },
+    { theme: "question", author: "lou", text: "does it stain fabric?", draft: "It shouldn't! Spray from 30 cm away and let it dry, it's water based.", conf: 0.84, why: "Answer found on your website." },
+    { theme: "positive", author: "Yara", text: "ordered 2 more, gifts sorted", conf: 0.98 },
+    { theme: "scam", author: "crypto.mike_88", text: "Bitcoin doubled my savings, ask me how", conf: 0.98, why: "Scam with a link. Deleting removes it for everyone." },
+    { theme: "positive", author: "Lina", text: "best smell in my flat", conf: 0.97 }
+  ];
+  const DRAFT_LOG = [["pen", "support", "Drafted 4 replies from the FAQ"], ["target", "lead", "Checked 12 new comments for buying intent"], ["tag", "community", "Sorted 9 new comments by theme"], ["search", "lead", "Matched a product for a question on TikTok"]];
+
+  // ---------- state
+  const S = {
+    route: "overview", scOn: "needs", tab: "suggestions", actAgent: "all", actWho: "all", open: {}, edits: {}, scanned: 612,
+    auto: { buy: false, b2b: false, question: false, positive: true, spam: false, scam: false, insult: false },
+    learned: { lead: [], support: [], community: [] }, guides: { lead: AGENTS.lead.guide, support: AGENTS.support.guide, community: AGENTS.community.guide }, log: []
+  };
+  let LID = 0;
+  const log = (o) => { const e = { lid: ++LID, t: Date.now(), ids: [], ...o }; S.log.unshift(e); return e; };
+  // history before this visit, and what the agents did automatically since Sunday
+  [["community", "heart", "Liked 41 positive comments", "agent", 41, 2], ["community", "tag", "Sorted 612 messages by theme", "agent", 0, 30], ["lead", "target", "Spotted 4 buying questions", "agent", 0, 31], ["support", "pen", "Drafted 14 replies from the FAQ", "agent", 0, 33], ["lead", "pen", "Drafted 4 replies with product links", "agent", 0, 34]]
+    .forEach(([agent, icon, text, by, count, h]) => S.log.push({ lid: ++LID, agent, icon, text, by, count, ids: [], t: NOW - h * 3600000, typed: true }));
+
+  const pend = (f = () => true) => items.filter((x) => x.status === "pending" && f(x));
+  const agentOf = (x) => TH[x.theme].agent;
+  const needs = (aid) => pend((x) => x.needs && (!aid || agentOf(x) === aid)).sort((a, b) => b.at - a.at);
+  const feed = (th) => pend((x) => x.theme === th && !x.needs).sort((a, b) => b.at - a.at);
+  const sure = (x) => x.conf >= 0.85;
+  const rel = (t) => { const m = Math.round((Date.now() - t) / MIN); return m < 1 ? "now" : m < 60 ? m + " min" : m < 1440 ? Math.round(m / 60) + " h" : Math.round(m / 1440) + " d"; };
+  const kf = (v) => (v >= 1000 ? (v / 1000).toFixed(1).replace(".0", "") + "K" : v);
+  const clock = (t) => new Date(t).toTimeString().slice(0, 5);
+  const cap = (t) => t.charAt(0).toUpperCase() + t.slice(1);
+  const draftOf = (x) => S.edits[x.id] ?? x.draft ?? "";
+  function stats(aid) {
+    const L = S.log.filter((e) => e.agent === aid && !e.undone && e.t >= LAST);
+    const auto = L.filter((e) => e.by === "agent").reduce((s, e) => s + (e.count || 0), 0);
+    const you = L.filter((e) => e.by === "you").reduce((s, e) => s + (e.count || 0), 0);
+    const todo = pend((x) => agentOf(x) === aid && !x.needs).length;
+    return { auto, you, todo, needs: needs(aid).length, saved: Math.round(auto * 0.3 + you * 0.6) };
+  }
+
+  // ---------- actions
+  function act(ids, a, by = "you") {
+    const xs = ids.map((id) => items.find((x) => x.id === id)).filter((x) => x && x.status === "pending");
+    if (!xs.length) return null;
+    xs.forEach((x) => { x.status = "done"; x.doneAct = a || TH[x.theme].act; });
+    const x = xs[0], aa = a || TH[x.theme].act, th = TH[x.theme];
+    const text = xs.length > 1 ? `${ACT[aa].past} ${xs.length} ${th.label.toLowerCase()}` : `${ACT[aa].past} ${x.author}${x.dm && aa === "reply" ? " and sent the product link by DM" : ""}`;
+    const e = log({ agent: agentOf(x), icon: ACT[aa].ic, text, q: xs.length === 1 ? x.text : "", by, count: xs.length, ids: xs.map((y) => y.id), edited: xs.length === 1 && S.edits[x.id] != null && S.edits[x.id] !== x.draft });
+    return e;
+  }
+  function undo(lid) {
+    const e = S.log.find((l) => l.lid === lid); if (!e || e.undone) return;
+    e.undone = true; e.ids.forEach((id) => { const x = items.find((y) => y.id === id); if (x) x.status = "pending"; });
+    render(); toast("Put back in the feed");
+  }
+  const REASONS = { tone: "Wrong tone", info: "Wrong information", noact: "Shouldn't act on this", theme: "Wrong theme or agent", other: "Something else" };
+  function dismiss(id, why) {
+    const x = items.find((y) => y.id === id); if (!x) return; x.status = "dismissed";
+    const r = REASONS[why] || "Not right";
+    S.learned[agentOf(x)].unshift({ r, q: x.text, t: Date.now() });
+    const e = log({ agent: agentOf(x), icon: "x", text: `Refused the suggestion for ${x.author} · ${r}`, q: x.text, by: "you", count: 0, ids: [id] });
+    render(); toast(`Noted: ${r.toLowerCase()}. The ${AGENTS[agentOf(x)].name} agent learns from it.`, () => { undo(e.lid); S.learned[agentOf(x)].shift(); });
+  }
+  function openReasons(btn, id) {
+    closeMenu(); const x = items.find((y) => y.id === id); if (!x) return;
+    const m = document.createElement("div"); m.className = "menu";
+    m.innerHTML = `<p>Why is it not right?</p>${Object.entries(REASONS).map(([k, v]) => `<button data-reason="${id}:${k}">${ic(k === "theme" ? "tag" : k === "noact" ? "x" : k === "info" ? "alert" : k === "tone" ? "msg" : "pen")}${v}</button>`).join("")}`;
+    document.body.appendChild(m); btn.classList.add("on"); m._btn = btn;
+    const rr = btn.getBoundingClientRect();
+    const top = rr.bottom + 6 + m.offsetHeight > innerHeight ? rr.top - m.offsetHeight - 6 : rr.bottom + 6;
+    m.style.top = top + "px"; m.style.left = Math.max(8, rr.right - m.offsetWidth) + "px";
+  }
+  function setAuto(th, on) {
+    S.auto[th] = on;
+    if (on) {
+      const ids = feed(th).map((x) => x.id);
+      if (ids.length) { const e = act(ids, TH[th].act, "agent"); e.typed = false; }
+    }
+    render(); toast(on ? `${TH[th].label}: the agent now acts on its own. Everything shows in Activity.` : `${TH[th].label}: back to suggestions.`);
+  }
+
+  // live: the agent keeps reading. Themes on auto are handled straight away.
+  let li = 0, di = 0;
+  function tick() {
+    S.scanned += 2 + Math.floor(Math.random() * 4);
+    if (li < LIVE.length && Math.random() < 0.8) {
+      const x = add({ ...LIVE[li++], ago: 0, followers: LIVE[li - 1].followers || 200 + Math.round(Math.random() * 900), why: LIVE[li - 1].why || "Positive comment." });
+      if (S.auto[x.theme]) { const e = act([x.id], TH[x.theme].act, "agent"); e.typed = false; }
+      else { x.fresh = true; setTimeout(() => { x.fresh = false; }, 8000); const e = log({ agent: agentOf(x), icon: x.theme === "buy" ? "target" : x.theme === "question" ? "pen" : "tag", text: x.theme === "buy" ? `Spotted a buying question from ${x.author}` : x.theme === "question" ? `Drafted a reply to ${x.author}` : `Flagged 1 ${TH[x.theme].label.toLowerCase().replace(/s$/, "")} from ${x.author}`, by: "agent", count: 0 }); e.typed = false; }
+    } else {
+      const [icon, agent, text] = DRAFT_LOG[di++ % DRAFT_LOG.length]; const e = log({ agent, icon, text, by: "agent", count: 0 }); e.typed = false;
+    }
+    render();
+  }
+  setInterval(tick, 7000);
+
+  // ---------- UI pieces
+  function nav() {
+    const cnt = (aid) => stats(aid).todo + stats(aid).needs;
+    const r = S.route;
+    return `<div class="brand"><svg viewBox="0 0 24 24"><rect x="2" y="12" width="4" height="4"/><rect x="7" y="7" width="4" height="4"/><rect x="12" y="12" width="4" height="4"/><rect x="12" y="2" width="4" height="4"/><rect x="17" y="7" width="4" height="4"/></svg>archie</div>
+      <div class="org"><i>H</i>Halden &amp; Co${ic("right")}</div>
+      <div class="nb">
+        <button class="ni">${ic("spark")}Archie</button>
+        <button class="ni">${ic("cal")}Publishing<span class="chev">${ic("right")}</span></button>
+        <button class="ni open ${r === "overview" ? "" : ""}" data-go="overview">${ic("inbox")}Agentic Inbox<span class="chev">${ic("right")}</span></button>
+        <button class="ni sub ${r === "overview" ? "on" : ""}" data-go="overview">Overview</button>
+        ${Object.values(AGENTS).map((a) => `<button class="ni sub ${r === a.id ? "on" : ""}" data-go="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.name}<span class="n ${needs(a.id).length ? "hot" : ""}">${cnt(a.id)}</span></button>`).join("")}
+      </div>
+      <div class="nf"><button class="create">${ic("send")}Create post</button><button class="ni">${ic("bell")}Notifications<span class="n hot">8</span></button><button class="ni">${ic("help")}Help &amp; resources</button><button class="ni"><span class="av" style="width:22px;height:22px;font-size:10px">AA</span>Audrey Alexandre</button></div>`;
+  }
+  function header(crumbs) {
+    return `<div class="mh">${crumbs}<span class="sp"></span><span class="pill"><span class="live"></span>3 agents on · ${S.scanned} read</span></div>`;
+  }
+  function ring(done, total) {
+    const C = 2 * Math.PI * 42, pct = total ? done / total : 0;
+    return `<div class="ring"><svg viewBox="0 0 96 96"><circle class="tr" cx="48" cy="48" r="42"/><circle class="vl" cx="48" cy="48" r="42" stroke-dasharray="${C}" stroke-dashoffset="${C * (1 - pct)}"/></svg><div class="c"><div><b>${Math.round(pct * 100)}%</b><small>cleared</small></div></div></div>`;
+  }
+  function logHTML(filter, opts = {}) {
+    const L = S.log.filter(filter).slice(0, opts.limit || 40);
+    if (!L.length) return `<div class="empty">Nothing yet.</div>`;
+    return `<ul class="log ${opts.fade ? "fade" : ""}">${L.map((e) => {
+      const typing = !e.typed && e.by === "agent";
+      return `<li class="${typing ? "new" : ""} ${e.undone ? "undone" : ""}" ${typing ? `data-tw="${e.lid}"` : ""}>${ic(e.icon || "check")}
+        <span class="txt">${typing ? "" : esc(e.text)}${!typing && e.q && opts.quote ? ` <span class="faint">“${esc(e.q.length > 60 ? e.q.slice(0, 60) + "…" : e.q)}”</span>` : ""}</span>
+        <span class="row" style="gap:6px">${opts.agent ? `<span class="chip" style="height:20px"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[e.agent].dot}"></span>${AGENTS[e.agent].short}</span>` : ""}<span class="chip who ${e.by === "agent" ? "dark" : ""}" style="height:20px">${e.by === "agent" ? ic("bolt") + "Auto" : "You"}</span></span>
+        <time>${rel(e.t) === "now" ? clock(e.t) : rel(e.t)}</time><button class="kebab" data-menu="${e.lid}" aria-label="More actions">${ic("dots")}</button></li>`;
+    }).join("")}</ul>`;
+  }
+  function typewriter() {
+    document.querySelectorAll("[data-tw]").forEach((li) => {
+      const e = S.log.find((l) => l.lid === +li.dataset.tw); if (!e) return;
+      e.typed = true; const span = li.querySelector(".txt"); span.classList.add("caret");
+      let i = 0; const go = () => { if (!span.isConnected) return; span.textContent = e.text.slice(0, ++i); if (i < e.text.length) setTimeout(go, 20); else span.classList.remove("caret"); }; go();
+    });
+  }
+  function liveTile(filter, title, agentChip, savedMin) {
+    return `<section class="card tile"><div class="t-h"><span class="live"></span>${title}<span class="muted">Undo anything from the ⋯ menu</span>${agentChip ? `<button class="seeall" data-go="activity">See all activity ${ic("right")}</button>` : ""}</div>
+      <div class="saved"><div class="orb">${ic("spark")}</div><div><b>~${savedMin} min saved since Sunday</b><span>Everything your agents did on their own, and what you approved</span></div></div>
+      ${logHTML(filter, { agent: agentChip, quote: true, fade: agentChip, limit: agentChip ? 9 : 40 })}</section>`;
+  }
+  function itemRow(x, first, opts = {}) {
+    const th = TH[x.theme];
+    const alt = th.bulk.find((b) => b.a !== th.act && b.a !== "reply");
+    const reply = th.act === "reply";
+    return `<div class="it ${first ? "first" : ""} ${x.fresh ? "fresh" : ""}">
+      <div style="min-width:0">
+        <div class="who"><span class="net ${x.net}">${x.net}</span><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers</span><span>· ${rel(x.at)}</span>${opts.agent ? `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${AGENTS[th.agent].dot}"></span>${AGENTS[th.agent].name}</span>` : ""}${opts.theme ? `<span class="chip">${th.label}</span>` : ""}${x.needs ? `<span class="chip">${ic("alert")}${esc(x.needs.split(":")[0])}</span>` : ""}${x.fresh ? '<span class="chip ok">New</span>' : ""}</div>
+        <div class="txt">${esc(x.text)}</div>
+        <div class="why">${ic("spark")}${esc(x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why)} <span class="faint">· ${Math.round(x.conf * 100)}% sure</span></div>
+        ${reply ? `<div class="sugg"><span class="tag">${ic("reply")}Reply</span><textarea class="draft" rows="1" data-draft="${x.id}" placeholder="Write your reply">${esc(draftOf(x))}</textarea></div>${x.dm ? `<div class="sugg"><span class="tag">${ic("send")}DM</span><span class="muted" style="font-size:13px;padding-top:2px">Product link: ${esc(x.dm)}</span></div>` : ""}` : ""}
+      </div>
+      <div class="acts"><button class="btn sm ${opts.pri ? "pri" : ""}" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>${alt ? `<button class="btn sm" data-do="${x.id}:${alt.a}">${ACT[alt.a].w}</button>` : ""}<button class="btn sm icon ghost" data-dismiss="${x.id}" title="Not right">${ic("x")}</button></div>
+    </div>`;
+  }
+
+  // ---------- overview
+  // ---------- V5 overview: shortcuts on the left, simple counter cards
+  const LEADS = ["buy", "b2b"];
+  function sections() {
+    const lead = LEADS.flatMap((t) => feed(t)), mod = MOD.flatMap((t) => feed(t));
+    return [
+      { id: "needs", label: "Needs you", icon: "alert", n: needs().length },
+      { id: "leads", label: "Leads", icon: "target", n: lead.length },
+      { id: "question", label: "Questions", icon: "chat", n: feed("question").length },
+      { id: "mod", label: "Spam and moderation", icon: "eyeoff", n: mod.length },
+      { id: "positive", label: "Positive comments", icon: "heart", n: S.auto.positive ? -1 : feed("positive").length },
+      { id: "activity", label: "Activity", icon: "bolt", n: -2 }
+    ];
+  }
+  function shortcuts() {
+    return `<nav class="sc"><div class="sc-h">Your inbox</div>${sections().map((x) => `<button class="sc-i ${S.scOn === x.id ? "on" : ""}" data-sc="${x.id}">${ic(x.icon)}<span>${x.label}</span>${x.n === -1 ? '<span class="sc-n auto">Auto</span>' : x.n === -2 ? '<span class="sc-n live"><span class="live"></span></span>' : x.n ? `<span class="sc-n">${x.n}</span>` : `<span class="sc-n ok">${ic("check")}</span>`}</button>`).join("")}
+      <p class="sc-f">Shortcuts to what needs your attention</p></nav>`;
+  }
+  const cogB = (a) => `<button class="btn cog" data-go="${a.id}" data-tab="config" title="${a.name} configuration" aria-label="${a.name} configuration">${ic("gear")}</button>`;
+  const openB = (a, t) => `<button class="btn sm" data-go="${a.id}" ${t ? `data-theme="${t}"` : ""}>Open feed ${ic("right")}</button>`;
+  const chipA = (a) => `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>`;
+  const tile = (n, l, hot) => `<div class="st"><b>${n}</b><span>${l}</span></div>`;
+  function mini(id, title, a, tiles, ctas, theme, extra = "") {
+    return `<section class="card mc" id="sec-${id}"><div class="mc-h"><h3>${title}</h3>${chipA(a)}${extra}<span class="sp"></span>${cogB(a)}</div>
+      <div class="mc-st">${tiles}</div><div class="mc-f">${ctas}${openB(a, theme)}</div></section>`;
+  }
+  function overview() {
+    const total = items.filter((x) => x.at >= LAST).length, left = pend().length;
+    const nd = needs(), leads = LEADS.flatMap((t) => feed(t)).sort((p, q) => q.at - p.at);
+    const q = feed("question"), qs = q.filter(sure);
+    const mod = MOD.map((t) => feed(t)), modAll = mod.flat();
+    const st = Object.keys(AGENTS).map(stats), saved = st.reduce((m, x) => m + x.saved, 0);
+    const posDone = S.log.filter((e) => e.by === "agent" && !e.undone && e.agent === "community" && e.icon === "heart").reduce((m, e) => m + (e.count || 0), 0);
+    // Needs you: count only, review in the agent that has them
+    const byAgent = Object.values(AGENTS).map((a) => [a, nd.filter((x) => agentOf(x) === a.id).length]).filter(([, n]) => n);
+    const needsCard = `<section class="card mc" id="sec-needs"><div class="mc-h"><h3>Needs you</h3><span class="muted" style="font-size:13px">Your agents aren't sure about these</span></div>
+      <div class="mc-st">${tile(nd.length, "Not sure")}${byAgent.map(([a, n]) => tile(n, a.name)).join("")}</div>
+      <div class="mc-f">${byAgent.length ? byAgent.map(([a, n], i) => `<button class="btn sm ${i === 0 ? "pri" : ""}" data-go="${a.id}">Review ${n} in ${a.name} ${ic("right")}</button>`).join("") : `<span class="chip ok">${ic("check")}Nothing needs you</span>`}</div></section>`;
+    // Leads: the one detailed card
+    const ls = leads.filter(sure);
+    const leadsCard = `<section class="card mc lead" id="sec-leads"><div class="mc-h"><h3>Leads</h3>${chipA(AGENTS.lead)}<span class="sp"></span>${cogB(AGENTS.lead)}</div>
+      <div class="mc-st">${tile(leads.length, "To answer")}${tile(feed("buy").length, "Ready to buy")}${tile(feed("b2b").length, "Partnerships")}${tile(ls.length, "Ready to send")}</div>
+      ${leads.length ? `<div class="mc-items">${leads.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</div>` : ""}
+      <div class="mc-f">${ls.length ? `<button class="btn sm pri" data-bulk="reply|${ls.map((x) => x.id).join(",")}">${ic("send")}Send ${ls.length} sure</button>` : ""}${openB(AGENTS.lead, "buy")}</div></section>`;
+    const qCard = q.length ? mini("question", "Questions", AGENTS.support, tile(q.length, "To answer") + tile(qs.length, "Ready to send") + tile(q.length - qs.length, "To read first"),
+      qs.length ? `<button class="btn sm pri" data-bulk="reply|${qs.map((x) => x.id).join(",")}">${ic("send")}Send ${qs.length} sure</button>` : "", "question")
+      : mini("question", "Questions", AGENTS.support, tile(0, "To answer"), "", "question", `<span class="chip ok">${ic("check")}All clear</span>`);
+    const modCard = mini("mod", "Spam and moderation", AGENTS.community, tile(mod[0].length, "Spam") + tile(mod[1].length, "Scams with links") + tile(mod[2].length, "Insults"),
+      modAll.length ? `<button class="btn sm pri" data-clean="1">${ic("eyeoff")}Clean up all ${modAll.length}</button><button class="btn sm" data-bulk="hide|${modAll.map((x) => x.id).join(",")}">${ic("eyeoff")}Hide all</button><button class="btn sm" data-bulk="delete|${modAll.map((x) => x.id).join(",")}">${ic("trash")}Delete all</button>` : "", "spam",
+      modAll.length ? "" : `<span class="chip ok">${ic("check")}All clear</span>`);
+    const pos = feed("positive");
+    const posCard = mini("positive", "Positive comments", AGENTS.community, tile(posDone, "Liked on auto") + tile(pos.length, "To review"),
+      pos.length ? `<button class="btn sm pri" data-bulk="like|${pos.map((x) => x.id).join(",")}">${ic("heart")}Like all ${pos.length}</button>` : "", "positive",
+      S.auto.positive ? `<span class="chip dark">${ic("bolt")}On auto</span>` : "");
+    return `${header(`<b>Agentic Inbox</b><span class="cr">/ Overview</span>`)}<div class="ov5">${shortcuts()}<div class="ov5-c">
+      <div class="hero5"><div><h1>Welcome back, Audrey.</h1><p class="muted">${nd.length} need${nd.length === 1 ? "s" : ""} you, ${leads.length} leads to answer, ${left - nd.length - leads.length} quick approvals.</p>${valueLine()}</div>${ring(total - left, total)}</div>
+      ${needsCard}${leadsCard}
+      <div class="mgrid">${qCard}${modCard}${posCard}</div>
+      <div id="sec-activity" style="margin-top:16px">${liveTile(() => true, "Live from your agents", true, saved)}</div>
+    </div></div>`;
+  }
+  const ORDER = ["buy", "b2b", "question", "mod", "positive"];
+  const MOD = ["spam", "scam", "insult"];
+  function valueLine() {
+    const spotted = items.filter((x) => (x.theme === "buy" || x.theme === "b2b") && x.at >= LAST).length;
+    const answered = items.filter((x) => (x.theme === "buy" || x.theme === "b2b") && x.status === "done").length;
+    const st = Object.keys(AGENTS).map(stats);
+    const auto = st.reduce((m, x) => m + x.auto, 0), you = st.reduce((m, x) => m + x.you, 0), saved = st.reduce((m, x) => m + x.saved, 0);
+    return `<div class="value"><span><b>${spotted}</b> leads spotted</span><span><b>${answered}</b> answered</span><span><b>${auto}</b> actions on their own</span><span><b>${you}</b> approved by you</span><span><b>~${saved} min</b> saved</span><span class="faint">since Sunday</span></div>`;
+  }
+  function needsOverview() {
+    const nd = needs();
+    if (!nd.length) return `<section class="needs" style="padding:14px 18px"><div class="row" style="color:var(--green);font-weight:600">${ic("check")}Nothing needs you right now</div></section>`;
+    return `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · your agents aren't sure about these. Your call.</span></div>${nd.map((x, i) => itemRow(x, i === 0, { agent: true, theme: true })).join("")}</section>`;
+  }
+  function bucket(t) {
+    if (t === "mod") return modBucket();
+    const th = TH[t], a = AGENTS[th.agent], xs = feed(t);
+    const isLead = t === "buy" || t === "b2b";
+    const chip = `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>`;
+    const cog = `<button class="btn cog" data-go="${a.id}" data-tab="config" title="${a.name} configuration" aria-label="${a.name} configuration">${ic("gear")}</button>`;
+    const open = `<button class="btn sm" data-go="${a.id}" data-theme="${t}">Open feed ${ic("right")}</button>`;
+    if (S.auto[t]) {
+      const done = S.log.filter((e) => e.by === "agent" && !e.undone && e.agent === a.id && e.icon === ACT[th.act].ic).reduce((m, e) => m + (e.count || 0), 0);
+      return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="chip dark">${ic("bolt")}On auto</span><span class="muted" style="font-size:13px">${done} ${ACT[th.act].past.toLowerCase()} since Sunday</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
+    }
+    if (!xs.length) return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>${th.label}</h3>${chip}<span class="chip ok">${ic("check")}All clear</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
+    const s = xs.filter(sure);
+    const ctas = th.bulk.map((b, i) => { const ids = (b.sure ? s : xs).map((x) => x.id); return ids.length ? `<button class="btn sm ${i === 0 ? "pri" : ""}" data-bulk="${b.a}|${ids.join(",")}">${ic(ACT[b.a].ic)}${b.sure ? `Send ${ids.length} sure` : `${b.l} ${ids.length}`}</button>` : ""; }).join("");
+    const sub = th.act === "reply" ? `${s.length} ready to send · ${xs.length - s.length} to read first` : t === "scam" ? "Links to scams. Deleting removes them for everyone." : t === "positive" ? "Happy customers to like" : "To clean up";
+    const shown = isLead ? xs : xs.slice(0, 3);
+    return `<section class="card bk ${isLead ? "lead" : ""}"><div class="bk-h"><div class="bk-t"><span class="bk-c">${xs.length}</span><h3>${th.label}</h3>${chip}${xs.some((x) => x.fresh) ? '<span class="chip ok">New</span>' : ""}<span class="muted" style="font-size:13px">${sub}</span></div><div class="bk-a">${ctas}${open}${cog}</div></div>
+      <div class="bk-items">${shown.map((x, i) => itemRow(x, i === 0)).join("")}</div>
+      ${xs.length > shown.length ? `<button class="more" data-go="${a.id}" data-theme="${t}">See the ${xs.length - shown.length} others in the feed ${ic("right")}</button>` : ""}</section>`;
+  }
+  function modBucket() {
+    const a = AGENTS.community, all = MOD.flatMap((t) => feed(t));
+    const cog = `<button class="btn cog" data-go="${a.id}" data-tab="config" title="${a.name} configuration" aria-label="${a.name} configuration">${ic("gear")}</button>`;
+    const open = `<button class="btn sm" data-go="${a.id}" data-theme="spam">Open feed ${ic("right")}</button>`;
+    const chip = `<span class="chip"><span style="width:6px;height:6px;border-radius:50%;background:${a.dot}"></span>${a.name}</span>`;
+    if (!all.length) return `<section class="card bk slim"><div class="bk-h"><div class="bk-t"><h3>Spam and moderation</h3>${chip}<span class="chip ok">${ic("check")}All clear</span></div><div class="bk-a">${open}${cog}</div></div></section>`;
+    const rows = MOD.map((t) => { const xs = feed(t), th = TH[t]; if (!xs.length) return `<div class="mrow"><span class="mn">${ic("check")}</span><span class="ml">${th.label}</span><span class="muted">All clear</span></div>`;
+      return `<div class="mrow"><span class="mn">${xs.length}</span><span class="ml">${th.label}</span><span class="muted mx">${esc(xs[0].text)}</span><span class="bk-a">${th.bulk.map((b) => `<button class="btn sm" data-bulk="${b.a}|${xs.map((x) => x.id).join(",")}">${ic(ACT[b.a].ic)}${b.l}</button>`).join("")}</span></div>`; }).join("");
+    return `<section class="card bk"><div class="bk-h"><div class="bk-t"><span class="bk-c">${all.length}</span><h3>Spam and moderation</h3>${chip}<span class="muted" style="font-size:13px">Bots, scams and insults, sorted by your agent</span></div><div class="bk-a"><button class="btn sm pri" data-clean="1">${ic("eyeoff")}Clean up all ${all.length}</button>${open}${cog}</div></div>${rows}</section>`;
+  }
+  function agentCard(a) {
+    const s = stats(a.id);
+    const latest = [...needs(a.id), ...pend((x) => agentOf(x) === a.id && !x.needs).sort((p, q) => q.at - p.at)].slice(0, 3);
+    return `<section class="card ac"><div class="ac-h"><span class="aav" style="background:${a.dot}">${ic(a.icon)}</span><div style="min-width:0"><h3>${a.name}</h3><p>${a.role}</p></div></div>
+      <div class="ac-stats"><div class="st ${s.needs ? "hot" : ""}"><b>${s.needs}</b><span>${s.needs ? ic("alert") : ""}Need${s.needs === 1 ? "s" : ""} you</span></div><div class="st"><b>${s.todo}</b><span>To review</span></div><div class="st"><b>${s.auto}</b><span>Done on its own</span></div></div>
+      <div class="ac-l">Latest suggestions</div>
+      ${latest.length ? latest.map((x) => { const th = TH[x.theme]; return `<div class="sg"><span class="net ${x.net}">${x.net}</span><div style="min-width:0"><div class="tx"><b>${esc(x.author)}</b> ${esc(x.text)}</div><div class="meta">${x.needs ? `<span class="chip" style="height:18px">${ic("alert")}Needs you</span>` : `<span class="chip" style="height:18px">${th.label}</span>`}${x.theme === "buy" || th.act === "reply" ? `<span class="dr">→ ${esc(draftOf(x) || "Write a reply")}</span>` : `<span class="dr">→ ${ACT[th.act].w}</span>`}<span class="faint">${rel(x.at)}</span></div></div>
+        ${x.needs ? `<button class="btn sm" data-go="${a.id}">Open</button>` : `<button class="btn sm" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`}</div>`; }).join("") : `<div class="empty">All clear.</div>`}
+      <div class="ac-f"><button class="btn pri" data-go="${a.id}">Open feed ${ic("right")}</button><button class="btn cog" data-go="${a.id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button><span class="sp"></span>${s.todo + s.needs ? "" : '<span class="chip ok">All clear</span>'}</div></section>`;
+  }
+
+  // ---------- agent page
+  function agentPage(a) {
+    const s = stats(a.id), nd = needs(a.id);
+    const autoThemes = a.themes.filter((t) => S.auto[t]);
+    return `${header(`<b>Agentic Inbox</b><span class="cr">/ ${a.name}</span>`)}<div class="wrap">
+      <div class="ahd"><span class="aav" style="background:${a.dot}">${ic(a.icon)}</span><div style="flex:1;min-width:0"><h1>${a.name}</h1><p class="muted">${a.role}</p></div>
+        ${autoThemes.length ? `<span class="chip dark">${ic("bolt")}Auto: ${autoThemes.map((t) => TH[t].label.toLowerCase()).join(", ")}</span>` : `<span class="chip">Suggestions only</span>`}<button class="btn cog" data-tab="config" title="Agent configuration" aria-label="Agent configuration">${ic("gear")}</button></div>
+      <section class="recap"><div class="row"><b>Since Sunday</b><span class="muted" style="font-size:13px">${s.auto + s.you} handled · about ${s.saved} min saved</span></div>
+        <div class="rg"><div class="st"><b>${s.auto}</b><span>Done on its own</span></div><div class="st"><b>${s.you}</b><span>Approved by you</span></div><div class="st ${s.needs ? "hot" : ""}"><b>${s.needs}</b><span>${s.needs ? ic("alert") : ""}Need${s.needs === 1 ? "s" : ""} you</span></div><div class="st"><b>${s.todo}</b><span>Suggestions to review</span></div></div></section>
+      <div class="tabs"><button class="${S.tab === "suggestions" ? "on" : ""}" data-tab="suggestions">Suggestions<span class="k">${s.todo + s.needs}</span></button><button class="${S.tab === "config" ? "on" : ""}" data-tab="config">Agent configuration</button></div>
+      ${S.tab === "config" ? config(a) : suggestions(a, s)}
+    </div>`;
+  }
+  function suggestions(a, s) {
+    const groups = a.themes.map((t) => {
+      const xs = feed(t), th = TH[t];
+      if (S.auto[t]) {
+        const done = S.log.filter((e) => e.by === "agent" && !e.undone && e.agent === a.id && e.icon === ACT[th.act].ic).reduce((m, e) => m + (e.count || 0), 0);
+        return `<section id="th-${t}" class="card theme auto"><div class="th-h"><h3>${th.label}</h3><span class="chip dark">${ic("bolt")}On auto</span><span class="muted" style="font-size:13px">${done} ${ACT[th.act].past.toLowerCase()} since Sunday. New ones are handled as they come.</span><div class="acts"><button class="btn sm" data-auto="${t}:off">Back to suggestions</button></div></div></section>`;
+      }
+      if (!xs.length) return `<section id="th-${t}" class="card theme"><div class="th-h"><h3>${th.label}</h3><span class="chip ok">${ic("check")}All clear</span></div></section>`;
+      const shown = S.open[t] ? xs : xs.slice(0, 5);
+      const bulks = th.bulk.map((b, i) => { const ids = (b.sure ? xs.filter(sure) : xs).map((x) => x.id); return ids.length ? `<button class="btn sm ${i === 0 ? "pri" : ""}" data-bulk="${b.a}|${ids.join(",")}">${ic(ACT[b.a].ic)}${b.l}${b.sure ? ` (${ids.length})` : ` ${ids.length}`}</button>` : ""; }).join("");
+      return `<section id="th-${t}" class="card theme"><div class="th-h"><h3>${th.label}</h3><span class="n">${xs.length}</span>${xs.some((x) => x.fresh) ? '<span class="chip ok">New</span>' : ""}<div class="acts">${bulks}</div></div>
+        ${shown.map((x, i) => itemRow(x, i === 0)).join("")}
+        ${xs.length > 5 ? `<button class="more" data-more="${t}">${S.open[t] ? "Show less" : `Show all ${xs.length}`}</button>` : ""}</section>`;
+    }).join("");
+    const nd = needs(a.id);
+    const needsSec = nd.length ? `<section class="needs"><div class="needs-h">${ic("alert")}Needs you<span class="muted" style="font-weight:400;font-size:13px">${nd.length} · the agent isn't sure about these. Your call.</span></div>${nd.map((x, i) => itemRow(x, i === 0, { theme: true })).join("")}</section>` : "";
+    return `${needsSec}${groups}<div style="margin-top:16px">${liveTile((e) => e.agent === a.id, "Activity", false, s.saved)}</div>`;
+  }
+  function config(a) {
+    return `<div class="cfg"><section class="card"><div class="lbl">Guidelines</div><textarea class="field" data-guide="${a.id}">${esc(S.guides[a.id])}</textarea><p class="faint" style="font-size:12.5px;margin-top:6px">Plain words. The agent reads this before every suggestion.</p>
+        <div class="lbl" style="margin-top:22px">Knows from</div>${a.sources.map((s) => `<div class="row" style="padding:5px 0;font-size:14px">${ic("book")}${esc(s)}</div>`).join("")}
+        <div class="lbl" style="margin-top:22px">Learned from your feedback</div>${S.learned[a.id].length ? S.learned[a.id].slice(0, 8).map((l) => `<div class="row" style="align-items:flex-start;padding:7px 0;border-top:1px solid var(--line);font-size:13.5px"><span class="chip">${esc(l.r)}</span><span class="muted">“${esc(l.q)}”</span></div>`).join("") : `<p class="muted" style="font-size:13.5px">Nothing yet. Each refusal and its reason shows up here and shapes the next suggestions.</p>`}</section>
+      <section class="card"><div class="lbl">Autonomy by theme</div>${a.themes.map((t) => { const th = TH[t]; return `<div class="mode"><p>${th.label}<span>${th.replies ? "Replies stay in suggestions for now" : S.auto[t] ? `The agent will ${ACT[th.act].w.toLowerCase()} on its own` : "You approve each one"}</span></p><div class="seg"><button class="${S.auto[t] ? "" : "on"}" data-auto="${t}:off">Suggest</button><button class="${S.auto[t] ? "on" : ""}" ${th.replies ? "disabled" : ""} data-auto="${t}:on">Auto</button></div></div>`; }).join("")}
+        <p class="faint" style="font-size:12.5px;margin-top:10px">What it does on auto shows up live in Activity, with Undo.</p></section></div>`;
+  }
+
+  // ---------- activity (all agents)
+  function activityPage() {
+    const f = (e) => (S.actAgent === "all" || e.agent === S.actAgent) && (S.actWho === "all" || e.by === S.actWho);
+    const all = S.log.filter((e) => e.t >= LAST);
+    const autoN = all.filter((e) => e.by === "agent" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
+    const youN = all.filter((e) => e.by === "you" && !e.undone).reduce((m, e) => m + (e.count || 0), 0);
+    return `${header(`<b>Agentic Inbox</b><span class="cr">/ Activity</span>`)}<div class="wrap">
+      <button class="btn ghost sm" data-go="overview" style="margin-left:-10px">${ic("left")}Overview</button>
+      <div class="ahd" style="margin-top:8px"><span class="aav" style="background:var(--fg)">${ic("bolt")}</span><div style="flex:1"><h1>Activity</h1><p class="muted">Everything your agents did since Sunday, live. ${autoN} actions on their own, ${youN} approved by you.</p></div><span class="pill"><span class="live"></span>Live</span></div>
+      <div class="filters" style="margin-top:20px"><button class="${S.actAgent === "all" ? "on" : ""}" data-actagent="all">All agents</button>${Object.values(AGENTS).map((a) => `<button class="${S.actAgent === a.id ? "on" : ""}" data-actagent="${a.id}"><span class="d" style="background:${a.dot}"></span>${a.name}</button>`).join("")}
+        <span class="sp"></span><button class="${S.actWho === "all" ? "on" : ""}" data-actwho="all">Everyone</button><button class="${S.actWho === "agent" ? "on" : ""}" data-actwho="agent">${ic("bolt")}Auto</button><button class="${S.actWho === "you" ? "on" : ""}" data-actwho="you">You</button></div>
+      <section class="card tile" style="margin-top:14px">${logHTML(f, { agent: true, quote: true, limit: 400 })}</section>
+    </div>`;
+  }
+  function openMenu(btn, lid) {
+    closeMenu(); const e = S.log.find((l) => l.lid === lid); if (!e) return;
+    const canUndo = e.ids.length && !e.undone && e.count;
+    const a = AGENTS[e.agent];
+    const m = document.createElement("div"); m.className = "menu";
+    m.innerHTML = `<p>${esc(a.name)}</p>
+      <button ${canUndo ? `data-undo="${lid}"` : "disabled"}>${ic("reply")}${e.undone ? "Already undone" : canUndo ? "Undo" : "Nothing to undo"}</button>
+      <hr><button data-go="${e.agent}" data-tab="config">${ic("gear")}Go to agent configuration</button>
+      <button data-go="${e.agent}">${ic("right")}Open ${esc(a.name)} feed</button>`;
+    document.body.appendChild(m); btn.classList.add("on"); m._btn = btn;
+    const r = btn.getBoundingClientRect();
+    const top = r.bottom + 6 + m.offsetHeight > innerHeight ? r.top - m.offsetHeight - 6 : r.bottom + 6;
+    m.style.top = top + "px"; m.style.left = Math.max(8, r.right - m.offsetWidth) + "px";
+  }
+  function closeMenu() { const had = document.querySelector(".menu"); document.querySelectorAll(".menu").forEach((m) => { m._btn && m._btn.classList.remove("on"); m.remove(); }); if (had && deferred) setTimeout(render, 0); }
+
+  // ---------- render
+  let deferred = false;
+  function render() {
+    const a = document.activeElement;
+    if (a && a.matches && a.matches("textarea")) { deferred = true; return; }
+    if (document.querySelector(".menu")) { deferred = true; return; }
+    deferred = false;
+    $("#nav").innerHTML = nav();
+    const main = $("#main"), st = main.scrollTop;
+    main.innerHTML = S.route === "overview" ? overview() : S.route === "activity" ? activityPage() : agentPage(AGENTS[S.route]);
+    main.scrollTop = st;
+    main.querySelectorAll("textarea.draft").forEach((t) => { t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; });
+    typewriter();
+  }
+  document.addEventListener("focusout", () => { if (deferred) setTimeout(() => { if (deferred) render(); }, 180); });
+  let tt;
+  function toast(msg, undoFn) {
+    const t = $("#toast"); t.innerHTML = `<span>${esc(msg)}</span>${undoFn ? "<button data-tundo>Undo</button>" : ""}`; t._u = undoFn; t.classList.add("on");
+    clearTimeout(tt); tt = setTimeout(() => t.classList.remove("on"), 4200);
+  }
+  document.addEventListener("input", (e) => {
+    const t = e.target;
+    if (t.dataset.draft) { S.edits[t.dataset.draft] = t.value; t.style.height = "auto"; t.style.height = t.scrollHeight + "px"; }
+    if (t.dataset.guide) S.guides[t.dataset.guide] = t.value;
+  });
+  document.addEventListener("click", (e) => {
+    const g = (k) => e.target.closest(`[data-${k}]`); let el;
+    if ((el = g("menu"))) { const open = document.querySelector(".menu"); const same = open && open._btn === el; closeMenu(); if (!same) openMenu(el, +el.dataset.menu); return; }
+    const inMenu = e.target.closest(".menu"); closeMenu();
+    if ((el = g("actagent"))) { S.actAgent = el.dataset.actagent; render(); return; }
+    if ((el = g("actwho"))) { S.actWho = el.dataset.actwho; render(); return; }
+    if ((el = g("reason")) && inMenu) { const [id, k] = el.dataset.reason.split(":"); dismiss(id, k); return; }
+    if (inMenu && !e.target.closest("button[data-undo], button[data-go]")) return;
+    if ((el = g("tundo"))) { const f = $("#toast")._u; $("#toast").classList.remove("on"); f && f(); return; }
+    if ((el = g("go"))) { S.route = el.dataset.go; S.tab = el.dataset.tab || "suggestions"; const ft = el.dataset.theme; if (ft) S.open[ft] = true; render(); $("#main").scrollTop = 0; if (ft) { const sec = document.getElementById("th-" + ft); if (sec) { $("#main").scrollTop = sec.offsetTop - 64; sec.animate([{ boxShadow: "0 0 0 3px #18181b" }, { boxShadow: "0 0 0 0 transparent" }], { duration: 1400 }); } } return; }
+    if ((el = g("sc"))) { const id = el.dataset.sc; S.scOn = id; const sec = document.getElementById("sec-" + id); if (sec) { $("#main").scrollTo({ top: sec.offsetTop - 64, behavior: "smooth" }); sec.classList.remove("flash"); void sec.offsetWidth; sec.classList.add("flash"); } document.querySelectorAll(".sc-i").forEach((b) => b.classList.toggle("on", b.dataset.sc === id)); return; }
+    if ((el = g("tab"))) { S.tab = el.dataset.tab; render(); return; }
+    if ((el = g("do"))) {
+      const [id, a] = el.dataset.do.split(":"); const x = items.find((y) => y.id === id);
+      if (a === "reply" && !draftOf(x).trim()) { toast("Write a reply first"); return; }
+      const ev = act([id], a); render(); if (ev) toast(`${ACT[a].past} ${x.author}`, () => undo(ev.lid)); return;
+    }
+    if ((el = g("bulk"))) { const [a, ids] = el.dataset.bulk.split("|"); const ev = act(ids.split(","), a); render(); if (ev) toast(ev.text, () => undo(ev.lid)); return; }
+    if ((el = g("clean"))) { const evs = MOD.map((t) => { const ids = feed(t).map((x) => x.id); return ids.length ? act(ids, TH[t].act) : null; }).filter(Boolean); render(); const n = evs.reduce((m, e) => m + e.count, 0); toast(`Cleaned up ${n} comments: spam and insults hidden, scams deleted`, () => evs.forEach((e) => undo(e.lid))); return; }
+    if ((el = g("dismiss"))) { const open = document.querySelector(".menu"); if (!(open && open._btn === el)) openReasons(el, el.dataset.dismiss); return; }
+    if ((el = g("undo"))) { undo(+el.dataset.undo); return; }
+    if ((el = g("more"))) { const t = el.dataset.more; S.open[t] = !S.open[t]; render(); return; }
+    if ((el = g("auto"))) { const [t, v] = el.dataset.auto.split(":"); if (S.auto[t] !== (v === "on")) setAuto(t, v === "on"); return; }
+  });
+  $("#main").addEventListener("scroll", () => {
+    if (S.route !== "overview") return;
+    const m = $("#main"); let cur = "needs";
+    sections().forEach((x) => { const el = document.getElementById("sec-" + x.id); if (el && el.offsetTop - 120 <= m.scrollTop) cur = x.id; });
+    if (cur !== S.scOn) { S.scOn = cur; document.querySelectorAll(".sc-i").forEach((b) => b.classList.toggle("on", b.dataset.sc === cur)); }
+  });
+  render();
+})();
+</script>
+</body>
+</html>

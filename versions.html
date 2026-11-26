@@ -1,0 +1,61 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Agent Inbox · prototypes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="shared.css">
+<style>
+.w { max-width:880px; margin:0 auto; padding:56px 20px 80px; }
+h1 { font-size:30px; font-weight:600; letter-spacing:-.025em; }
+.lead { color:var(--muted); font-size:16px; margin-top:10px; max-width:640px; }
+.two { display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-top:32px; }
+.opt { padding:22px; text-decoration:none; color:inherit; display:flex; flex-direction:column; gap:10px; transition:box-shadow .15s; }
+.opt:hover { box-shadow:0 0 0 1px var(--line2), 0 14px 34px -20px rgba(0,0,0,.3); }
+.opt h2 { font-size:19px; font-weight:600; }
+.opt ul { margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:flex; flex-direction:column; gap:4px; }
+.opt .go { margin-top:auto; padding-top:8px; font-weight:600; }
+.common { margin-top:32px; padding:20px 22px; }
+.common h3 { font-size:15px; font-weight:600; margin-bottom:8px; }
+.common ul { margin:0; padding-left:18px; color:var(--muted); font-size:13.5px; display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; }
+@media (max-width:700px) { .two, .common ul { grid-template-columns:1fr; } }
+</style>
+</head>
+<body>
+<div class="w">
+  <span class="chip">V1 janvier · données fictives · Halden & Co</span>
+  <h1 style="margin-top:14px">Agent Inbox V1 : les deux propositions du 27/11</h1>
+  <p class="lead">Même scénario pour les deux : l'utilisateur revient après 3 jours, 200 suggestions l'attendent, dont 3 leads et 150 spams. Le bandeau noir mesure le temps et les clics pour traiter le premier lead et pour vider le spam.</p>
+  <div class="two">
+    <a class="card opt" href="a.html"><span class="chip dark" style="align-self:flex-start">A</span><h2>Hub léger Inbox</h2>
+      <ul><li>Page d'accueil avec un résumé au retour</li><li>Les leads en tête, à traiter sur place</li><li>Le reste groupé par intent, validable par lots depuis l'accueil</li><li>Valeur produite, historique et instructions des agents à droite</li></ul>
+      <span class="go">Ouvrir A →</span></a>
+    <a class="card opt" href="b.html"><span class="chip dark" style="align-self:flex-start">B</span><h2>Un onglet par agent</h2>
+      <ul><li>Entrée « Engagement » dans la nav d'archie.app</li><li>Un onglet par agent : Lead gen et Généraliste</li><li>Dans chaque onglet : suggestions (filtrables par intent), historique, instructions</li><li>Pas de vue globale ni de résumé au retour</li></ul>
+      <span class="go">Ouvrir B →</span></a>
+  </div>
+  <div class="card common"><h3>Périmètre V1 commun</h3><ul>
+    <li>2 agents : Lead gen et Généraliste</li><li>Suggestions groupées par intent</li>
+    <li>Suggestions seules : approuver, modifier, refuser avec raison</li><li>Actions natives : reply (+ DM produit), like, hide, delete</li>
+    <li>Validation par lots dès le départ</li><li>Historique de ce qui a été validé</li>
+    <li>L'agent tourne en continu : nouveaux messages toutes les ~10 s</li><li>Hors V1 : automatisation, escalade, Shopify, CRM</li>
+  </ul></div>
+  <a class="card opt" href="./" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">Proto unique · switch de version en bas à droite</span><h2>Toutes les versions dans un seul proto</h2>
+    <ul><li>V5 par défaut : overview simple, raccourcis à gauche, carte Leads détaillée, autres paquets en mini</li><li>Le switch en bas à droite active une version et désactive la précédente</li></ul>
+    <span class="go">Ouvrir le proto →</span></a>
+  <a class="card opt" href="v4/" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">V4 · 25/11 · overview par paquet</span><h2>archie.app : overview par paquet</h2>
+    <ul><li>Même base que la V3 (nav archie.app, 3 agents, pages agent, activité avec menu ⋯)</li><li>Overview : Needs you en priorité, puis chaque sous-catégorie (Ready to buy, Questions, Spam, Scams…) avec son action adaptée</li><li>Chaque paquet : Open feed (ouvre l'agent sur ce thème) et l'engrenage de configuration</li><li>Activité de tous les agents en dessous</li></ul>
+    <span class="go">Ouvrir la V4 →</span></a>
+  <a class="card opt" href="v3/" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">V3 · 25/11 · overview par agent</span><h2>archie.app : Overview + 3 agents</h2>
+    <ul><li>Nav archie.app : Archie, Publishing, Agentic Inbox (Overview, Lead generation, Support, Community management)</li><li>Overview façon Today : chaque agent avec ses 3 dernières suggestions, Open feed et Configure</li><li>Page agent : récap, onglets Suggestions (Needs you en tête, feed par thème avec Hide all / Delete all, activité live) et Configuration</li><li>Activité de tous les agents, avec un menu ⋯ (Undo, configuration de l'agent)</li></ul>
+    <span class="go">Ouvrir la V3 →</span></a>
+  <a class="card opt" href="v2/" style="margin-top:14px"><span class="chip dark" style="align-self:flex-start">V2 · 25/11</span><h2>Hub + agents en dossier (style Today)</h2>
+    <ul><li>Direction retenue avec Jean-Loup : le hub en entrée, pleine largeur</li><li>« Needs you » en tête (suggestions dont l'agent n'est pas sûr), puis les leads, puis le Généraliste par intent</li><li>Activité en direct sous le hub</li><li>Agents en dossier dans la nav : à faire, activité, réglages et guidelines</li></ul>
+    <span class="go">Ouvrir la V2 →</span></a>
+  <p class="muted" style="margin-top:22px;font-size:13.5px">Première exploration (4 agents, Needs you, passage en auto) : <a href="exploration/" style="color:inherit">exploration/</a></p>
+</div>
+</body>
+</html>
