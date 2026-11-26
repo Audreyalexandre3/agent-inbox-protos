@@ -7,6 +7,7 @@
 <!-- mode: html-prototype · design-archie (light) · DS tokens + Averta from @agorapulse/ui-theme via jsDelivr -->
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/desktop_variables.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/font-face.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-theme@latest/assets/style/css-ui/index.css">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@agorapulse/ui-symbol@latest/icons/ap-icons.css">
 <style>
 :root {
@@ -51,52 +52,75 @@ i[class^="ap-icon-"] { font-size:16px; line-height:1; }
 .btn-wide { width:100%; }
 .btn-sm { height:32px; padding:0 12px; font-size:13px; }
 
-/* ===== Archie onboarding (as in production) ===== */
-.ob { min-height:calc(100vh - 44px); background:#fff radial-gradient(1200px 600px at 85% -10%, #FFE7DA 0%, rgba(255,231,218,0) 60%), radial-gradient(900px 500px at -10% 110%, #FDFFE5 0%, rgba(253,255,229,0) 60%); display:flex; flex-direction:column; }
-.ob-top { padding:22px 32px; }
-.ob-top img { width:178px; display:block; }
-.ob-mid { flex:1; display:flex; align-items:flex-start; justify-content:center; padding:30px 24px 60px; }
-.ob-col { width:440px; max-width:100%; }
-.ob-title { text-align:center; margin-bottom:20px; }
-.ob-title h1 { font-size:28px; line-height:1.2; font-weight:600; color:var(--navy); letter-spacing:-.01em; }
-.ob-title p { margin-top:8px; color:var(--ink2); font-size:15px; }
-.acard { background:#fff; border-radius:16px; box-shadow:0 0 0 1px var(--line), 0 20px 50px -30px rgba(10,27,51,.25); padding:28px; display:flex; flex-direction:column; gap:16px; }
-.fld { display:flex; flex-direction:column; gap:6px; }
-.fld label { font-weight:600; font-size:13.5px; color:var(--ink); }
-.fld small { color:var(--ink2); font-size:12.5px; }
-.inp { height:40px; padding:0 12px; border-radius:6px; border:1px solid var(--line); background:#fff; outline:none; width:100%; }
-.inp:focus { border-color:var(--blue); box-shadow:0 0 0 3px var(--blue-05); }
+/* ===== Archie onboarding — reproduced from production (hello.archie.app + platform code:
+   archie-layout, archie-titles, archie-card, archie-signup-buttons, archie-signup-social-network-card) ===== */
+.ob { position:relative; min-height:calc(100vh - 44px); display:flex; font-family:var(--ref-font-family); color:var(--ref-color-grey-100); }
+/* editorial steps (signup, verify) */
+.ob.editorial { flex-direction:column; align-items:center; background:var(--ref-color-white); isolation:isolate; padding:calc(var(--ref-spacing-xxxl) + var(--ref-spacing-xxl)) var(--ref-spacing-md) var(--ref-spacing-xl); gap:var(--ref-spacing-md); }
+.editorial-background { position:absolute; inset:0; z-index:-1; overflow:hidden;
+  background: radial-gradient(139.8% 60.5% at 76.3% 92.3%, #ff3c00 0%, rgba(253,109,49,.75) 25%, rgba(251,158,99,.5) 50%, rgba(249,206,148,.25) 75%, rgba(247,255,197,0) 100%),
+              radial-gradient(112.3% 78% at 2.6% 90.3%, #f7ffc5 28.8%, rgba(247,255,197,0) 100%), var(--ref-color-white); }
+.editorial-background::after { content:""; position:absolute; inset:0; opacity:.25; background-image:conic-gradient(from 270deg at 3px 3px, #ff3c00 25%, transparent 0); background-size:71px 71px; }
+.editorial-header { position:absolute; top:24px; left:24px; right:24px; display:flex; justify-content:space-between; align-items:center; gap:var(--ref-spacing-sm); }
+.editorial-header img { width:178px; height:34px; display:block; }
+.have-top { font-size:13px; color:var(--ref-color-grey-80); }
+.have-top a, .ap-link-like { color:var(--ref-color-electric-blue-100); text-decoration:none; font-weight:600; }
+.ed-content { width:100%; max-width:960px; display:flex; flex-direction:column; align-items:center; gap:var(--ref-spacing-md); }
+.hero-t { text-align:center; font-size:52px; line-height:60px; font-weight:700; color:var(--ref-color-grey-150); margin:0; }
+.hero-t .highlight { background:#F7FFC5; padding:0 10px; display:inline-block; transition:width .3s; }
+.hero-sub { text-align:center; color:var(--ref-color-grey-80); font-size:16px; line-height:24px; max-width:500px; margin:0; }
+.ed-card { width:430px; max-width:100%; }
+.trustbar { display:flex; align-items:center; justify-content:center; gap:12px; flex-wrap:wrap; font-size:14px; font-weight:700; color:var(--ref-color-grey-150); margin-top:var(--ref-spacing-xs); }
+.trustbar img { height:16px; } .trustbar .sep { width:1px; height:16px; background:var(--ref-color-grey-40); } .trustbar .dt { color:var(--ref-color-grey-60); font-weight:400; }
+.recap { font-size:11px; color:var(--ref-color-grey-80); text-align:center; margin-top:var(--ref-spacing-md); }
+.recap a { color:var(--ref-color-electric-blue-100); }
+/* archie-card (bordered) */
+.acard { display:flex; flex-direction:column; border-radius:var(--ref-border-radius-md); border:1px solid var(--ref-color-grey-10); background:var(--ref-color-white); }
+.acard .content { display:flex; flex-direction:column; gap:var(--ref-spacing-md); padding:var(--ref-spacing-md); }
+.acard .footer { display:flex; justify-content:space-between; align-items:center; gap:var(--ref-spacing-sm); padding:var(--ref-spacing-xs) var(--ref-spacing-sm); border-top:1px solid var(--ref-color-grey-10); }
+.acard .footer .fright { display:flex; gap:var(--ref-spacing-xs); align-items:center; margin-left:auto; }
+.freenote { font-size:12px; color:var(--ref-color-grey-80); }
+.legal { font-size:12px; line-height:16px; color:var(--ref-color-grey-80); margin:0; }
+.legal a { color:var(--ref-color-electric-blue-100); }
+.fld { display:flex; flex-direction:column; gap:var(--ref-spacing-xxs); }
+.fld label { font-size:14px; font-weight:400; color:var(--ref-color-grey-100); }
+.fld small { font-size:12px; color:var(--ref-color-grey-80); }
+.inp { height:36px; padding:0 12px; border-radius:var(--sys-border-radius-sm); border:1px solid var(--ref-color-grey-20); background:#fff; outline:none; width:100%; color:var(--ref-color-grey-100); font-size:14px; }
+.inp::placeholder { color:var(--ref-color-grey-60); }
+.inp:focus { border-color:var(--ref-color-electric-blue-100); }
 select.inp { appearance:auto; }
+.or { display:flex; align-items:center; gap:10px; color:var(--ref-color-grey-80); font-size:12px; }
+.or::before, .or::after { content:""; flex:1; height:1px; background:var(--ref-color-grey-20); }
+.gbtn { display:flex; align-items:center; justify-content:center; gap:8px; height:36px; width:100%; border-radius:var(--sys-border-radius-sm); border:1px solid var(--ref-color-grey-20); background:transparent; color:var(--ref-color-grey-80); font-size:14px; }
+.gbtn:hover { background:var(--ref-color-grey-05); }
+.g { width:16px; height:16px; }
 .code { display:flex; gap:8px; }
-.code input { width:44px; height:48px; text-align:center; font-size:20px; font-weight:600; border:1px solid var(--line); border-radius:8px; }
-.or { display:flex; align-items:center; gap:10px; color:var(--ink2); font-size:12.5px; }
-.or::before, .or::after { content:""; flex:1; height:1px; background:var(--line); }
-.sso { display:flex; flex-direction:column; gap:8px; }
-.sso .btn { width:100%; }
-.g { width:18px; height:18px; }
-.cfoot { display:flex; align-items:center; justify-content:space-between; gap:10px; margin-top:4px; }
-.free { text-align:center; color:var(--ink2); font-size:12.5px; }
-.have { text-align:center; margin-top:16px; color:var(--ink2); font-size:13.5px; }
-.have a { color:var(--blue); text-decoration:none; font-weight:600; }
-.link { color:var(--blue); font-weight:600; font-size:13px; }
-/* signup editorial split */
-.edit { display:grid; grid-template-columns:1.1fr 440px; gap:64px; max-width:1100px; width:100%; align-items:center; }
-.hero h1 { font-size:46px; line-height:1.1; font-weight:600; color:var(--navy); letter-spacing:-.02em; }
-.hero .rot { color:var(--orange); display:inline-block; min-width:4ch; }
-.hero p { margin-top:18px; font-size:17px; color:var(--ink2); max-width:480px; }
-.trust { display:flex; align-items:center; gap:14px; margin-top:28px; color:var(--ink2); font-size:13px; flex-wrap:wrap; }
-.trust b { color:var(--ink); }
-.trust .dot { width:4px; height:4px; border-radius:50%; background:var(--line); }
-/* connect */
-.nets { display:grid; grid-template-columns:repeat(2, 1fr); gap:10px; }
-.net { display:flex; align-items:center; gap:10px; padding:12px; border-radius:10px; box-shadow:inset 0 0 0 1px var(--line); text-align:left; background:#fff; transition:box-shadow .15s; }
-.net:hover { box-shadow:inset 0 0 0 1px var(--blue); }
-.net .lg { width:30px; height:30px; border-radius:8px; display:grid; place-items:center; color:#fff; font-weight:700; font-size:12px; flex:none; }
-.net .t { flex:1; min-width:0; } .net .t b { display:block; font-size:14px; } .net .t span { display:block; font-size:12px; color:var(--ink2); }
-.net.on { box-shadow:inset 0 0 0 1px var(--green); background:var(--green-10); }
-.net.wait .t span::after { content:"…"; }
-.connected { font-size:12.5px; color:var(--ink2); }
-.strike { text-decoration:line-through; color:var(--ink2); font-size:13px; }
+.code input { width:44px; height:44px; text-align:center; font-size:18px; font-weight:600; border:1px solid var(--ref-color-grey-20); border-radius:var(--sys-border-radius-sm); }
+/* non-editorial steps: grey left panel + brand right panel */
+.ob.split .left { flex:1 0 0; position:relative; background:var(--ref-color-grey-bg); display:flex; flex-direction:column; align-items:center; padding:var(--ref-spacing-xl) calc(var(--ref-spacing-xl) * 2); }
+.ob.split .full-logo { position:absolute; left:24px; top:24px; width:178px; height:34px; z-index:1; }
+.ob.split .lcontent { display:flex; flex-direction:column; gap:var(--ref-spacing-md); width:100%; max-width:430px; margin:auto 0; }
+.ob.split .titles { display:flex; flex-direction:column; gap:var(--ref-spacing-xxxs); }
+.ob.split .titles h1 { margin:0; font-size:var(--sys-text-style-h1-size); line-height:var(--sys-text-style-h1-line-height); font-weight:700; color:var(--ref-color-grey-150); }
+.ob.split .titles span { color:var(--ref-color-grey-80); font-size:14px; line-height:18px; }
+.ob.split .right { width:25vw; align-self:stretch; position:relative; overflow:hidden; padding:var(--ref-spacing-xxl) var(--ref-spacing-xl); background:url(assets/archie_gradient_background.svg) center/cover no-repeat; }
+.ob.split .right h1 { position:relative; z-index:1; margin:0; font-size:40px; line-height:48px; font-weight:700; color:var(--ref-color-grey-150); }
+.ob.split .right .mark { position:absolute; right:34px; bottom:27px; width:44px; }
+/* connect: social network cards + installed profiles panel */
+.netlist { display:flex; flex-direction:column; gap:var(--ref-spacing-xxs); }
+.snc { position:relative; display:flex; align-items:center; gap:var(--ref-spacing-xxs); height:48px; padding:var(--ref-spacing-xs); border-radius:var(--ref-border-radius-md); border:1px solid var(--ref-color-grey-10); background:#fff; cursor:pointer; text-align:left; width:100%; }
+.snc h3 { margin:0; font-size:14px; font-weight:600; color:var(--ref-color-grey-100); }
+.snc .plus { position:absolute; right:6px; top:6px; padding:10px; display:flex; color:var(--ref-color-grey-80); }
+.snc:hover { border-color:var(--ref-color-electric-blue-80); } .snc:hover h3, .snc:hover .plus { color:var(--ref-color-electric-blue-100); }
+.snc .nl { width:20px; height:20px; border-radius:5px; display:grid; place-items:center; color:#fff; font-size:9.5px; font-weight:700; }
+.snc.wait h3::after { content:" · connecting…"; color:var(--ref-color-grey-80); font-weight:400; }
+.installed { width:440px; flex-shrink:0; border-left:1px solid var(--ref-color-grey-10); background:#fff; padding:var(--ref-spacing-md); display:flex; flex-direction:column; gap:var(--ref-spacing-sm); }
+.installed h2 { margin:0; font-size:16px; font-weight:700; color:var(--ref-color-grey-150); }
+.prof { display:flex; align-items:center; gap:10px; padding:10px 0; border-top:1px solid var(--ref-color-grey-10); font-size:14px; }
+.prof .nl { width:28px; height:28px; border-radius:50%; display:grid; place-items:center; color:#fff; font-size:10px; font-weight:700; }
+.prof span { color:var(--ref-color-grey-80); font-size:12px; display:block; }
+.strike { text-decoration:line-through; color:var(--ref-color-grey-60); font-size:13px; }
+@media (max-width:980px) { .ob.split .right, .installed { display:none; } .hero-t { font-size:36px; line-height:44px; } }
 
 /* notes (proto annotations) */
 .note { position:relative; margin-top:12px; padding:10px 12px 10px 34px; border-radius:10px; background:#FFF8D6; color:#5c4a00; font-size:12.5px; line-height:1.45; box-shadow:inset 0 0 0 1px #F2DE8A; }
@@ -323,58 +347,62 @@ body.nonotes .note { display:none; }
   }
   const note = (html) => `<div class="note">${html}</div>`;
 
-  // ---------- Archie onboarding (as in production)
-  const top = `<div class="ob-top"><img src="assets/Full_Logo_principal_Archie_orange.svg" alt="Archie"></div>`;
+  // ---------- Archie onboarding — production screens (copy from prod en.json, layout from the platform code)
+  const LOGO = "assets/archie_full_logo.svg";
   const WORDS = ["webinar", "article", "PDF", "podcast", "keynote"];
   let rotT; let rotI = 0;
-  function startRotator() { clearInterval(rotT); rotT = setInterval(() => { const el = $(".rot"); if (!el) return clearInterval(rotT); rotI = (rotI + 1) % WORDS.length; el.textContent = WORDS[rotI]; }, 2200); }
-  const sso = `<div class="sso"><button class="btn btn-sec" data-next="1"><svg class="g" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.2l7.9 6.1C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.4 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>Sign up with Google</button>
-    <button class="btn btn-sec" data-next="1"><svg class="g" viewBox="0 0 24 24"><path fill="#111" d="M16.4 12.6c0-2.4 2-3.6 2.1-3.6-1.1-1.7-2.9-1.9-3.5-1.9-1.5-.2-2.9.9-3.7.9-.8 0-1.9-.9-3.2-.8-1.6 0-3.2 1-4 2.4-1.7 3-.4 7.4 1.2 9.8.8 1.2 1.8 2.5 3 2.4 1.2 0 1.7-.8 3.1-.8 1.5 0 1.9.8 3.2.8 1.3 0 2.2-1.2 3-2.4.9-1.4 1.3-2.7 1.3-2.8 0 0-2.5-1-2.5-4zM14 5.4c.7-.8 1.1-1.9 1-3-1 0-2.1.7-2.8 1.5-.6.7-1.2 1.8-1 2.9 1 .1 2.1-.6 2.8-1.4z"/></svg>Sign up with Apple</button></div>`;
+  function startRotator() { clearInterval(rotT); rotT = setInterval(() => { const el = $(".highlight"); if (!el) return clearInterval(rotT); rotI = (rotI + 1) % WORDS.length; el.textContent = WORDS[rotI]; }, 2500); }
+  const gIcon = `<svg class="g" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.6 5.4 2.6 13.2l7.9 6.1C12.4 13.7 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.7 6c4.5-4.2 6.9-10.4 6.9-17.7z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.5 0 20.1 0 24s.9 7.5 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.7-6c-2.1 1.4-4.9 2.3-8.2 2.3-6.3 0-11.6-4.2-13.5-9.9l-7.9 6.1C6.6 42.6 14.6 48 24 48z"/></svg>`;
+  const cont = (label = "Continue", dis = "") => `<button type="button" class="ap-button primary orange" data-next="1" ${dis}><span>${label}</span><i class="ap-icon-arrow-right"></i></button>`;
+  const back = `<button type="button" class="ap-button stroked" data-prev="1"><i class="ap-icon-arrow-left"></i><span>Back</span></button>`;
+  function editorial(cardInner, foot) {
+    return `<div class="ob editorial"><div class="editorial-background" aria-hidden="true"></div>
+      <div class="editorial-header"><img src="${LOGO}" alt="archie logo"><span class="have-top">Already registered? <a href="#" data-next="0">Log in</a></span></div>
+      <div class="ed-content"><h1 class="hero-t">Turn your <span class="highlight">${WORDS[rotI]}</span><br>into a week of posts.</h1>
+        <p class="hero-sub">Text posts, images, and short clips, already captioned, all in your voice and ready to schedule.</p>
+        <div class="acard ed-card"><div class="content">${cardInner}</div><div class="footer"><span class="freenote">Free to start · No credit card needed</span><div class="fright">${foot}</div></div></div>
+        <div class="trustbar"><img src="assets/archie_full_logo.svg" alt="archie" style="height:14px"><span style="font-weight:400;color:var(--ref-color-grey-80)">by</span><b style="color:#FF6726">agorapulse</b><span class="sep"></span><span>15 years in social</span><span class="dt">·</span><span>31,000+ customers worldwide</span></div>
+        <p class="recap">This site is protected by reCAPTCHA and the Google <a href="#">Privacy Policy</a> and <a href="#">Terms of Service</a> apply.</p>
+      </div></div>`;
+  }
+  function split(inner, rightHTML) {
+    return `<div class="ob split"><div class="left"><img class="full-logo" src="${LOGO}" alt="archie logo"><div class="lcontent">${inner}</div></div>
+      ${rightHTML || `<div class="right"><h1>Built for social.<br>Powered by you.</h1><img class="mark" src="assets/archie_logo.svg" alt="archie logo"></div>`}</div>`;
+  }
+  const stepCard = (fields, footRight, footLeft = back) => `<div class="acard"><div class="content">${fields}</div><div class="footer"><div>${footLeft}</div><div class="fright">${footRight}</div></div></div>`;
   function scrSignup() {
-    return `<div class="ob">${top}<div class="ob-mid" style="align-items:center"><div class="edit">
-      <div class="hero"><h1>Turn your <span class="rot">${WORDS[rotI]}</span><br>into a week of posts.</h1>
-        <p>Text posts, images, and short clips, already captioned, all in your voice and ready to schedule.</p>
-        <div class="trust"><span><b>15 years</b> in social</span><span class="dot"></span><span><b>31,000+</b> customers worldwide</span><span class="dot"></span><span>by <b>Agorapulse</b></span></div></div>
-      <div><div class="acard">${sso}<div class="or">or</div>
-        <div class="fld"><label for="em">Enter business email</label><input id="em" class="inp" placeholder="business@email.com" value="${esc(S.email)}" data-bind="email"></div>
-        <button class="btn btn-pri btn-wide" data-next="1">Continue</button><p class="free">Free to start · No credit card needed</p></div>
-        <p class="have">Already have an account? <a href="#" data-next="0">Log in</a></p>
-        ${note("<b>Archie onboarding kept as is.</b> Same screens and copy as production (archie.app signup, editorial step). Only the buttons follow the 26/11 review: navy instead of orange.")}</div>
-    </div></div></div>`;
+    return editorial(`<button type="button" class="gbtn" data-next="1">${gIcon}Sign up with Google</button><div class="or">or</div>
+      <div class="fld"><label for="em">Enter business email</label><input id="em" class="inp" placeholder="business@email.com" value="${esc(S.email)}" data-bind="email"></div>
+      <p class="legal">By clicking “Continue”, I agree to Agorapulse's <a href="#">terms of use</a> and acknowledge I have read its <a href="#">privacy policy</a>.</p>`, cont())
+      + `<div style="position:absolute;left:24px;bottom:24px;width:360px">${note("<b>Archie onboarding as in production.</b> Layout, copy and assets taken from hello.archie.app and the platform code (archie-layout, archie-card, archie-signup-*). Nothing changed.")}</div>`;
   }
   function scrVerify() {
-    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col"><div class="ob-title"><h1>Check your inbox</h1><p>We sent a code to ${esc(S.email)}</p></div>
-      <div class="acard"><div class="fld"><label>Enter business email</label><input class="inp" value="${esc(S.email)}" disabled></div>
-        <div class="fld"><label>Enter verification code</label><small>Check your emails and enter the code provided</small>
-          <div class="code">${"482913".split("").map((d) => `<input maxlength="1" value="${d}">`).join("")}</div></div>
-        <a class="link" href="#" onclick="return false">Resend code</a>
-        <div class="cfoot"><button class="btn btn-ghost" data-prev="1">Back</button><button class="btn btn-pri" data-next="1">Continue</button></div></div></div></div></div>`;
+    return editorial(`<button type="button" class="gbtn" data-next="1">${gIcon}Sign up with Google</button><div class="or">or</div>
+      <div class="fld"><label>Enter business email</label><input class="inp" value="${esc(S.email)}" disabled></div>
+      <div class="fld"><label>Enter verification code</label><small>Check your emails and enter the code provided</small><div class="code">${"482913".split("").map((d) => `<input maxlength="1" value="${d}">`).join("")}</div></div>
+      <a class="ap-link-like" href="#" onclick="return false" style="font-size:13px">Resend code</a>`, cont());
   }
   function scrUser() {
-    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col"><div class="ob-title"><h1>Let’s set you up</h1></div>
-      <div class="acard"><div class="fld"><label>First name</label><input class="inp" placeholder="Jane" value="${esc(S.first)}" data-bind="first"></div>
-        <div class="fld"><label>Last name</label><input class="inp" placeholder="Doe" value="${esc(S.last)}" data-bind="last"></div>
-        <div class="cfoot"><button class="btn btn-ghost" data-prev="1">Back</button><button class="btn btn-pri" data-next="1">Continue</button></div></div></div></div></div>`;
+    return split(`<div class="titles"><h1>Let’s set you up</h1></div>
+      ${stepCard(`<div class="fld"><label>First name</label><input class="inp" placeholder="Jane" value="${esc(S.first)}" data-bind="first"></div>
+        <div class="fld"><label>Last name</label><input class="inp" placeholder="Doe" value="${esc(S.last)}" data-bind="last"></div>`, cont())}`);
   }
   function scrCompany() {
     const sizes = ["Only me", "2 - 10 employees", "11 - 50 employees", "51 - 200 employees", "201 - 1000 employees", "1,001+ employees"];
     const tools = ["No / Native (Direct from Social Media Platform)", "Yes, Hootsuite", "Yes, Sprout Social", "Yes, Meltwater", "Yes, Brandwatch", "Yes, Sprinklr Social", "Yes, another tool"];
-    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col"><div class="ob-title"><h1>About your company</h1></div>
-      <div class="acard"><div class="fld"><label>Company name</label><input class="inp" placeholder="Acme Corp" value="${esc(S.company)}" data-bind="company"></div>
+    return split(`<div class="titles"><h1>About your company</h1></div>
+      ${stepCard(`<div class="fld"><label>Company name</label><input class="inp" placeholder="Acme Corp" value="${esc(S.company)}" data-bind="company"></div>
         <div class="fld"><label>How many people work there?</label><select class="inp" data-bind="size">${sizes.map((x) => `<option ${x === S.size ? "selected" : ""}>${x}</option>`).join("")}</select></div>
-        <div class="fld"><label>Is your company already using a Social Media Management tool?</label><select class="inp" data-bind="tool">${tools.map((x) => `<option ${x === S.tool ? "selected" : ""}>${x}</option>`).join("")}</select></div>
-        <div class="cfoot"><button class="btn btn-ghost" data-prev="1">Back</button><button class="btn btn-pri" data-next="1">Continue</button></div></div></div></div></div>`;
+        <div class="fld"><label>Is your company already using a Social Media Management tool?</label><select class="inp" data-bind="tool">${tools.map((x) => `<option ${x === S.tool ? "selected" : ""}>${x}</option>`).join("")}</select></div>`, cont())}`);
   }
   function scrConnect() {
     const n = Object.keys(S.connected).length;
-    return `<div class="ob">${top}<div class="ob-mid"><div class="ob-col" style="width:560px"><div class="ob-title"><h1>Tailor your content creation</h1><p>Add your social profiles to assess your brand type, tone of voice and brand guidelines</p></div>
-      <div class="acard"><div class="nets">${NETS.map((x) => { const on = S.connected[x.k], w = S.connecting === x.k;
-        return `<button class="net ${on ? "on" : ""} ${w ? "wait" : ""}" data-net="${x.k}"><span class="lg" style="background:${x.c}">${x.s}</span><span class="t"><b>${x.n}</b><span>${on ? "Connected · " + esc(x.acc) : w ? "Connecting" : "Connect"}</span></span>${on ? `<span class="chip ok">${ic("check")}</span>` : ""}</button>`; }).join("")}</div>
-        <div class="connected">${n ? `${n} connected profile${n > 1 ? "s" : ""}` : "Connect at least one profile to continue"}</div>
-        <div class="cfoot"><span class="strike" title="Removed: the inbox needs a profile from day 1">Skip for now</span><button class="btn btn-pri" data-next="1" ${n ? "" : "disabled"}>Continue</button></div></div>
-      ${note("<b>Decision 26/11:</b> the “Skip for now” option is removed. Users who skip connect later anyway, and the Agentic Inbox needs a profile from the start.")}
-      ${note("<b>Open question:</b> the connect step uses the existing connect (Facebook, Instagram, LinkedIn, Threads, TikTok, X, YouTube). For the inbox, should Archie support every network Agorapulse already supports (Google Business Profile, Pinterest…)? Not the case in Archie today.")}
-    </div></div></div>`;
+    const list = NETS.filter((x) => !S.connected[x.k]).map((x) => `<button type="button" class="snc ${S.connecting === x.k ? "wait" : ""}" data-net="${x.k}"><span class="nl" style="background:${x.c}">${x.s}</span><h3>${x.n}</h3><span class="plus"><i class="ap-icon-plus"></i></span></button>`).join("");
+    const installed = n ? `<aside class="installed"><h2>Connected profiles</h2>${NETS.filter((x) => S.connected[x.k]).map((x) => `<div class="prof"><span class="nl" style="background:${x.c}">${x.s}</span><div>${esc(x.acc)}<span>${x.n}</span></div><span style="flex:1"></span><button class="ap-icon-button" data-net="${x.k}" title="Remove"><i class="ap-icon-close"></i></button></div>`).join("")}</aside>` : null;
+    return split(`<div class="titles"><h1>Tailor your content creation</h1><span>Add your social profiles to assess your brand type, tone of voice and brand guidelines</span></div>
+      ${stepCard(`<div class="netlist">${list || `<p class="legal">All available networks are connected.</p>`}</div>`, `<span class="strike" title="Removed: the inbox needs a profile from day 1">Skip for now</span>${cont("Continue", n ? "" : "disabled")}`)}
+      ${note("<b>Decision 26/11:</b> “Skip for now” is removed: the Agentic Inbox needs a profile from day 1.")}
+      ${note("<b>Open question:</b> this is the existing Archie connect (Facebook, Instagram, LinkedIn, Threads, TikTok, X, YouTube). Should Archie support every network Agorapulse already supports (Google Business Profile, Pinterest…) for the inbox?")}`, installed);
   }
 
   // ---------- sync engine
@@ -551,7 +579,7 @@ body.nonotes .note { display:none; }
     pb();
     const k = FLOW[S.step].k;
     $("#root").innerHTML = SCREENS[k]();
-    if (k === "signup") startRotator();
+    if (k === "signup" || k === "verify") startRotator();
     const u = new URL(location.href); u.searchParams.set("step", k); u.searchParams.set("v", S.variant); u.searchParams.set("sync", S.syncSec); history.replaceState(null, "", u);
   }
   function go(i) { S.step = Math.max(0, Math.min(FLOW.length - 1, i)); if (FLOW[S.step].k === "sync" && !Object.keys(S.connected).length) { S.connected = { instagram: true, facebook: true, tiktok: true }; } window.scrollTo(0, 0); render(); }
