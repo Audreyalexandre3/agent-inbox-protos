@@ -401,6 +401,8 @@ body.nonotes .note { display:none; }
     { f: "4.6K", act: "reply", draft: "We'd love that! Could you email hello@halden.co with your dates? We'll send our hotel pricing.", conf: 79, why: "Business request, wholesale page found." }
   ];
   TRAIN.forEach((t, i) => Object.assign(t, SUG[i] || {}));
+  // simplified: one question per agent for now
+  { const seen = new Set(); const keep = TRAIN.filter((t) => !seen.has(t.a) && seen.add(t.a)); TRAIN.length = 0; TRAIN.push(...keep); }
   const STREAM = [
     ["moderation", "IG", "DM us to grow your followers fast 🚀", "Spam · hidden in Suggest mode"],
     ["engagement", "IG", "best candle I've ever owned", "Positive · like ready"],
@@ -626,7 +628,7 @@ body.nonotes .note { display:none; }
     }
     return `<div class="sy-h"><div><h1>While we sync, train your agents</h1><p>See what your agents would do with a few typical messages. Send, edit or refuse: each choice teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
       ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}
-      ${note("<b>Variant A · Train (inspired by Blabla).</b> Fake messages shaped by the business category, each with the agent's suggestion in the inbox card. Send, edit or refuse with a reason or an instruction: each choice is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime. Once the quiz is done, Keep training serves real synced messages with the same card as the inbox: send, edit or refuse with a reason, each choice is a training signal.")}</div></div>`;
+      ${note("<b>Variant A · Train (inspired by Blabla).</b> Fake messages shaped by the business category, one per agent for now, each with the agent's suggestion in the inbox card. Send, edit or refuse with a reason or an instruction: each choice is a first training signal. Agents unlock one by one, Engagement first (no extra connector needed). Works for 20 s or 2 min: the quiz goes on after the sync, and the user can open the inbox anytime. Once the quiz is done, Keep training serves real synced messages with the same card as the inbox: send, edit or refuse with a reason, each choice is a training signal.")}</div></div>`;
   }
 
   // ---------- B · Unlock your agents (micro-config, prefilled)
