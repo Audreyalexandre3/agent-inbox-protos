@@ -1316,7 +1316,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   }
   const GOAL = 5, ORDER11 = ["lead", "support", "partnerships", "moderation", "engagement"];
   const AUTO_DO = { lead: "Answers buying questions with the right product link", support: "Answers questions it finds on your website", partnerships: "Replies to business requests and asks for an email", moderation: "Hides spam and abusive comments, deletes scams", engagement: "Likes and thanks happy customers" };
-  const COMPACT = QP.get("layout") === "compact";
+  const COMPACT = QP.get("layout") !== "full";
   const nextOpen = () => ORDER11.find((id) => S.mode[id] === "suggest" && pend((x) => agentOf(x) === id).length) || null;
   function day1Train() {
     if (COMPACT && (S.open11 === undefined || (S.open11 && S.mode[S.open11] !== "suggest"))) S.open11 = nextOpen();
