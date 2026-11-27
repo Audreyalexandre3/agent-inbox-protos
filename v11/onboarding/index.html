@@ -360,7 +360,7 @@ body.nonotes .note { display:none; }
 
   // ---------- flow
   const FLOW = [
-    { k: "signup", l: "Sign up" }, { k: "verify", l: "Verify email" }, { k: "user", l: "Let's set you up" }, { k: "company", l: "About your company" },
+    // V11: the flow starts at Connect (signup, verify, user and company screens removed)
     { k: "connect", l: "Connect profiles" }, { k: "sync", l: "Agentic onboarding (sync)" }, { k: "inbox", l: "Day 1 inbox" }
   ];
   const VARIANTS = { A: "Train your agents", B: "Unlock your agents", C: "Watch it sort", D: "Chat with Archie" };
@@ -487,7 +487,7 @@ body.nonotes .note { display:none; }
     return `<div class="ob split"><div class="left"><img class="full-logo" src="${LOGO}" alt="archie logo"><div class="lcontent">${inner}</div></div>
       ${rightHTML || `<div class="right"><h1>Built for social.<br>Powered by you.</h1><img class="mark" src="assets/archie_logo.svg" alt="archie logo"></div>`}</div>`;
   }
-  const stepCard = (fields, footRight, footLeft = back) => `<div class="acard"><div class="content">${fields}</div><div class="footer"><div>${footLeft}</div><div class="fright">${footRight}</div></div></div>`;
+  const stepCard = (fields, footRight, footLeft = S.step > 0 ? back : "") => `<div class="acard"><div class="content">${fields}</div><div class="footer"><div>${footLeft}</div><div class="fright">${footRight}</div></div></div>`;
   function scrSignup() {
     return editorial(`<button type="button" class="gbtn" data-next="1">${gIcon}Sign up with Google</button><div class="or">or</div>
       <div class="fld"><label for="em">Enter business email</label><input id="em" class="inp" placeholder="business@email.com" value="${esc(S.email)}" data-bind="email"></div>
