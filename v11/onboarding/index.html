@@ -334,6 +334,17 @@ body.nonotes .note { display:none; }
 .kb11-ok { margin-left:auto; }
 .kb11 .ap-button { align-self:flex-start; }
 .kb11-r { display:flex; align-items:center; gap:var(--ref-spacing-xs); } .kb11-r .ap-input-group { flex:1; }
+/* V11 suggestion card = Figma proposal 3c (same as the inbox) */
+.dk3c { display:flex; flex-direction:column; align-items:center; }
+.dk3c > i { display:block; height:7px; border:1px solid var(--ref-color-grey-20); border-top:0; border-radius:0 0 10px 10px; background:var(--ref-color-white); }
+.dk3c > i.e1 { width:94%; opacity:.7; } .dk3c > i.e2 { width:88%; opacity:.45; }
+.fc3c { align-self:stretch; display:flex; flex-direction:column; gap:12px; padding:16px 24px 18px; background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:12px; box-shadow:0 4px 16px rgba(52,69,99,.08); }
+.fh3c { display:flex; align-items:center; gap:10px; } .fh3c div { display:flex; flex-direction:column; line-height:1.25; } .fh3c b { font-size:var(--sys-text-style-body-size); color:var(--ref-color-grey-100); } .fh3c div span, .n3c { font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); } .n3c { font-weight:700; }
+.q3c { margin:0; font-size:18px; line-height:26px; font-weight:600; color:var(--ref-color-grey-100); }
+.sl3c { display:flex; align-items:center; gap:6px; padding-top:12px; border-top:1px solid var(--ref-color-grey-20); font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); min-width:0; } .sl3c > span:last-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fc3c textarea { width:100%; }
+.ac3c { display:flex; align-items:center; gap:6px; flex-wrap:wrap; } .ac3c .ap-button[disabled] { opacity:.45; pointer-events:none; }
+.c3c { text-align:center; }
 </style>
 </head>
 <body>
@@ -558,25 +569,30 @@ body.nonotes .note { display:none; }
     return `Got it. ${a.n} will do the same with messages like this one.`;
   }
   const realAvail = () => Math.min(REAL.length, 3 + Math.floor(S.sync.pct * (REAL.length - 3)));
-  function sugCard(x, headHTML, cap) {
-    const a = agent(x.a), net = netOf(x.net);
+  // same suggestion card as the V11 inbox (Figma proposal 3c): message, suggestion, editable reply, Refuse + Approve right under it
+  const isLike = (x) => x.act === "like" || /liking/i.test(x.what || "");
+  const draftFor = (x) => x.draft ?? (isLike(x) ? `Thank you ${x.who.split(/[ .]/)[0]}! So happy you love it.` : "");
+  function sugCard(x, headHTML, cap, count) {
+    const a = agent(x.a), net = netOf(x.net), like = isLike(x);
     const ini = x.who.replace(/[^A-Za-zÀ-ÿ ._&]/g, "").split(/[ ._&]/).filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
-    const reply = x.act === "reply", text = A.rtext ?? x.draft ?? "", empty = reply && !text.trim(), ok = x.conf >= 85;
-    const av = `<span class="sc9-agav" style="background:${a.c}">${ic(a.i)}</span><b>${a.n} agent</b>`;
-    const ai = `<div class="sc9-aih">${av}<span>${x.what || REAL_WHAT[x.act]}</span><span style="flex:1"></span></div>
-         ${reply ? `<textarea class="ap-textarea-field aedit rt" rows="2" data-rtext="1" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(text)}</textarea>` : ""}
-         <div class="sc9-why">${ic("sparkles")}<span><b>Why:</b> ${esc(x.why)}</span></div>`;
+    const editable = x.act === "reply" || like, text = A.rtext ?? draftFor(x), empty = editable && !text.trim();
+    const what = like ? "Suggests liking it and replying" : REAL_WHAT[x.act].replace(" this comment", " it");
+    const prim = like ? `<button class="ap-button stroked grey" data-rlike="1">${ic("heart")}Like only</button><button class="ap-button primary orange" data-rdo="1" ${empty ? "disabled" : ""}>${ic("heart")}Like &amp; reply</button>`
+      : x.act === "reply" ? `<button class="ap-button primary orange" data-rdo="1" ${empty ? "disabled" : ""}>${ic("paper-plane")}Approve &amp; send</button>`
+      : `<button class="ap-button primary orange" data-rdo="1">${ic(REAL_ACT[x.act][0])}Approve &amp; ${REAL_ACT[x.act][1].toLowerCase()}</button>`;
     const acts = A.refusing
       ? `<div class="rf11"><label class="rf11-l" for="rf11">Why is this not right?</label>
            <div class="ap-textarea-field"><textarea id="rf11" rows="2" data-rother="1" placeholder="Ex: we never reply to this kind of comment, or the tone is too formal">${esc(A.rother || "")}</textarea></div>
            <div class="rf11-f"><span class="cap">${a.n} learns from your words and applies them to messages like this one.</span><span style="flex:1"></span><button class="ap-button ghost grey" data-rback="1">Cancel</button><button class="ap-button secondary orange" data-rsave="1" ${(A.rother || "").trim() ? "" : "disabled"}>Send feedback</button></div></div>`
-      : `<span class="cap">${cap}</span><span style="flex:1"></span><button class="ap-button ghost grey" data-rrefuse="1">${ic("close")}Refuse</button><button class="ap-button secondary orange" data-rdo="1" ${empty ? "disabled" : ""}>${ic(REAL_ACT[x.act][0])}${reply && x.what ? "Like and reply" : REAL_ACT[x.act][1]}</button>`;
-    return headHTML + `<article class="sc9">
-      <div class="sc9-msg"><div class="sc9-who"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span>
-        <div class="sc9-id"><b>${esc(x.who)}</b><span>${x.f || "—"} followers · ${net.n || net.s} · just now</span></div></div>
-        <p class="sc9-bubble">${esc(x.text)}</p></div>
-      <div class="sc9-ai" style="--ag:${a.c}">${ai}</div>
-      <div class="sc9-act">${acts}</div></article>`;
+      : `<div class="ac3c"><button class="ap-button stroked grey" data-rrefuse="1">${ic("close")}Refuse</button><span style="flex:1"></span>${prim}</div>`;
+    return headHTML + `<div class="dk3c"><article class="fc3c">
+      <div class="fh3c"><span class="sc9-av">${esc(ini)}<span class="nb9" style="background:${net.c}">${net.s}</span></span><div><b>${esc(x.who)}</b><span>${x.f || "—"} followers · ${net.n || net.s} · just now</span></div><span style="flex:1"></span>${count ? `<span class="n3c">${count}</span>` : ""}</div>
+      <p class="q3c">“${esc(x.text)}”</p>
+      <div class="sl3c"><span style="color:${a.c}">${ic("sparkles")}</span><b style="color:${a.c}">${what}</b><span>· ${esc(x.why)}</span></div>
+      ${editable ? `<div class="ap-textarea-field"><textarea class="rt" rows="2" data-rtext="1" placeholder="${like ? "Write a comment…" : empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(text)}</textarea></div>` : ""}
+      ${acts}
+      ${cap ? `<span class="cap c3c">${cap}</span>` : ""}
+    </article><i class="e1"></i><i class="e2"></i></div>`;
   }
   function realCard() {
     const x = REAL[A.ri];
@@ -626,7 +642,7 @@ body.nonotes .note { display:none; }
         <div class="qfoot"><button class="ap-button primary orange" data-next="1"><span>Open your inbox</span>${ic("arrow-right")}</button></div></div>`; }
     else {
       const a = agent(t.a);
-      body = sugCard(t, `<div class="q9-top"><span class="ap-status blue">Training ${a.n}</span><span class="ap-status grey no-dot">${A.i + 1} of ${TRAIN.length}</span><span style="flex:1"></span><span class="cap">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>${kb11(t.a)}`, "Send, edit or refuse: it teaches the agent");
+      body = sugCard(t, `<div class="q9-top"><span class="ap-status blue">Training ${a.n}</span><span class="ap-status grey no-dot">${A.i + 1} of ${TRAIN.length}</span><span style="flex:1"></span><span class="cap">A typical message for an e-commerce brand like ${esc(S.company)}</span></div>${kb11(t.a)}`, "Approve, edit or refuse: each choice teaches the agent.");
     }
     return `<div class="sy-h"><div><h1>While we analyze your inbox, train your agents</h1><p>One typical message per agent. Send, edit or refuse: each choice teaches an agent how ${esc(S.company)} replies, and unlocks it.</p></div></div>
       ${readyBar()}<div class="two">${agentsRail("A")}<div>${body}
@@ -792,7 +808,10 @@ body.nonotes .note { display:none; }
     if ((el = g("rotherb"))) { A.rother = ""; render(); const ta = document.querySelector("[data-rother]"); if (ta) ta.focus(); return; }
     if ((el = g("rsave"))) { if (el.disabled) return; const r = A.rother.trim(); const cur = TRAIN[A.i] || REAL[A.ri]; A.custom.push({ a: cur.a, rule: r }); learn("Refused", r); return; }
     if ((el = g("rwhy"))) { const r = el.dataset.rwhy; learn(r ? "Refused: " + r.toLowerCase() : "Refused the suggestion"); return; }
-    if ((el = g("rdo"))) { if (el.disabled) return; const x = TRAIN[A.i] || REAL[A.ri]; if (x.act !== "reply") { learn(ACT_PAST[x.act]); return; }
+    if ((el = g("rlike"))) { learn("Liked it"); return; }
+    if ((el = g("rdo"))) { if (el.disabled) return; const x = TRAIN[A.i] || REAL[A.ri];
+      if (isLike(x)) { const t = (A.rtext ?? draftFor(x)).trim(); learn(t ? "Liked and replied" : "Liked it", t); return; }
+      if (x.act !== "reply") { learn(ACT_PAST[x.act]); return; }
       const t = (A.rtext ?? x.draft ?? "").trim(); learn(!x.draft ? "Wrote the reply" : t === x.draft ? "Sent the reply" : "Edited the reply", t !== x.draft ? t : ""); return; }
     if ((el = g("anext"))) { if (el.disabled) return; const t = TRAIN[A.i]; if (A.picked === "other") A.custom.push({ a: t.a, rule: A.text.trim() }); A.answers.push({ a: t.a, msg: t.text, choice: A.picked === "other" ? "Custom rule" : t.opts[A.picked][1], text: A.text.trim() }); A.text = ""; A.trained[t.a] = (A.trained[t.a] || 0) + 1; const need = TRAIN.filter((x) => x.a === t.a).length;
       if (A.trained[t.a] >= need && !A.unlocked.includes(t.a)) { A.unlocked.push(t.a); toast(`${agent(t.a).n} unlocked`); }

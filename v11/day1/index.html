@@ -816,7 +816,12 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .gh3c { display:flex; align-items:center; gap:var(--ref-spacing-xxs); min-width:0; }
 .gh3c h2 { font-size:var(--sys-text-style-h3-size); font-weight:700; color:var(--ref-color-grey-100); margin:0 0 0 2px; white-space:nowrap; }
 .av3c { width:28px; height:28px; border-radius:var(--sys-border-radius-md); display:grid; place-items:center; color:var(--ref-color-white); flex:none; } .av3c svg { width:14px; height:14px; }
-.lk3c { border:0; background:none; padding:0 0 0 2px; font:inherit; font-size:var(--sys-text-style-body-size); color:var(--ref-color-grey-80); cursor:pointer; white-space:nowrap; } .lk3c:hover { color:var(--ref-color-grey-100); text-decoration:underline; }
+.lk3c { padding-left:2px; font-size:var(--sys-text-style-body-size); color:var(--ref-color-grey-80); white-space:nowrap; }
+.gc3c { container-type:inline-size; } .of3c { white-space:nowrap; flex:none; }
+@container (max-width:600px) { .lk3c { display:none; } } @container (max-width:470px) { .ct3c b { display:none; } }
+.sc9-list .fc3c { box-shadow:none; } .sc9-list { display:flex; flex-direction:column; gap:var(--ref-spacing-xs); }
+.fc3c.sel { border-color:var(--ref-color-electric-blue-100); } .fc3c.fresh { border-color:var(--ref-color-electric-blue-40, #9fb6ff); }
+.fc3c .sc9-chk { margin-right:2px; }
 .ct3c { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:var(--ref-color-grey-05, #f1f3f5); font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); white-space:nowrap; } .ct3c b { font-weight:700; }
 .ct3c .pp11 { gap:3px; } .ct3c .pp11 i { width:6px; height:6px; border-radius:50%; background:var(--ref-color-grey-40, #c4cad3); } .ct3c .pp11 i.f { background:var(--ref-color-green-100); }
 .dk3c { display:flex; flex-direction:column; align-items:center; }
@@ -1187,35 +1192,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   }
   const NETN = { IG: "Instagram", FB: "Facebook", TT: "TikTok", LI: "LinkedIn", X: "X" };
   const initials = (n) => (n || "?").replace(/[^A-Za-zÀ-ÿ ]/g, "").split(" ").filter(Boolean).slice(0, 2).map((w) => w[0].toUpperCase()).join("") || "?";
-  function itemRow(x, first, opts = {}) {
-    const th = TH[x.theme], a = AGENTS[th.agent];
-    const alt = th.bulk.find((b) => b.a !== th.act && b.a !== "reply");
-    const reply = th.act === "reply";
-    const why = x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why;
-    const what = reply ? "Suggested reply" : th.act === "like" ? "Suggests liking this comment" : th.act === "delete" ? "Suggests deleting this comment" : "Suggests hiding this comment";
-    const pct = Math.round(x.conf * 100), ok = sure(x);
-    const draft = reply ? draftOf(x) : "";
-    const empty = reply && !String(draft).trim();
-    const primary = reply
-      ? `<button class="ap-button secondary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Send reply</button>`
-      : `<button class="ap-button secondary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
-    return `<article class="sc9 ${x.fresh ? "fresh" : ""} ${opts.sel && S.sel.has(x.id) ? "sel" : ""}" id="it-${x.id}">
-      <div class="sc9-msg">
-        <div class="sc9-who">${opts.sel ? `<label class="ap-checkbox-container sc9-chk" title="Select"><input type="checkbox" data-sel="${x.id}" ${S.sel.has(x.id) ? "checked" : ""} aria-label="Select ${esc(x.author)}"><i></i><span></span></label>` : ""}<span class="sc9-av">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
-          <div class="sc9-id"><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${NETN[x.net] || x.net} · ${rel(x.at)}</span></div>
-          <span class="sp"></span>${opts.theme ? `<span class="ap-status grey no-dot">${th.label}</span>` : ""}${x.fresh ? '<span class="ap-status blue">New</span>' : ""}</div>
-        <p class="sc9-bubble">${esc(x.text)}</p>
-      </div>
-      <div class="sc9-ai" style="--ag:${a.dot}">
-        <div class="sc9-aih"><span class="i9-av" style="background:${a.dot}">${ic(a.icon)}</span><b>${a.short} agent</b><span class="sc9-what">${what}</span><span class="sp"></span>
-          </div>
-        ${reply ? `<div class="ap-textarea-field autoresize i9-in"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : "Write a reply…"}">${esc(draft)}</textarea></div>
-          ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}` : ""}
-        <div class="sc9-why">${ic("spark")}<span><b>Why:</b> ${esc(why)}</span></div>
-      </div>
-      ${S.refusing === x.id ? `<div class="sc9-act rf11"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal, this is not a lead">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from your words and applies them to messages like this one.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>` : `<div class="sc9-act">${alt ? `<button class="ap-button ghost grey" data-do="${x.id}:${alt.a}">${ic(ACT[alt.a].ic)}${ACT[alt.a].w} instead</button>` : ""}<span class="sp"></span><button class="ap-button ghost grey" data-dismiss="${x.id}">${ic("x")}Refuse</button>${primary}</div>`}
-    </article>`;
-  }
+  function itemRow(x, first, opts = {}) { return card3c(x, { sel: opts.sel, theme: opts.theme, alt: true }); }
 
 
   // ---------- overview
@@ -1376,25 +1353,28 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
       ${refusing ? `<div class="rf11 im11-rf"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from it.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>` : ""}
     </div>`;
   }
-  function deck3c(x, total) {
-    const th = TH[x.theme], a = AGENTS[th.agent], reply = th.act === "reply", draft = reply ? draftOf(x) : "", empty = reply && !String(draft).trim();
-    const like = th.act === "like", ldraft = like ? draftOf(x) : "";
+  // one suggestion card, shared by the overview deck, the agent feed (and the onboarding training)
+  function card3c(x, o = {}) {
+    const th = TH[x.theme], a = AGENTS[th.agent], reply = th.act === "reply", like = th.act === "like", draft = reply || like ? draftOf(x) : "", empty = reply && !String(draft).trim();
     const what = reply ? "Suggested reply" : like ? "Suggests liking it and replying" : th.act === "delete" ? "Suggests deleting it" : "Suggests hiding it";
-    const verb = reply ? "send" : ACT[th.act].w.toLowerCase();
-    const prim = like ? `<button class="ap-button stroked grey" data-do="${x.id}:like">${ic("heart")}Like only</button><button class="ap-button primary orange" data-likerep="${x.id}" data-send="${x.id}" ${String(ldraft).trim() ? "" : "disabled"}>${ic("heart")}Like &amp; reply</button>`
+    const why = x.needs ? cap(x.needs.split(": ")[1] || x.why) : x.why;
+    const prim = like ? `<button class="ap-button stroked grey" data-do="${x.id}:like">${ic("heart")}Like only</button><button class="ap-button primary orange" data-likerep="${x.id}" data-send="${x.id}" ${String(draft).trim() ? "" : "disabled"}>${ic("heart")}Like &amp; reply</button>`
       : reply ? `<button class="ap-button primary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Approve &amp; send</button>`
-      : `<button class="ap-button primary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}Approve &amp; ${verb}</button>`;
+      : `<button class="ap-button primary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}Approve &amp; ${ACT[th.act].w.toLowerCase()}</button>`;
+    const alt = o.alt ? th.bulk.find((q) => q.a !== th.act && q.a !== "reply" && q.a !== "like") : null;
     const refusing = S.refusing === x.id;
-    return `<div class="fc3c" id="it-${x.id}">
-      <div class="fh3c"><span class="sc9-av sm">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span><div><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span></div><span class="sp"></span><span class="n3c">1 of ${total}</span></div>
+    const chk = o.sel ? `<label class="ap-checkbox-container sc9-chk" title="Select"><input type="checkbox" data-sel="${x.id}" ${S.sel.has(x.id) ? "checked" : ""} aria-label="Select ${esc(x.author)}"><i></i><span></span></label>` : "";
+    return `<article class="fc3c ${o.sel && S.sel.has(x.id) ? "sel" : ""} ${x.fresh && o.sel ? "fresh" : ""}" id="it-${x.id}">
+      <div class="fh3c">${chk}<span class="sc9-av sm">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span><div><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span></div><span class="sp"></span>${o.theme ? `<span class="ap-status grey no-dot">${th.label}</span>` : ""}${x.fresh && o.sel ? '<span class="ap-status blue">New</span>' : ""}${o.total ? `<span class="n3c">1 of ${o.total}</span>` : ""}</div>
       <p class="q3c">“${esc(x.text)}”</p>
-      <div class="sl3c"><span style="color:${a.dot}">${ic("spark")}</span><b style="color:${a.dot}">${what}</b><span>· ${esc(x.why)}</span></div>
-      ${reply || like ? `<div class="ap-textarea-field autoresize"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${like ? "Write a comment…" : empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(like ? ldraft : draft)}</textarea></div>` : ""}
+      <div class="sl3c"><span style="color:${a.dot}">${ic("spark")}</span><b style="color:${a.dot}">${what}</b><span>· ${esc(why)}</span></div>
+      ${reply || like ? `<div class="ap-textarea-field autoresize"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${like ? "Write a comment…" : empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(draft)}</textarea></div>` : ""}
       ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}
       ${refusing ? `<div class="rf11"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from it.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>`
-        : `<div class="ac3c"><button class="ap-button stroked grey" data-dismiss="${x.id}">${ic("x")}Refuse</button><span class="sp"></span>${prim}</div>`}
-    </div>`;
+        : `<div class="ac3c"><button class="ap-button stroked grey" data-dismiss="${x.id}">${ic("x")}Refuse</button>${alt ? `<button class="ap-button ghost grey" data-do="${x.id}:${alt.a}">${ic(ACT[alt.a].ic)}${ACT[alt.a].w} instead</button>` : ""}<span class="sp"></span>${prim}</div>`}
+    </article>`;
   }
+  const deck3c = (x, total) => card3c(x, { total });
   function day1Train() {
     if (COMPACT && (S.open11 === undefined || (S.open11 && S.mode[S.open11] !== "suggest"))) S.open11 = nextOpen();
     const html = `<div class="tr11 ${COMPACT ? "cmp" : ""} ${GRID ? "grd" : ""}">${ORDER11.map(trainSec).join("")}</div>`; S.anim = null; return html;
@@ -1420,7 +1400,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
       const counter = m === "auto" ? `<span class="ap-status green">Auto</span>` : m === "off" ? `<span class="ap-status grey">Off</span>`
         : ready ? `<button class="ap-button secondary orange" data-mode="${id}:auto">${ic("check")}Turn on Auto</button>`
         : `<span class="ct3c" title="Each review trains ${a.short}. After ${GOAL}, you can put it on Auto.">${pips}<b>${GOAL - n} review${GOAL - n === 1 ? "" : "s"} to Auto</b></span>`;
-      const ghead = `<div class="gh3c"><span class="av3c" style="background:${a.dot}">${ic(a.icon)}</span><h2>${TITLE[id]}</h2><button class="lk3c" data-go="${id}">${xs.length} waiting</button><span class="sp"></span>${counter}<button class="ap-icon-button ghost cog" data-go="${id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button></div>`;
+      const ghead = `<div class="gh3c"><span class="av3c" style="background:${a.dot}">${ic(a.icon)}</span><h2>${TITLE[id]}</h2><span class="lk3c">${xs.length} waiting</span><span class="sp"></span>${counter}<button class="ap-button ghost grey of3c" data-go="${id}"><span>Open feed</span><i class="ap-icon-arrow-right"></i></button><button class="ap-icon-button ghost cog" data-go="${id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button></div>`;
       let gb;
       if (m === "auto") gb = `<div class="au11"><span class="auic11">${ic("bolt")}</span><div class="aut11"><b>Works on its own now</b><span>${done} handled since you turned on Auto. Everything is in the Log.</span></div></div><div class="sf11"><button class="ap-button ghost grey" data-mode="${id}:suggest">Back to Suggest</button></div>`;
       else if (m === "off") gb = `<p class="cap11 gm11">This agent is off. New messages stay untouched.</p><div class="sf11"><button class="ap-button stroked grey" data-mode="${id}:suggest">Turn on</button></div>`;
