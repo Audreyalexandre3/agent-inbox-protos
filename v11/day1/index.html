@@ -828,7 +828,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .q3c { margin:0; font-size:18px; line-height:26px; font-weight:600; color:var(--ref-color-grey-100); }
 .sl3c { display:flex; align-items:center; gap:6px; padding-top:var(--ref-spacing-xs); border-top:1px solid var(--ref-color-grey-20); font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); min-width:0; } .sl3c svg { width:14px; height:14px; display:block; } .sl3c > span:last-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
 .fc3c textarea { width:100%; }
-.ac3c { display:flex; align-items:center; gap:var(--ref-spacing-xxs); }
+.ac3c { display:flex; align-items:center; gap:var(--ref-spacing-xxs); flex-wrap:wrap; }
 @media (prefers-reduced-motion:reduce) { .dk3c.in .fc3c { animation:none; } }
 </style>
 </head>
@@ -966,7 +966,8 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   if (FIRSTRUN) {
     const happy = ["obsessed 😍", "best candle I've ever owned", "my whole flat smells amazing", "Amber Night is a 10/10", "bought 3 already lol", "the packaging is so pretty", "gift for my sister, she loved it", "cozy season = this candle"];
     const nm = ["Chloé", "Marcus", "Priya", "Lucas", "Hannah", "Diego", "Zoe", "Noah", "Amara", "Leo", "Julia", "Theo", "Mila", "Oscar", "Ines", "Kai", "Rosa", "Felix", "Lina", "Sami", "Ella", "Nico", "Ava", "Jonas", "Iris", "Malo", "June", "Ravi", "Nora", "Eli", "Yara", "Paul"];
-    nm.forEach((a, k) => add({ theme: "positive", author: a, followers: 80 + (k * 137) % 2400, text: happy[k % happy.length], conf: 0.96, why: "Positive comment." }));
+    const thx = ["Thank you {n}! So happy you love it.", "Thanks so much {n}, that means a lot!", "Yay, thank you {n}! Enjoy every bit of it.", "Thank you {n}! Your words made our day."];
+    nm.forEach((a, k) => add({ theme: "positive", author: a, followers: 80 + (k * 137) % 2400, text: happy[k % happy.length], conf: 0.96, why: "Positive comment.", draft: thx[k % thx.length].replace("{n}", String(a).split(" ")[0]) }));
   }
   const LIVE = [
     { theme: "positive", author: "Mia", text: "spraying this every morning now 🤍", conf: 0.97 },
@@ -1377,16 +1378,18 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   }
   function deck3c(x, total) {
     const th = TH[x.theme], a = AGENTS[th.agent], reply = th.act === "reply", draft = reply ? draftOf(x) : "", empty = reply && !String(draft).trim();
-    const what = reply ? "Suggested reply" : th.act === "like" ? "Suggests liking it" : th.act === "delete" ? "Suggests deleting it" : "Suggests hiding it";
+    const like = th.act === "like", ldraft = like ? draftOf(x) : "";
+    const what = reply ? "Suggested reply" : like ? "Suggests liking it and replying" : th.act === "delete" ? "Suggests deleting it" : "Suggests hiding it";
     const verb = reply ? "send" : ACT[th.act].w.toLowerCase();
-    const prim = reply ? `<button class="ap-button primary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Approve &amp; send</button>`
+    const prim = like ? `<button class="ap-button stroked grey" data-do="${x.id}:like">${ic("heart")}Like only</button><button class="ap-button primary orange" data-likerep="${x.id}" data-send="${x.id}" ${String(ldraft).trim() ? "" : "disabled"}>${ic("heart")}Like &amp; reply</button>`
+      : reply ? `<button class="ap-button primary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Approve &amp; send</button>`
       : `<button class="ap-button primary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}Approve &amp; ${verb}</button>`;
     const refusing = S.refusing === x.id;
     return `<div class="fc3c" id="it-${x.id}">
       <div class="fh3c"><span class="sc9-av sm">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span><div><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span></div><span class="sp"></span><span class="n3c">1 of ${total}</span></div>
       <p class="q3c">“${esc(x.text)}”</p>
       <div class="sl3c"><span style="color:${a.dot}">${ic("spark")}</span><b style="color:${a.dot}">${what}</b><span>· ${esc(x.why)}</span></div>
-      ${reply ? `<div class="ap-textarea-field autoresize"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(draft)}</textarea></div>` : ""}
+      ${reply || like ? `<div class="ap-textarea-field autoresize"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${like ? "Write a comment…" : empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(like ? ldraft : draft)}</textarea></div>` : ""}
       ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}
       ${refusing ? `<div class="rf11"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from it.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>`
         : `<div class="ac3c"><button class="ap-button stroked grey" data-dismiss="${x.id}">${ic("x")}Refuse</button><span class="sp"></span>${prim}</div>`}
@@ -1671,6 +1674,10 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     if ((el = g("leadsmore"))) { S.leadsAll = !S.leadsAll; render(); return; }
     if ((el = g("sc"))) { const id = el.dataset.sc; S.scOn = id; const sec = document.getElementById("sec-" + id); if (sec) { $("#main").scrollTo({ top: sec.offsetTop - 64, behavior: "smooth" }); sec.classList.remove("flash"); void sec.offsetWidth; sec.classList.add("flash"); } document.querySelectorAll(".sc-i").forEach((b) => b.classList.toggle("on", b.dataset.sc === id)); return; }
     if ((el = g("tab"))) { S.tab = el.dataset.tab; if (S.tab === "config") fxDone("tune"); render(); return; }
+    if ((el = g("likerep"))) {
+      if (el.disabled) return; const id = el.dataset.likerep, x = items.find((y) => y.id === id);
+      const ev = act([id], "like"); if (ev) { ev.text = `Liked and replied to ${x.author}`; ev.icon = "heart"; } render(); if (ev) toast(`Liked and replied to ${x.author}`, () => undo(ev.lid)); return;
+    }
     if ((el = g("do"))) {
       const [id, a] = el.dataset.do.split(":"); const x = items.find((y) => y.id === id);
       if (a === "reply" && !draftOf(x).trim()) { toast("Write a reply first"); return; }
