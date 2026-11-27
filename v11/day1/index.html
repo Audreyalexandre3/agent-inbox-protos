@@ -772,6 +772,22 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .rf11 textarea, .rfm textarea { width:100%; }
 .rf11-f { display:flex; align-items:center; gap:var(--ref-spacing-xxs); }
 .rfm { width:340px; padding:var(--ref-spacing-xs); display:flex; flex-direction:column; gap:var(--ref-spacing-xxs); }
+.tr11.cmp { gap:0; background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:var(--sys-border-radius-lg); overflow:hidden; }
+.tr11.cmp .tr11s { border:0; border-radius:0; padding:0; border-top:1px solid var(--ref-color-grey-20); }
+.tr11.cmp .tr11s:first-child { border-top:0; }
+.rw11 { display:flex; align-items:center; gap:var(--ref-spacing-xs); width:100%; height:56px; padding:0 var(--ref-spacing-sm); text-align:left; }
+.rw11:hover { background:var(--ref-color-grey-05); }
+.av11.sm { width:28px; height:28px; }
+.av11.sm i { font-size:var(--sys-icon-css-sm); }
+.nm11 { font-weight:700; color:var(--ref-color-grey-100); width:110px; flex:none; }
+.pv11 { flex:1; min-width:0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; color:var(--ref-color-grey-80); font-size:var(--sys-text-style-body-size); }
+.pv11 b { color:var(--ref-color-grey-100); font-weight:700; }
+.pg11.in { flex-direction:row; align-items:center; gap:var(--ref-spacing-xxs); }
+.pg11.in .pp11 i { width:16px; height:4px; }
+.ch11 { color:var(--ref-color-grey-80); transition:transform .2s; flex:none; }
+.tr11s.open .ch11 { transform:rotate(180deg); }
+.bd11 { padding:0 var(--ref-spacing-sm) var(--ref-spacing-sm); }
+.tr11.cmp .sc9 { border-color:var(--ref-color-grey-20); }
 </style>
 </head>
 <body>
@@ -1300,7 +1316,12 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   }
   const GOAL = 5, ORDER11 = ["lead", "support", "partnerships", "moderation", "engagement"];
   const AUTO_DO = { lead: "Answers buying questions with the right product link", support: "Answers questions it finds on your website", partnerships: "Replies to business requests and asks for an email", moderation: "Hides spam and abusive comments, deletes scams", engagement: "Likes and thanks happy customers" };
-  function day1Train() { const html = `<div class="tr11">${ORDER11.map(trainSec).join("")}</div>`; S.anim = null; return html; }
+  const COMPACT = QP.get("layout") === "compact";
+  const nextOpen = () => ORDER11.find((id) => S.mode[id] === "suggest" && pend((x) => agentOf(x) === id).length) || null;
+  function day1Train() {
+    if (COMPACT && (S.open11 === undefined || (S.open11 && S.mode[S.open11] !== "suggest"))) S.open11 = nextOpen();
+    const html = `<div class="tr11 ${COMPACT ? "cmp" : ""}">${ORDER11.map(trainSec).join("")}</div>`; S.anim = null; return html;
+  }
   function trainSec(id) {
     const a = AGENTS[id], m = S.mode[id], n = Math.min(S.rev[id] || 0, 99), xs = pend((x) => agentOf(x) === id).sort((p, q) => q.at - p.at);
     const done = S.log.filter((e) => e.agent === id && e.by === "agent" && !e.undone && e.count && e.t >= (S.autoAt?.[id] || 0)).reduce((k, e) => k + e.count, 0);
@@ -1317,6 +1338,14 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
         <div class="sf11"><span class="cap11">${xs.length} more suggestion${xs.length === 1 ? "" : "s"} waiting</span><span class="sp"></span><button class="ap-button ghost grey" data-keep="${id}">Keep reviewing</button><button class="ap-button primary orange" data-mode="${id}:auto">${ic("bolt")}Turn on Auto</button></div></div>`; }
     else if (!xs.length) body = `<p class="cap11">All caught up. New suggestions show up here as messages come in.</p>`;
     else body = `<div class="one11 ${S.anim === id ? "in" : ""}">${itemRow(xs[0], true)}</div><div class="nx11"><span class="cap11">${xs.length - 1} more waiting</span><button class="ap-button ghost grey" data-go="${id}"><span>See all</span><i class="ap-icon-arrow-right"></i></button></div>`;
+    if (COMPACT) {
+      const open = S.open11 === id;
+      const nx = m === "suggest" && xs[0] ? `<span class="pv11"><b>${esc(xs[0].author)}</b> ${esc(xs[0].text)}</span>` : m === "auto" ? `<span class="pv11">${done} handled on its own</span>` : `<span class="pv11">${m === "off" ? "Off" : "All caught up"}</span>`;
+      const ready = m === "suggest" && n >= GOAL && !S.keep[id];
+      const cta = m === "auto" ? `<span class="ap-status green">Auto</span>` : ready ? `<span class="ap-status green">Ready for Auto</span>` : "";
+      const row = `<button class="rw11" data-open11="${id}" aria-expanded="${open}"><span class="av11 sm" style="background:${a.dot}">${ic(a.icon)}</span><b class="nm11">${TITLE[id]}</b>${open ? `<span class="pv11">${a.role}</span>` : nx}${cta}${m === "auto" ? "" : `<span class="pg11 in">${pips}<span class="cap11">${Math.min(n, GOAL)}/${GOAL}</span></span>`}<i class="ap-icon-chevron-down ch11"></i></button>`;
+      return `<section class="tr11s ${m} ${open ? "open" : ""}" id="sec-${id === "lead" ? "leads" : id}">${row}${open ? `<div class="bd11">${body}</div>` : ""}</section>`;
+    }
     return `<section class="tr11s ${m}" id="sec-${id === "lead" ? "leads" : id}">${head}${body}</section>`;
   }
   function day1Cards() {
@@ -1571,6 +1600,7 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     if ((el = g("rcancel"))) { S.refusing = null; S.rwhy = ""; render(); return; }
     if ((el = g("rsend"))) { if (el.disabled) return; dismiss(el.dataset.rsend, S.rwhy.trim()); return; }
     if ((el = g("keep"))) { S.keep[el.dataset.keep] = true; render(); return; }
+    if ((el = g("open11"))) { const id = el.dataset.open11; S.open11 = S.open11 === id ? null : id; render(); return; }
     if ((el = g("undo"))) { undo(+el.dataset.undo); return; }
     if ((el = g("more"))) { const t = el.dataset.more; S.open[t] = !S.open[t]; render(); return; }
     if ((el = g("auto"))) { const [t, v] = el.dataset.auto.split(":"); if (S.auto[t] !== (v === "on")) setAuto(t, v === "on"); return; }
