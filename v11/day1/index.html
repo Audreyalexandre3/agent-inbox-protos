@@ -811,6 +811,25 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .im11-rf { margin:var(--ref-spacing-xs) 0 0 42px; }
 .gc11 .au11, .gc11 .of11 { margin:0; }
 @media (max-width:1100px) { .tr11.grd { grid-template-columns:1fr; } }
+/* V11 card = Figma proposal 3c */
+.gc3c { display:flex; flex-direction:column; gap:var(--ref-spacing-sm); padding:var(--ref-spacing-sm) var(--ref-spacing-sm) var(--ref-spacing-md) var(--ref-spacing-md); min-width:0; }
+.gh3c { display:flex; align-items:center; gap:var(--ref-spacing-xxs); min-width:0; }
+.gh3c h2 { font-size:var(--sys-text-style-h3-size); font-weight:700; color:var(--ref-color-grey-100); margin:0 0 0 2px; white-space:nowrap; }
+.av3c { width:28px; height:28px; border-radius:var(--sys-border-radius-md); display:grid; place-items:center; color:var(--ref-color-white); flex:none; } .av3c svg { width:14px; height:14px; }
+.lk3c { border:0; background:none; padding:0 0 0 2px; font:inherit; font-size:var(--sys-text-style-body-size); color:var(--ref-color-grey-80); cursor:pointer; white-space:nowrap; } .lk3c:hover { color:var(--ref-color-grey-100); text-decoration:underline; }
+.ct3c { display:inline-flex; align-items:center; gap:8px; padding:5px 10px; border-radius:999px; background:var(--ref-color-grey-05, #f1f3f5); font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); white-space:nowrap; } .ct3c b { font-weight:700; }
+.ct3c .pp11 { gap:3px; } .ct3c .pp11 i { width:6px; height:6px; border-radius:50%; background:var(--ref-color-grey-40, #c4cad3); } .ct3c .pp11 i.f { background:var(--ref-color-green-100); }
+.dk3c { display:flex; flex-direction:column; align-items:center; }
+.dk3c > i { display:block; height:7px; border:1px solid var(--ref-color-grey-20); border-top:0; border-radius:0 0 10px 10px; background:var(--ref-color-white); }
+.dk3c > i.e1 { width:94%; opacity:.7; } .dk3c > i.e2 { width:88%; opacity:.45; }
+.fc3c { align-self:stretch; display:flex; flex-direction:column; gap:var(--ref-spacing-xs); padding:var(--ref-spacing-sm) var(--ref-spacing-md); background:var(--ref-color-white); border:1px solid var(--ref-color-grey-20); border-radius:12px; box-shadow:0 4px 16px rgba(52,69,99,.08); }
+.dk3c.in .fc3c { animation:in3c .35s cubic-bezier(.2,.9,.2,1); } @keyframes in3c { from { opacity:0; transform:translateY(10px) scale(.98); } }
+.fh3c { display:flex; align-items:center; gap:10px; } .fh3c div { display:flex; flex-direction:column; line-height:1.25; } .fh3c b { font-size:var(--sys-text-style-body-size); color:var(--ref-color-grey-100); } .fh3c div span, .n3c { font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); } .n3c { font-weight:700; }
+.q3c { margin:0; font-size:18px; line-height:26px; font-weight:600; color:var(--ref-color-grey-100); }
+.sl3c { display:flex; align-items:center; gap:6px; padding-top:var(--ref-spacing-xs); border-top:1px solid var(--ref-color-grey-20); font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); min-width:0; } .sl3c svg { width:14px; height:14px; display:block; } .sl3c > span:last-child { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.fc3c textarea { width:100%; }
+.ac3c { display:flex; align-items:center; gap:var(--ref-spacing-xxs); }
+@media (prefers-reduced-motion:reduce) { .dk3c.in .fc3c { animation:none; } }
 </style>
 </head>
 <body>
@@ -1356,6 +1375,23 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
       ${refusing ? `<div class="rf11 im11-rf"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from it.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>` : ""}
     </div>`;
   }
+  function deck3c(x, total) {
+    const th = TH[x.theme], a = AGENTS[th.agent], reply = th.act === "reply", draft = reply ? draftOf(x) : "", empty = reply && !String(draft).trim();
+    const what = reply ? "Suggested reply" : th.act === "like" ? "Suggests liking it" : th.act === "delete" ? "Suggests deleting it" : "Suggests hiding it";
+    const verb = reply ? "send" : ACT[th.act].w.toLowerCase();
+    const prim = reply ? `<button class="ap-button primary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Approve &amp; send</button>`
+      : `<button class="ap-button primary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}Approve &amp; ${verb}</button>`;
+    const refusing = S.refusing === x.id;
+    return `<div class="fc3c" id="it-${x.id}">
+      <div class="fh3c"><span class="sc9-av sm">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span><div><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span></div><span class="sp"></span><span class="n3c">1 of ${total}</span></div>
+      <p class="q3c">“${esc(x.text)}”</p>
+      <div class="sl3c"><span style="color:${a.dot}">${ic("spark")}</span><b style="color:${a.dot}">${what}</b><span>· ${esc(x.why)}</span></div>
+      ${reply ? `<div class="ap-textarea-field autoresize"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(draft)}</textarea></div>` : ""}
+      ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}
+      ${refusing ? `<div class="rf11"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from it.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>`
+        : `<div class="ac3c"><button class="ap-button stroked grey" data-dismiss="${x.id}">${ic("x")}Refuse</button><span class="sp"></span>${prim}</div>`}
+    </div>`;
+  }
   function day1Train() {
     if (COMPACT && (S.open11 === undefined || (S.open11 && S.mode[S.open11] !== "suggest"))) S.open11 = nextOpen();
     const html = `<div class="tr11 ${COMPACT ? "cmp" : ""} ${GRID ? "grd" : ""}">${ORDER11.map(trainSec).join("")}</div>`; S.anim = null; return html;
@@ -1377,16 +1413,17 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
     else if (!xs.length) body = `<p class="cap11">All caught up. New suggestions show up here as messages come in.</p>`;
     else body = `<div class="one11 ${S.anim === id ? "in" : ""}">${itemRow(xs[0], true)}</div><div class="nx11"><span class="cap11">${xs.length - 1} more waiting</span><button class="ap-button ghost grey" data-go="${id}"><span>See all</span><i class="ap-icon-arrow-right"></i></button></div>`;
     if (GRID) {
-      const all = items.filter((x) => agentOf(x) === id).length;
-      const ghead = `<div class="gh11"><span class="av11" style="background:${a.dot}">${ic(a.icon)}</span><div class="tt11"><div class="tn11"><h2>${TITLE[id]}</h2>${status}</div><p>${a.role}</p></div><div class="gn11"><b>${all}</b><span>analyzed</span></div></div>`;
+      const ready = m === "suggest" && n >= GOAL;
+      const counter = m === "auto" ? `<span class="ap-status green">Auto</span>` : m === "off" ? `<span class="ap-status grey">Off</span>`
+        : ready ? `<button class="ap-button secondary orange" data-mode="${id}:auto">${ic("check")}Turn on Auto</button>`
+        : `<span class="ct3c" title="Each review trains ${a.short}. After ${GOAL}, you can put it on Auto.">${pips}<b>${GOAL - n} review${GOAL - n === 1 ? "" : "s"} to Auto</b></span>`;
+      const ghead = `<div class="gh3c"><span class="av3c" style="background:${a.dot}">${ic(a.icon)}</span><h2>${TITLE[id]}</h2><button class="lk3c" data-go="${id}">${xs.length} waiting</button><span class="sp"></span>${counter}<button class="ap-icon-button ghost cog" data-go="${id}" data-tab="config" title="Agent configuration" aria-label="${a.name} configuration">${ic("gear")}</button></div>`;
       let gb;
-      if (m === "auto") gb = `<div class="au11"><span class="auic11">${ic("bolt")}</span><div class="aut11"><b>Works on its own now</b><span>${done} handled since you turned on Auto. Everything is in the Log.</span></div></div>`;
-      else if (m === "off") gb = `<p class="cap11 gm11">This agent is off. New messages stay untouched.</p>`;
-      else if (n >= GOAL && !S.keep[id]) gb = `<div class="of11"><span class="ap-status green">Ready for Auto</span><h3>Let ${a.short} work on its own?</h3><p>You reviewed ${n} suggestions and sent ${S.ok[id] || 0} as they were. On Auto, it ${AUTO_DO[id].charAt(0).toLowerCase() + AUTO_DO[id].slice(1)}.</p><div class="sf11"><button class="ap-button ghost grey" data-keep="${id}">Keep reviewing</button><button class="ap-button primary orange" data-mode="${id}:auto">${ic("bolt")}Turn on Auto</button></div></div>`;
+      if (m === "auto") gb = `<div class="au11"><span class="auic11">${ic("bolt")}</span><div class="aut11"><b>Works on its own now</b><span>${done} handled since you turned on Auto. Everything is in the Log.</span></div></div><div class="sf11"><button class="ap-button ghost grey" data-mode="${id}:suggest">Back to Suggest</button></div>`;
+      else if (m === "off") gb = `<p class="cap11 gm11">This agent is off. New messages stay untouched.</p><div class="sf11"><button class="ap-button stroked grey" data-mode="${id}:suggest">Turn on</button></div>`;
       else if (!xs.length) gb = `<p class="cap11 gm11">All caught up. New suggestions show up here.</p>`;
-      else gb = `<div class="gl11"><span class="cap11">To review · ${xs.length} waiting</span></div><div class="${S.anim === id ? "in one11" : "one11"}">${itemMini(xs[0])}</div>`;
-      const foot = `<div class="gf11">${m === "suggest" ? `<span class="pg11 in">${pips}<span class="cap11">${Math.min(n, GOAL)} of ${GOAL} reviewed</span></span>` : m === "auto" ? `<button class="ap-button ghost grey" data-mode="${id}:suggest">Back to Suggest</button>` : `<button class="ap-button stroked grey" data-mode="${id}:suggest">Turn on</button>`}<span class="sp"></span><button class="ap-icon-button stroked" data-go="${id}" data-tab="config" title="Agent configuration" aria-label="Agent configuration">${ic("gear")}</button><button class="ap-button stroked blue" data-go="${id}"><span>Open feed</span><i class="ap-icon-arrow-right"></i></button></div>`;
-      return `<section class="tr11s gc11 ${m}" id="sec-${id === "lead" ? "leads" : id}">${ghead}<div class="gbd11">${gb}</div>${foot}</section>`;
+      else gb = `<div class="dk3c ${S.anim === id ? "in" : ""}">${deck3c(xs[0], xs.length)}<i class="e1"></i><i class="e2"></i></div>`;
+      return `<section class="tr11s gc3c ${m}" id="sec-${id === "lead" ? "leads" : id}">${ghead}${gb}</section>`;
     }
     if (COMPACT) {
       const open = S.open11 === id;
