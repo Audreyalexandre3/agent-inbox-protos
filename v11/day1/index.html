@@ -788,6 +788,29 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
 .tr11s.open .ch11 { transform:rotate(180deg); }
 .bd11 { padding:0 var(--ref-spacing-sm) var(--ref-spacing-sm); }
 .tr11.cmp .sc9 { border-color:var(--ref-color-grey-20); }
+.tr11.grd { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:var(--ref-spacing-sm); }
+.gc11 { display:flex; flex-direction:column; padding:var(--ref-spacing-sm) var(--ref-spacing-md); min-width:0; }
+.gh11 { display:flex; align-items:flex-start; gap:var(--ref-spacing-xs); }
+.gh11 .tt11 p { font-size:var(--sys-text-style-caption-size); }
+.gn11 { text-align:right; flex:none; } .gn11 b { display:block; font-size:var(--sys-text-style-h2-size); line-height:1.1; font-weight:700; color:var(--ref-color-grey-100); } .gn11 span { font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); }
+.gbd11 { flex:1; margin-top:var(--ref-spacing-sm); }
+.gl11 { padding-bottom:var(--ref-spacing-xxs); border-bottom:1px solid var(--ref-color-grey-20); margin-bottom:var(--ref-spacing-xs); }
+.gm11 { padding:var(--ref-spacing-sm) 0; }
+.gf11 { display:flex; align-items:center; gap:var(--ref-spacing-xxs); margin-top:var(--ref-spacing-sm); padding-top:var(--ref-spacing-xs); border-top:1px solid var(--ref-color-grey-20); }
+.im11-r { display:flex; align-items:flex-start; gap:var(--ref-spacing-xs); }
+.sc9-av.sm { width:32px; height:32px; }
+.im11-b { flex:1; min-width:0; }
+.im11-h { display:flex; align-items:baseline; gap:6px; } .im11-h b { color:var(--ref-color-grey-100); font-weight:700; font-size:var(--sys-text-style-body-size); } .im11-h span { font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); white-space:nowrap; }
+.im11-t { margin-top:2px; color:var(--ref-color-grey-100); font-size:var(--sys-text-style-body-size); overflow:hidden; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; }
+.im11-a { display:flex; align-items:center; gap:var(--ref-spacing-xxs); flex:none; }
+.im11-s { margin:var(--ref-spacing-xs) 0 0 42px; }
+.im11-l { display:flex; align-items:center; gap:6px; font-size:var(--sys-text-style-caption-size); color:var(--ref-color-grey-80); margin-bottom:4px; min-width:0; }
+.im11-l svg { width:13px; height:13px; flex:none; } .im11-l > span:nth-child(2) { color:var(--ref-color-grey-100); font-weight:700; white-space:nowrap; }
+.im11-w { white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.im11-s textarea { width:100%; }
+.im11-rf { margin:var(--ref-spacing-xs) 0 0 42px; }
+.gc11 .au11, .gc11 .of11 { margin:0; }
+@media (max-width:1100px) { .tr11.grd { grid-template-columns:1fr; } }
 </style>
 </head>
 <body>
@@ -1316,11 +1339,26 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
   }
   const GOAL = 5, ORDER11 = ["lead", "support", "partnerships", "moderation", "engagement"];
   const AUTO_DO = { lead: "Answers buying questions with the right product link", support: "Answers questions it finds on your website", partnerships: "Replies to business requests and asks for an email", moderation: "Hides spam and abusive comments, deletes scams", engagement: "Likes and thanks happy customers" };
-  const COMPACT = QP.get("layout") !== "full";
+  const LAYOUT = QP.get("layout") || "grid", COMPACT = LAYOUT === "compact", GRID = LAYOUT === "grid";
   const nextOpen = () => ORDER11.find((id) => S.mode[id] === "suggest" && pend((x) => agentOf(x) === id).length) || null;
+  function itemMini(x) {
+    const th = TH[x.theme], a = AGENTS[th.agent], reply = th.act === "reply", draft = reply ? draftOf(x) : "", empty = reply && !String(draft).trim();
+    const what = reply ? "Suggested reply" : th.act === "like" ? "Suggests liking it" : th.act === "delete" ? "Suggests deleting it" : "Suggests hiding it";
+    const prim = reply ? `<button class="ap-button secondary orange" data-do="${x.id}:reply" data-send="${x.id}" ${empty ? "disabled" : ""}>${ic("send")}Send</button>` : `<button class="ap-button secondary orange" data-do="${x.id}:${th.act}">${ic(ACT[th.act].ic)}${ACT[th.act].w}</button>`;
+    const refusing = S.refusing === x.id;
+    return `<div class="im11" id="it-${x.id}">
+      <div class="im11-r"><span class="sc9-av sm">${initials(x.author)}<span class="net ${x.net}">${x.net}</span></span>
+        <div class="im11-b"><div class="im11-h"><b>${esc(x.author)}</b><span>${kf(x.followers || 0)} followers · ${rel(x.at)}</span></div><p class="im11-t">${esc(x.text)}</p></div>
+        <div class="im11-a">${refusing ? "" : `${prim}<button class="ap-icon-button stroked" data-dismiss="${x.id}" title="Refuse" aria-label="Refuse">${ic("x")}</button>`}</div></div>
+      <div class="im11-s"><div class="im11-l">${ic("spark")}<span>${what}</span><span class="im11-w">· ${esc(x.why)}</span></div>
+        ${reply ? `<div class="ap-textarea-field autoresize"><textarea class="draft92" rows="1" data-draft="${x.id}" aria-label="Reply to ${esc(x.author)}" placeholder="${empty ? "The agent didn't draft a reply. Write yours…" : ""}">${esc(draft)}</textarea></div>` : ""}
+        ${x.dm ? `<div class="i9-dm">${ic("send")}Then sends a DM with <b>${esc(x.dm)}</b></div>` : ""}</div>
+      ${refusing ? `<div class="rf11 im11-rf"><label class="rf11-l" for="rf-${x.id}">Why is this not right?</label><div class="ap-textarea-field"><textarea id="rf-${x.id}" rows="2" data-rwhy="${x.id}" placeholder="Ex: we never offer discounts, the tone is too formal">${esc(S.rwhy)}</textarea></div><div class="rf11-f"><span class="cap11">${a.short} learns from it.</span><span class="sp"></span><button class="ap-button ghost grey" data-rcancel="1">Cancel</button><button class="ap-button secondary orange" data-rsend="${x.id}" ${S.rwhy.trim() ? "" : "disabled"}>Send feedback</button></div></div>` : ""}
+    </div>`;
+  }
   function day1Train() {
     if (COMPACT && (S.open11 === undefined || (S.open11 && S.mode[S.open11] !== "suggest"))) S.open11 = nextOpen();
-    const html = `<div class="tr11 ${COMPACT ? "cmp" : ""}">${ORDER11.map(trainSec).join("")}</div>`; S.anim = null; return html;
+    const html = `<div class="tr11 ${COMPACT ? "cmp" : ""} ${GRID ? "grd" : ""}">${ORDER11.map(trainSec).join("")}</div>`; S.anim = null; return html;
   }
   function trainSec(id) {
     const a = AGENTS[id], m = S.mode[id], n = Math.min(S.rev[id] || 0, 99), xs = pend((x) => agentOf(x) === id).sort((p, q) => q.at - p.at);
@@ -1338,6 +1376,18 @@ body.d1mode .hero6 .ring, body.d1mode .hero6 [data-preview] { display:none; }
         <div class="sf11"><span class="cap11">${xs.length} more suggestion${xs.length === 1 ? "" : "s"} waiting</span><span class="sp"></span><button class="ap-button ghost grey" data-keep="${id}">Keep reviewing</button><button class="ap-button primary orange" data-mode="${id}:auto">${ic("bolt")}Turn on Auto</button></div></div>`; }
     else if (!xs.length) body = `<p class="cap11">All caught up. New suggestions show up here as messages come in.</p>`;
     else body = `<div class="one11 ${S.anim === id ? "in" : ""}">${itemRow(xs[0], true)}</div><div class="nx11"><span class="cap11">${xs.length - 1} more waiting</span><button class="ap-button ghost grey" data-go="${id}"><span>See all</span><i class="ap-icon-arrow-right"></i></button></div>`;
+    if (GRID) {
+      const all = items.filter((x) => agentOf(x) === id).length;
+      const ghead = `<div class="gh11"><span class="av11" style="background:${a.dot}">${ic(a.icon)}</span><div class="tt11"><div class="tn11"><h2>${TITLE[id]}</h2>${status}</div><p>${a.role}</p></div><div class="gn11"><b>${all}</b><span>analyzed</span></div></div>`;
+      let gb;
+      if (m === "auto") gb = `<div class="au11"><span class="auic11">${ic("bolt")}</span><div class="aut11"><b>Works on its own now</b><span>${done} handled since you turned on Auto. Everything is in the Log.</span></div></div>`;
+      else if (m === "off") gb = `<p class="cap11 gm11">This agent is off. New messages stay untouched.</p>`;
+      else if (n >= GOAL && !S.keep[id]) gb = `<div class="of11"><span class="ap-status green">Ready for Auto</span><h3>Let ${a.short} work on its own?</h3><p>You reviewed ${n} suggestions and sent ${S.ok[id] || 0} as they were. On Auto, it ${AUTO_DO[id].charAt(0).toLowerCase() + AUTO_DO[id].slice(1)}.</p><div class="sf11"><button class="ap-button ghost grey" data-keep="${id}">Keep reviewing</button><button class="ap-button primary orange" data-mode="${id}:auto">${ic("bolt")}Turn on Auto</button></div></div>`;
+      else if (!xs.length) gb = `<p class="cap11 gm11">All caught up. New suggestions show up here.</p>`;
+      else gb = `<div class="gl11"><span class="cap11">To review · ${xs.length} waiting</span></div><div class="${S.anim === id ? "in one11" : "one11"}">${itemMini(xs[0])}</div>`;
+      const foot = `<div class="gf11">${m === "suggest" ? `<span class="pg11 in">${pips}<span class="cap11">${Math.min(n, GOAL)} of ${GOAL} reviewed</span></span>` : m === "auto" ? `<button class="ap-button ghost grey" data-mode="${id}:suggest">Back to Suggest</button>` : `<button class="ap-button stroked grey" data-mode="${id}:suggest">Turn on</button>`}<span class="sp"></span><button class="ap-icon-button stroked" data-go="${id}" data-tab="config" title="Agent configuration" aria-label="Agent configuration">${ic("gear")}</button><button class="ap-button stroked blue" data-go="${id}"><span>Open feed</span><i class="ap-icon-arrow-right"></i></button></div>`;
+      return `<section class="tr11s gc11 ${m}" id="sec-${id === "lead" ? "leads" : id}">${ghead}<div class="gbd11">${gb}</div>${foot}</section>`;
+    }
     if (COMPACT) {
       const open = S.open11 === id;
       const nx = m === "suggest" && xs[0] ? `<span class="pv11"><b>${esc(xs[0].author)}</b> ${esc(xs[0].text)}</span>` : m === "auto" ? `<span class="pv11">${done} handled on its own</span>` : `<span class="pv11">${m === "off" ? "Off" : "All caught up"}</span>`;
